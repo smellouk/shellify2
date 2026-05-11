@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -55,7 +56,7 @@ fun AppNavigation(
     Scaffold(
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
-                NavigationBar {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     NavigationBarItem(
                         selected = currentRoute == Screen.Home.route,
                         onClick = { navController.navigateToTab(Screen.Home.route) },
@@ -93,7 +94,7 @@ fun AppNavigation(
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    viewModel = HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories, app.saveWebApp, app.isolationManager, app),
+                    viewModel = HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories, app.saveWebApp, app.isolationManager, app, app.passwordManager),
                     onAddApp = { navController.navigate(Screen.Add.createRoute()) },
                     onEditApp = { id -> navController.navigate(Screen.Add.createRoute(id)) },
                     onOpenApp = { },
@@ -153,7 +154,11 @@ fun AppNavigation(
 
             composable(Screen.GlobalSettings.route) {
                 GlobalSettingsScreen(
-                    viewModel = GlobalSettingsViewModel(app.themeManager, app.isolationManager, app.webAppRepository),
+                    viewModel = GlobalSettingsViewModel(
+                        app.themeManager, app.isolationManager, app.webAppRepository,
+                        app.categoryRepository, app.passwordManager,
+                        app.backupSettings, app.backupManager, app,
+                    ),
                 )
             }
         }

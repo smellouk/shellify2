@@ -31,6 +31,7 @@ class WebAppRepositoryImpl(private val dao: WebAppDao) : WebAppRepository {
     override suspend fun delete(app: WebApp) = dao.delete(app.toEntity())
 
     override suspend fun deleteById(id: Long) = dao.deleteById(id)
+    override suspend fun deleteAll() = dao.deleteAll()
 
     override suspend fun clearIsolatedData(isolationId: String) {
         // Actual WebView profile/cookie clearing is handled in IsolationManager.

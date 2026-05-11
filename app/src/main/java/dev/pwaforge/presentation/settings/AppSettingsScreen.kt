@@ -9,12 +9,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.automirrored.filled.Shortcut
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -35,8 +43,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 
@@ -54,7 +66,9 @@ fun AppSettingsScreen(
 
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
 
+    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     Scaffold(
+        containerColor = screenBg,
         topBar = {
             TopAppBar(
                 title = { Text(app?.name ?: "App settings") },
@@ -105,6 +119,45 @@ fun AppSettingsScreen(
                 )
             }
 
+            SectionLabel("Security")
+            SettingsCard {
+                ListItem(
+                    headlineContent = { Text("App Lock") },
+                    trailingContent = {
+                        Switch(
+                            checked = app.lockType != dev.pwaforge.domain.model.LockType.NONE,
+                            onCheckedChange = { on ->
+                                viewModel.setLockType(
+                                    if (on) dev.pwaforge.domain.model.LockType.PASSWORD
+                                    else dev.pwaforge.domain.model.LockType.NONE
+                                )
+                            },
+                        )
+                    },
+                )
+                if (app.lockType != dev.pwaforge.domain.model.LockType.NONE) {
+                    HorizontalDivider()
+                    listOf(
+                        dev.pwaforge.domain.model.LockType.PASSWORD to "App password (set in Settings)",
+                        dev.pwaforge.domain.model.LockType.SYSTEM to "System lock (fingerprint / PIN)",
+                    ).forEach { (type, label) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable { viewModel.setLockType(type) }
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            androidx.compose.material3.RadioButton(
+                                selected = app.lockType == type,
+                                onClick = { viewModel.setLockType(type) },
+                            )
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
             SectionLabel("Danger zone")
 
@@ -131,6 +184,7 @@ fun AppSettingsScreen(
                 },
             )
         }
+
     }
 }
 
@@ -141,7 +195,12 @@ private fun SectionLabel(text: String) =
 
 @Composable
 private fun SettingsCard(content: @Composable () -> Unit) =
-    Card(elevation = CardDefaults.cardElevation(2.dp)) { content() }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) { content() }
 
 @Composable
 private fun ToggleListItem(label: String, checked: Boolean, onToggle: () -> Unit) =

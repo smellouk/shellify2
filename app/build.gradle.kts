@@ -90,6 +90,18 @@ dependencies {
     // DataStore (global app preferences)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    // AppCompat (required for BiometricPrompt → FragmentActivity)
+    implementation("androidx.appcompat:appcompat:1.7.0")
+
+    // Biometric — system lock / fingerprint prompt
+    implementation("androidx.biometric:biometric:1.1.0")
+
+    // WorkManager — scheduled backups
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // DocumentFile — SAF-based file writing for backups
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

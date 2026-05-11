@@ -34,4 +34,7 @@ interface WebAppDao {
 
     @Query("DELETE FROM web_apps WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM web_apps")
+    suspend fun deleteAll()
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
@@ -39,6 +41,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,10 +66,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.fragment.app.FragmentActivity
+import dev.pwaforge.core.security.showSystemLockPrompt
+import dev.pwaforge.core.security.verifyPassword
 import dev.pwaforge.domain.model.Category
+import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.presentation.webview.WebViewActivity
 
@@ -80,10 +94,17 @@ fun HomeScreen(
     onOpenSettings: (Long) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
+    val globalPasswordHash by viewModel.globalPasswordHash.collectAsState()
     val context = LocalContext.current
     var showSearch by remember { mutableStateOf(false) }
+    var lockedApp by remember { mutableStateOf<WebApp?>(null) }
+    var passwordInput by remember { mutableStateOf("") }
+    var showPasswordInput by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
+    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     Scaffold(
+        containerColor = screenBg,
         topBar = {
             TopAppBar(
                 title = {
@@ -113,7 +134,10 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddApp) {
+            FloatingActionButton(
+                onClick = onAddApp,
+                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add PWA")
             }
         },
@@ -135,10 +159,25 @@ fun HomeScreen(
                         )
                     }
                     items(state.categories) { cat ->
+                        val catColor = runCatching {
+                            Color(android.graphics.Color.parseColor(cat.color))
+                        }.getOrDefault(MaterialTheme.colorScheme.primary)
                         FilterChip(
                             selected = state.selectedCategoryId == cat.id,
                             onClick = { viewModel.selectCategory(cat.id) },
-                            label = { Text(cat.name) },
+                            label = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(10.dp)
+                                            .background(catColor, CircleShape),
+                                    )
+                                    Text(cat.name)
+                                }
+                            },
                         )
                     }
                 }
@@ -158,7 +197,24 @@ fun HomeScreen(
                             app = app,
                             categories = state.categories,
                             onClick = {
-                                context.startActivity(WebViewActivity.launchIntent(context, app.id))
+                                when (app.lockType) {
+                                    LockType.NONE -> context.startActivity(WebViewActivity.launchIntent(context, app.id))
+                                    LockType.PASSWORD -> {
+                                        lockedApp = app
+                                        passwordInput = ""
+                                        showPasswordInput = false
+                                        passwordError = null
+                                    }
+                                    LockType.SYSTEM -> {
+                                        val activity = context as? FragmentActivity ?: return@AppCard
+                                        showSystemLockPrompt(
+                                            activity = activity,
+                                            title = "Open ${app.name}",
+                                            onSuccess = { context.startActivity(WebViewActivity.launchIntent(context, app.id)) },
+                                            onFailed = {},
+                                        )
+                                    }
+                                }
                             },
                             onEdit = { onEditApp(app.id) },
                             onSettings = { onOpenSettings(app.id) },
@@ -171,6 +227,51 @@ fun HomeScreen(
             }
         }
 
+    }
+
+    lockedApp?.let { app ->
+        AlertDialog(
+            onDismissRequest = { lockedApp = null },
+            icon = { Icon(Icons.Default.Lock, null) },
+            title = { Text(app.name) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Enter password to open this app",
+                        style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = passwordInput,
+                        onValueChange = { passwordInput = it; passwordError = null },
+                        label = { Text("Password") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showPasswordInput) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { showPasswordInput = !showPasswordInput }) {
+                                Icon(if (showPasswordInput) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                            }
+                        },
+                        isError = passwordError != null,
+                        supportingText = { if (passwordError != null) Text(passwordError!!) },
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val hash = globalPasswordHash
+                    if (hash != null && verifyPassword(passwordInput, hash)) {
+                        lockedApp = null
+                        context.startActivity(WebViewActivity.launchIntent(context, app.id))
+                    } else {
+                        passwordError = "Wrong password"
+                    }
+                }) { Text("Open") }
+            },
+            dismissButton = {
+                TextButton(onClick = { lockedApp = null }) { Text("Cancel") }
+            },
+        )
     }
 }
 
@@ -236,7 +337,8 @@ private fun AppCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1,6 +1,7 @@
 package dev.pwaforge.data.mapper
 
 import dev.pwaforge.data.local.entity.WebAppEntity
+import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.UserAgentMode
@@ -31,6 +32,7 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     uaMode = runCatching { UserAgentMode.valueOf(uaMode) }.getOrDefault(UserAgentMode.CHROME_MOBILE),
     createdAt = createdAt,
     updatedAt = updatedAt,
+    lockType = runCatching { LockType.valueOf(lockType) }.getOrDefault(LockType.NONE),
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -58,4 +60,5 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     uaMode = uaMode.name,
     createdAt = createdAt,
     updatedAt = updatedAt,
+    lockType = lockType.name,
 )

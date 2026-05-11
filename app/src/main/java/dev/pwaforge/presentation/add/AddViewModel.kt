@@ -7,6 +7,7 @@ import dev.pwaforge.core.pwa.PwaAnalyzer
 import dev.pwaforge.domain.model.PwaManifest
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
+import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.UserAgentMode
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.domain.repository.WebAppRepository
@@ -51,6 +52,8 @@ data class AddUiState(
     val autoTranslateOnLoad: Boolean = false,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
+    // Security
+    val lockType: LockType = LockType.NONE,
     val analyzeError: String? = null,
     val urlError: String? = null,
     val nameError: String? = null,
@@ -101,6 +104,7 @@ class AddViewModel(
                         showTranslateButton = app.showTranslateButton,
                         autoTranslateOnLoad = app.autoTranslateOnLoad,
                         uaMode = app.uaMode,
+                        lockType = app.lockType,
                     )
                 }
             }
@@ -139,6 +143,9 @@ class AddViewModel(
 
     // Browser
     fun setUaMode(v: UserAgentMode) = _state.update { it.copy(uaMode = v) }
+
+    // Security
+    fun setLockType(v: LockType) = _state.update { it.copy(lockType = v) }
 
     // ── Analysis ──────────────────────────────────────────────────────────────
 
@@ -276,6 +283,7 @@ class AddViewModel(
             showTranslateButton = s.showTranslateButton,
             autoTranslateOnLoad = s.autoTranslateOnLoad,
             uaMode = s.uaMode,
+            lockType = s.lockType,
         )
     }
 }

@@ -15,7 +15,7 @@ import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 2,
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -36,6 +36,25 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE categories ADD COLUMN icon TEXT NOT NULL DEFAULT 'folder'")
+                db.execSQL("ALTER TABLE categories ADD COLUMN color TEXT NOT NULL DEFAULT '#6D28D9'")
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE web_apps ADD COLUMN passwordHash TEXT DEFAULT NULL")
+            }
+        }
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE web_apps ADD COLUMN lockType TEXT NOT NULL DEFAULT 'NONE'")
+            }
+        }
+
         fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: buildDatabase(context, crypto).also { instance = it }
@@ -52,7 +71,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "pwaforge.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
                 .also { passphrase.fill(0) }
         }

@@ -3,11 +3,14 @@ package dev.pwaforge.presentation.shortcuts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
@@ -19,6 +22,9 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -51,7 +57,9 @@ import dev.pwaforge.presentation.home.AppIcon
 fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     val state by viewModel.uiState.collectAsState()
 
+    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     Scaffold(
+        containerColor = screenBg,
         topBar = {
             TopAppBar(title = { Text("Shortcuts") })
         },
@@ -71,18 +79,29 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     if (uri != null) viewModel.applyPickedIcon(item, uri)
                 }
 
-                LazyColumn(modifier = Modifier.padding(padding)) {
+                LazyColumn(
+                    modifier = Modifier.padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     items(state.items, key = { it.shortcutId }) { item ->
-                        ShortcutRow(
-                            item = item,
-                            onRename = { viewModel.startRename(item) },
-                            onRefreshIcon = { viewModel.refreshIcon(item) },
-                            onChangeIcon = {
-                                iconPickItem = item
-                                pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                            },
-                            onRemove = { viewModel.showRemove(item) },
-                        )
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        ) {
+                            ShortcutRow(
+                                item = item,
+                                onRename = { viewModel.startRename(item) },
+                                onRefreshIcon = { viewModel.refreshIcon(item) },
+                                onChangeIcon = {
+                                    iconPickItem = item
+                                    pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                                },
+                                onRemove = { viewModel.showRemove(item) },
+                            )
+                        }
                     }
                 }
             }
@@ -146,6 +165,7 @@ private fun ShortcutRow(
     var showMenu by remember { mutableStateOf(false) }
 
     ListItem(
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
         leadingContent = { AppIcon(app = item.app, modifier = Modifier.size(48.dp)) },
         headlineContent = { Text(item.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {

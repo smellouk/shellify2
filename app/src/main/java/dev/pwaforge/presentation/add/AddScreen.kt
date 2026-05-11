@@ -41,7 +41,13 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.TravelExplore
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -68,7 +74,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -149,7 +154,6 @@ fun AddScreen(
         containerColor = screenBg,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = screenBg),
                 title = {
                     Text(
                         if (state.name.isEmpty() && state.url.isEmpty()) "Create App" else "Edit App",
@@ -268,95 +272,86 @@ fun AddScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // 3. Icon (left) + Theme Color (right)
+                // 3. Icon preview · fetch · gallery  ──  color swatch · label (single row)
+                val previewIconPath = state.iconPath ?: state.pendingIconPath
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    // Icon box + action buttons below
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    // Icon preview
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(13.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(13.dp))
+                            .clickable {
+                                imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            },
+                        contentAlignment = Alignment.Center,
                     ) {
-                        val previewIconPath = state.iconPath ?: state.pendingIconPath
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(MaterialTheme.colorScheme.primaryContainer)
-                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
-                                .clickable {
-                                    imagePicker.launch(
-                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    )
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (previewIconPath != null || state.name.isNotBlank()) {
-                                AppIcon(
-                                    app = WebApp(
-                                        name = state.name, url = state.url,
-                                        iconPath = previewIconPath, themeColor = state.themeColor,
-                                    ),
-                                    modifier = Modifier.fillMaxSize(),
-                                )
-                            } else {
-                                Icon(
-                                    Icons.Default.PhoneAndroid, null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(28.dp),
-                                )
-                            }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            // Fetch from URL
-                            FilledIconButton(
-                                onClick = viewModel::fetchIcon,
-                                enabled = state.url.isNotBlank() && !state.isFetchingIcon,
-                                modifier = Modifier.size(28.dp),
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                ),
-                            ) {
-                                if (state.isFetchingIcon) {
-                                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp)
-                                } else {
-                                    Icon(Icons.Default.Language, "Fetch icon", modifier = Modifier.size(14.dp))
-                                }
-                            }
-                            // Pick from gallery
-                            FilledIconButton(
-                                onClick = {
-                                    imagePicker.launch(
-                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    )
-                                },
-                                modifier = Modifier.size(28.dp),
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                ),
-                            ) {
-                                Icon(Icons.Default.AutoAwesome, "Choose image", modifier = Modifier.size(14.dp))
-                            }
+                        if (previewIconPath != null || state.name.isNotBlank()) {
+                            AppIcon(
+                                app = WebApp(name = state.name, url = state.url,
+                                    iconPath = previewIconPath, themeColor = state.themeColor),
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else {
+                            Icon(Icons.Default.PhoneAndroid, null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(26.dp))
                         }
                     }
 
-                    // Theme color (takes remaining width)
+                    Spacer(Modifier.width(8.dp))
+
+                    // Fetch from URL
+                    FilledIconButton(
+                        onClick = viewModel::fetchIcon,
+                        enabled = state.url.isNotBlank() && !state.isFetchingIcon,
+                        modifier = Modifier.size(32.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                    ) {
+                        if (state.isFetchingIcon) {
+                            CircularProgressIndicator(modifier = Modifier.size(13.dp), strokeWidth = 1.5.dp)
+                        } else {
+                            Icon(Icons.Default.Language, "Fetch icon", modifier = Modifier.size(16.dp))
+                        }
+                    }
+
+                    Spacer(Modifier.width(4.dp))
+
+                    // Pick from gallery
+                    FilledIconButton(
+                        onClick = {
+                            imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
+                        modifier = Modifier.size(32.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, "Choose image", modifier = Modifier.size(16.dp))
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    // Theme color swatch + label — tappable
                     Row(
                         modifier = Modifier
-                            .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
                             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                             .clickable { showColorPicker = true }
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .size(26.dp)
+                                .clip(RoundedCornerShape(6.dp))
                                 .background(
                                     if (state.themeColor != null)
                                         runCatching { Color(android.graphics.Color.parseColor(state.themeColor)) }
@@ -364,11 +359,12 @@ fun AddScreen(
                                     else MaterialTheme.colorScheme.primaryContainer
                                 ),
                         )
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Theme Color", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                        Column {
+                            Text("Theme Color", style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium)
                             Text(
                                 state.themeColor ?: "Not set",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -450,6 +446,30 @@ fun AddScreen(
                 SubToggleRow("Show Top Toolbar",
                     "Keep browser toolbar visible in fullscreen mode (title, URL, back/forward/refresh)",
                     state.fullscreenShowTopToolbar, viewModel::setFullscreenShowTopToolbar)
+            }
+
+            FeatureCard(Icons.Default.Lock, "App Lock",
+                enabled = state.lockType != dev.pwaforge.domain.model.LockType.NONE,
+                onToggle = { on ->
+                    viewModel.setLockType(if (on) dev.pwaforge.domain.model.LockType.PASSWORD else dev.pwaforge.domain.model.LockType.NONE)
+                },
+            ) {
+                listOf(
+                    dev.pwaforge.domain.model.LockType.PASSWORD to "App password (set in Settings)",
+                    dev.pwaforge.domain.model.LockType.SYSTEM to "System lock (fingerprint / PIN)",
+                ).forEach { (type, label) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { viewModel.setLockType(type) }.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        androidx.compose.material3.RadioButton(
+                            selected = state.lockType == type,
+                            onClick = { viewModel.setLockType(type) },
+                        )
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
             }
 
             Spacer(Modifier.height(24.dp))
@@ -656,7 +676,7 @@ private fun ColorPickerDialog(
 private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
         Column(modifier = Modifier.padding(16.dp), content = content)
     }
 }
@@ -671,7 +691,7 @@ private fun FeatureCard(
 ) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
         Column {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically) {

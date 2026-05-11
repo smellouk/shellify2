@@ -4,6 +4,9 @@ import android.app.Application
 import dev.pwaforge.core.adblock.AdBlocker
 import dev.pwaforge.core.crypto.CryptoManager
 import dev.pwaforge.core.isolation.IsolationManager
+import dev.pwaforge.core.backup.BackupManager
+import dev.pwaforge.core.backup.BackupSettings
+import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.theme.ThemeManager
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
@@ -33,6 +36,11 @@ class PWAForgeApplication : Application() {
     val saveCategory by lazy { SaveCategoryUseCase(categoryRepository) }
 
     val themeManager by lazy { ThemeManager(this) }
+    val passwordManager by lazy { PasswordManager(this) }
+    val backupSettings by lazy { BackupSettings(this, cryptoManager) }
+    val backupManager by lazy {
+        BackupManager(this, database, isolationManager.cookieJarManager)
+    }
 
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
     val faviconFetcher by lazy { FaviconFetcher(this) }

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.pwaforge.core.isolation.IsolationManager
 import dev.pwaforge.core.shortcut.PwaShortcutManager
+import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.domain.repository.WebAppRepository
 import dev.pwaforge.domain.usecase.DeleteWebAppUseCase
@@ -50,6 +51,7 @@ class AppSettingsViewModel(
     fun toggleFullscreen() = update { it.copy(isFullscreen = !it.isFullscreen) }
     fun toggleAdBlock() = update { it.copy(adBlockEnabled = !it.adBlockEnabled) }
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
+    fun setLockType(v: LockType) = update { it.copy(lockType = v) }
 
     fun showDeleteDialog() = _state.update { it.copy(showDeleteDialog = true) }
     fun dismissDeleteDialog() = _state.update { it.copy(showDeleteDialog = false) }

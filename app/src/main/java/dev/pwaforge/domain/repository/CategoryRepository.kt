@@ -7,4 +7,5 @@ interface CategoryRepository {
     fun getAll(): Flow<List<Category>>
     suspend fun save(category: Category): Long
     suspend fun delete(category: Category)
+    suspend fun deleteAll()
 }

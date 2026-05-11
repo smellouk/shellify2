@@ -32,7 +32,11 @@ data class WebApp(
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
+    // Security
+    val lockType: LockType = LockType.NONE,
 )
+
+enum class LockType { NONE, PASSWORD, SYSTEM }
 
 enum class TranslateEngine(val displayName: String) {
     AUTO("Auto"),

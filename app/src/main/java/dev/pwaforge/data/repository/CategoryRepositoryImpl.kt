@@ -19,4 +19,5 @@ class CategoryRepositoryImpl(private val dao: CategoryDao) : CategoryRepository 
     }
 
     override suspend fun delete(category: Category) = dao.delete(category.toEntity())
+    override suspend fun deleteAll() = dao.deleteAll()
 }

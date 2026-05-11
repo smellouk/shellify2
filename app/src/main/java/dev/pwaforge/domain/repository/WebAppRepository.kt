@@ -11,5 +11,6 @@ interface WebAppRepository {
     suspend fun save(app: WebApp): Long
     suspend fun delete(app: WebApp)
     suspend fun deleteById(id: Long)
+    suspend fun deleteAll()
     suspend fun clearIsolatedData(isolationId: String)
 }

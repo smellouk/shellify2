@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
  */
 class IsolationManager(context: Context, crypto: CryptoManager) {
 
-    private val cookieJarManager = CookieJarManager(context, crypto)
+    val cookieJarManager = CookieJarManager(context, crypto)
     private val scope = CoroutineScope(Dispatchers.Main)
 
     /**

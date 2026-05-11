@@ -46,4 +46,6 @@ data class WebAppEntity(
     val uaMode: String = "CHROME_MOBILE",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
+    val passwordHash: String? = null,   // unused — kept so DB column exists from migration 3→4
+    val lockType: String = "NONE",
 )

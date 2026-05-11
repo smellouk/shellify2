@@ -60,6 +60,27 @@ class CookieJarManager(
         context.cookieStore.edit { prefs -> prefs.remove(stringPreferencesKey(isolationId)) }
     }
 
+    /** Returns all cookie jars as plaintext (isolationId → cookie string) for backup. */
+    suspend fun exportAll(): Map<String, String> = withContext(Dispatchers.IO) {
+        val prefs = context.cookieStore.data.firstOrNull() ?: return@withContext emptyMap()
+        prefs.asMap().entries.mapNotNull { (key, value) ->
+            val plaintext = runCatching { crypto.decryptString(value as String) }.getOrNull()
+            if (plaintext != null) key.name to plaintext else null
+        }.toMap()
+    }
+
+    /** Writes plaintext cookie jars back (re-encrypting with this device's Keystore) for restore. */
+    suspend fun importAll(data: Map<String, String>) = withContext(Dispatchers.IO) {
+        context.cookieStore.edit { prefs ->
+            prefs.clear()
+            data.forEach { (isolationId, plaintext) ->
+                if (plaintext.isNotBlank()) {
+                    prefs[stringPreferencesKey(isolationId)] = crypto.encryptString(plaintext)
+                }
+            }
+        }
+    }
+
     // ---------- internal ----------
 
     private fun clearAll() {
