@@ -52,6 +52,7 @@ class AppSettingsViewModel(
     fun toggleAdBlock() = update { it.copy(adBlockEnabled = !it.adBlockEnabled) }
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
     fun setLockType(v: LockType) = update { it.copy(lockType = v) }
+    fun setWipeOnFailedAttempts(v: Boolean) = update { it.copy(wipeOnFailedAttempts = v) }
 
     fun showDeleteDialog() = _state.update { it.copy(showDeleteDialog = true) }
     fun dismissDeleteDialog() = _state.update { it.copy(showDeleteDialog = false) }

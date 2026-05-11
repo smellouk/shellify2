@@ -1,9 +1,11 @@
 package dev.pwaforge.presentation
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +22,12 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
             val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+            val screenshotProtection by app.passwordManager.screenshotProtection.collectAsState(false)
+
+            LaunchedEffect(screenshotProtection) {
+                if (screenshotProtection) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
 
             PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
                 val navController = rememberNavController()

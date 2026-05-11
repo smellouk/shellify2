@@ -8,6 +8,7 @@ interface WebAppRepository {
     fun getByCategory(categoryId: Long): Flow<List<WebApp>>
     suspend fun getById(id: Long): WebApp?
     suspend fun getByUrl(url: String): WebApp?
+    suspend fun getByName(name: String): WebApp?
     suspend fun save(app: WebApp): Long
     suspend fun delete(app: WebApp)
     suspend fun deleteById(id: Long)

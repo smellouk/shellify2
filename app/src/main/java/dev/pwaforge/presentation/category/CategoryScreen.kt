@@ -67,6 +67,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -142,7 +143,13 @@ fun CategoryScreen(
             }
         },
     ) { padding ->
-        if (categories.isEmpty()) {
+        if (categories == null) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
+        if (categories!!.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center,
@@ -178,7 +185,7 @@ fun CategoryScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(categories, key = { it.id }) { cat ->
+            items(categories!!, key = { it.id }) { cat ->
                 val catColor = runCatching { Color(android.graphics.Color.parseColor(cat.color)) }
                     .getOrDefault(MaterialTheme.colorScheme.primary)
                 Card(

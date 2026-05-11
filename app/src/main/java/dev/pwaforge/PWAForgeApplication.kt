@@ -1,8 +1,11 @@
 package dev.pwaforge
 
 import android.app.Application
+import android.os.Build
 import dev.pwaforge.core.adblock.AdBlocker
+import dev.pwaforge.core.engine.GeckoNativeLoader
 import dev.pwaforge.core.crypto.CryptoManager
+import dev.pwaforge.core.engine.GeckoEngineManager
 import dev.pwaforge.core.isolation.IsolationManager
 import dev.pwaforge.core.backup.BackupManager
 import dev.pwaforge.core.backup.BackupSettings
@@ -20,7 +23,6 @@ import dev.pwaforge.domain.usecase.SaveCategoryUseCase
 import dev.pwaforge.domain.usecase.SaveWebAppUseCase
 
 class PWAForgeApplication : Application() {
-
     // Crypto first — everything else depends on it
     val cryptoManager by lazy { CryptoManager(this) }
 
@@ -42,8 +44,23 @@ class PWAForgeApplication : Application() {
         BackupManager(this, database, isolationManager.cookieJarManager)
     }
 
+    val geckoEngineManager by lazy { GeckoEngineManager(this) }
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
     val faviconFetcher by lazy { FaviconFetcher(this) }
     val adBlocker by lazy { AdBlocker() }
-    val isolationManager by lazy { IsolationManager(this, cryptoManager) }
+    val isolationManager by lazy { IsolationManager(this, cryptoManager, geckoEngineManager) }
+
+    override fun onCreate() {
+        super.onCreate()
+        // Preload all GeckoView .so files for every process (main + tab/gpu children).
+        // Classloader injection alone is insufficient: libxul.so's transitive dep on
+        // liblgpllibs.so is resolved by the native linker namespace, not the Java classloader.
+        // Pre-loading each .so via System.load() puts them in the global linker table so
+        // dlopen("liblgpllibs.so") from within libxul.so succeeds in all processes.
+        injectAndLoadGeckoView()
+    }
+
+    fun injectAndLoadGeckoView() {
+        GeckoNativeLoader.injectAndLoad(this)
+    }
 }

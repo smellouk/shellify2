@@ -15,7 +15,7 @@ import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 5,
+    version = 7,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -55,6 +55,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE web_apps ADD COLUMN engineType TEXT NOT NULL DEFAULT 'SYSTEM_WEBVIEW'")
+            }
+        }
+
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE web_apps ADD COLUMN wipeOnFailedAttempts INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: buildDatabase(context, crypto).also { instance = it }
@@ -71,7 +83,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "pwaforge.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .build()
                 .also { passphrase.fill(0) }
         }

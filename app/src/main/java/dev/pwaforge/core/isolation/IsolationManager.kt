@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.webkit.WebView
 import dev.pwaforge.core.crypto.CryptoManager
+import dev.pwaforge.core.engine.GeckoEngineManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ import kotlinx.coroutines.launch
  *   1. Call [attachProfile] BEFORE the WebView is added to the view hierarchy (API 33+ requirement).
  *   2. Call [restoreSession] (suspend) BEFORE loadUrl — awaits cookie restore on API < 33.
  */
-class IsolationManager(context: Context, crypto: CryptoManager) {
+class IsolationManager(context: Context, crypto: CryptoManager, private val geckoEngineManager: GeckoEngineManager? = null) {
 
     val cookieJarManager = CookieJarManager(context, crypto)
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -56,5 +57,6 @@ class IsolationManager(context: Context, crypto: CryptoManager) {
         } else {
             scope.launch { cookieJarManager.deleteFor(isolationId) }
         }
+        geckoEngineManager?.clearDataForContext(isolationId)
     }
 }

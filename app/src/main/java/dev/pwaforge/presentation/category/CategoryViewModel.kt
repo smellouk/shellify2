@@ -26,8 +26,8 @@ class CategoryViewModel(
     private val repo: CategoryRepository,
 ) : ViewModel() {
 
-    val categories = getCategories()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val categories: kotlinx.coroutines.flow.StateFlow<List<Category>?> = getCategories()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _state = MutableStateFlow(CategoryUiState())
     val uiState = _state

@@ -78,9 +78,13 @@ class BackupManager(
                 zip.entry("icons/$relative") { file.readBytes() }
             }
 
-            // Theme + password DataStore files (plain protobuf, no device-specific encryption)
+            // All DataStore preference files (plain protobuf, no device-specific encryption)
             val datastoreDir = File(context.filesDir.parent!!, "datastore")
-            listOf("pwa_theme.preferences_pb", "pwa_password.preferences_pb").forEach { name ->
+            listOf(
+                "pwa_theme.preferences_pb",
+                "pwa_password.preferences_pb",
+                "pwa_backup.preferences_pb",
+            ).forEach { name ->
                 val f = File(datastoreDir, name)
                 if (f.exists()) zip.entry("datastore/$name") { f.readBytes() }
             }

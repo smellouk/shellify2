@@ -48,4 +48,6 @@ data class WebAppEntity(
     val updatedAt: Long = System.currentTimeMillis(),
     val passwordHash: String? = null,   // unused — kept so DB column exists from migration 3→4
     val lockType: String = "NONE",
+    val engineType: String = "SYSTEM_WEBVIEW",
+    val wipeOnFailedAttempts: Boolean = false,
 )

@@ -1,6 +1,5 @@
 package dev.pwaforge.presentation.webview
 
-import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -8,85 +7,136 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
-import android.widget.ProgressBar
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import androidx.activity.ComponentActivity
+import android.widget.ProgressBar
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.GTranslate
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.fragment.app.FragmentActivity
 import dev.pwaforge.PWAForgeApplication
-import dev.pwaforge.core.adblock.AdBlocker
+import dev.pwaforge.core.engine.BrowserEngine
+import dev.pwaforge.core.engine.BrowserEngineCallback
+import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.core.engine.GeckoViewEngine
+import dev.pwaforge.core.engine.SystemWebViewEngine
 import dev.pwaforge.core.isolation.IsolationManager
+import dev.pwaforge.core.security.showSystemLockPrompt
+import dev.pwaforge.core.security.verifyPassword
+import kotlinx.coroutines.flow.first
+import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.core.translate.TranslateBridge
-import dev.pwaforge.core.webview.WebViewManager
+import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.WebApp
+import dev.pwaforge.presentation.theme.PWAForgeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
-class WebViewActivity : ComponentActivity() {
+class WebViewActivity : FragmentActivity() {
 
     companion object {
         const val EXTRA_APP_ID = "app_id"
 
-        /** Creates an intent that opens this app in its own recents task. */
         fun launchIntent(context: android.content.Context, appId: Long): Intent =
             Intent(context, WebViewActivity::class.java)
                 .putExtra(EXTRA_APP_ID, appId)
-                // Unique data URI = unique document task per app
                 .setData(android.net.Uri.parse("pwaforge://app/$appId"))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
     }
 
-    private lateinit var webView: WebView
+    private lateinit var engine: BrowserEngine
     private lateinit var progressBar: ProgressBar
+    private lateinit var container: FrameLayout
     private lateinit var isolationManager: IsolationManager
-    private lateinit var adBlocker: AdBlocker
-    private var currentApp: WebApp? = null
+    private val currentAppFlow = MutableStateFlow<WebApp?>(null)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val visitedUrls = mutableSetOf<String>()
 
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val app = application as PWAForgeApplication
         isolationManager = app.isolationManager
-        adBlocker = app.adBlocker
 
         val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
         if (appId == -1L) { finish(); return }
 
-        // Load synchronously so we have the isolationId before creating the WebView.
-        // WebView Profiles (API 33+) must be assigned before the view is attached to a window.
         val pwaApp = runBlocking(Dispatchers.IO) { app.webAppRepository.getById(appId) }
             ?: run { finish(); return }
-        currentApp = pwaApp
+        currentAppFlow.value = pwaApp
 
-        val container = FrameLayout(this)
+        engine = when (pwaApp.engineType) {
+            EngineType.GECKOVIEW -> GeckoViewEngine(this, app.geckoEngineManager)
+            EngineType.SYSTEM_WEBVIEW -> SystemWebViewEngine(app.adBlocker)
+        }
+
+        container = FrameLayout(this)
         container.setBackgroundColor(Color.BLACK)
-        webView = WebView(this)
 
-        // Must happen BEFORE addView / setContentView (API 33+ requirement)
-        isolationManager.attachProfile(webView, pwaApp.isolationId)
+        val engineView = engine.createView(this, pwaApp, buildCallback(pwaApp, container))
 
-        container.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        if (engine is SystemWebViewEngine) {
+            val wv = (engine as SystemWebViewEngine).getWebView()
+            if (wv != null) isolationManager.attachProfile(wv, pwaApp.isolationId)
+        }
 
-        // Loading progress bar pinned to the top of the screen
+        container.addView(
+            engineView,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        )
+
         val barHeightPx = (3 * resources.displayMetrics.density).toInt().coerceAtLeast(2)
         progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100
@@ -103,79 +153,341 @@ class WebViewActivity : ComponentActivity() {
         )
 
         setContentView(container)
-
-        setupWebView(pwaApp)
         applyWindowMode(pwaApp)
         if (!pwaApp.isFullscreen) applyStatusBarColor(pwaApp.themeColor)
         applyTaskDescription(pwaApp)
 
-        scope.launch {
-            // Restore cookies BEFORE loading — must be awaited (API < 33)
-            isolationManager.restoreSession(pwaApp.isolationId)
-            webView.loadUrl(pwaApp.url)
+        authenticate(app, pwaApp)
+    }
+
+    private fun authenticate(app: PWAForgeApplication, pwaApp: WebApp) {
+        when (pwaApp.lockType) {
+            LockType.NONE -> startLoading(pwaApp)
+            LockType.PASSWORD -> {
+                val hash = runBlocking { app.passwordManager.passwordHash.first() }
+                if (hash != null) showPasswordDialog(app, pwaApp) else startLoading(pwaApp)
+            }
+            LockType.SYSTEM -> showSystemLockWithWipe(app, pwaApp)
         }
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView(app: WebApp) {
-        WebViewManager.configure(webView, app)
+    private fun showPasswordDialog(app: PWAForgeApplication, pwaApp: WebApp) {
+        val overlay = ComposeView(this).apply {
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val hash by app.passwordManager.passwordHash.collectAsState(initial = null)
+                var input by remember { mutableStateOf("") }
+                var visible by remember { mutableStateOf(false) }
+                var failedAttempts by remember { mutableStateOf(0) }
+                val maxAttempts = 3
+                val remaining = maxAttempts - failedAttempts
+                val wipe by app.passwordManager.wipeOnFailedAttempts.collectAsState(initial = false)
 
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                if (app.adBlockEnabled) adBlocker.shouldBlock(request)?.let { return it }
-                return super.shouldInterceptRequest(view, request)
-            }
-
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                val url = request.url.toString()
-                if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                    runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-                    return true
+                val error = when {
+                    failedAttempts == 0 -> null
+                    wipe && remaining == 2 -> "Wrong password — 2 attempts remaining before data wipe"
+                    wipe && remaining == 1 -> "Wrong password — 1 attempt remaining before data wipe"
+                    !wipe -> "Wrong password"
+                    else -> null
                 }
-                return false
+
+                PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
+                    AlertDialog(
+                        onDismissRequest = { finish() },
+                        icon = { Icon(Icons.Default.Lock, null) },
+                        title = { Text(pwaApp.name) },
+                        text = {
+                            Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
+                                Text("Enter password to open this app")
+                                Spacer(Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = input,
+                                    onValueChange = { input = it },
+                                    label = { Text("Password") },
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                    trailingIcon = {
+                                        IconButton(onClick = { visible = !visible }) {
+                                            Icon(if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                                        }
+                                    },
+                                    isError = error != null,
+                                    supportingText = { if (error != null) Text(error) },
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                val h = hash
+                                if (h != null && verifyPassword(input, h)) {
+                                    container.removeView(this@apply)
+                                    startLoading(pwaApp)
+                                } else {
+                                    input = ""
+                                    failedAttempts++
+                                    if (wipe && failedAttempts >= maxAttempts) {
+                                        wipeAndUnlock(app, pwaApp)
+                                    }
+                                }
+                            }) { Text("Open") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { finish() }) { Text("Cancel") }
+                        },
+                    )
+                }
+            }
+        }
+        container.addView(
+            overlay,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    private fun showSystemLockWithWipe(app: PWAForgeApplication, pwaApp: WebApp) {
+        val maxAttempts = 3
+        var failedAttempts = 0
+
+        fun prompt() {
+            showSystemLockPrompt(
+                activity = this,
+                title = "Open ${pwaApp.name}",
+                onSuccess = { startLoading(pwaApp) },
+                onFailed = {
+                    failedAttempts++
+                    val wipe = runBlocking { app.passwordManager.wipeOnFailedAttempts.first() }
+                    if (wipe && failedAttempts >= maxAttempts) {
+                        wipeAndUnlock(app, pwaApp)
+                    } else {
+                        prompt()
+                    }
+                },
+            )
+        }
+        prompt()
+    }
+
+    private fun wipeAndUnlock(app: PWAForgeApplication, pwaApp: WebApp) {
+        scope.launch(Dispatchers.IO) {
+            app.isolationManager.clearData(pwaApp.isolationId)
+            app.webAppRepository.save(pwaApp.copy(lockType = LockType.NONE))
+            finish()
+        }
+    }
+
+    private fun startLoading(pwaApp: WebApp) {
+        scope.launch {
+            if (engine is SystemWebViewEngine) {
+                isolationManager.restoreSession(pwaApp.isolationId)
+            }
+            engine.loadUrl(pwaApp.url)
+            addControlsOverlay()
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    private fun addControlsOverlay() {
+        val app = application as PWAForgeApplication
+        val overlay = ComposeView(this).apply {
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val pwaAppState by currentAppFlow.collectAsState()
+                val pwaApp = pwaAppState ?: return@setContent
+                val passwordHash by app.passwordManager.passwordHash.collectAsState(initial = null)
+                val hasGlobalPassword = passwordHash != null
+
+                PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
+                    var showSheet by remember { mutableStateOf(false) }
+
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        contentAlignment = Alignment.BottomEnd,
+                    ) {
+                        SmallFloatingActionButton(
+                            onClick = { showSheet = true },
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ) {
+                            Icon(Icons.Default.Tune, contentDescription = "App controls")
+                        }
+                    }
+
+                    if (showSheet) {
+                        ModalBottomSheet(onDismissRequest = { showSheet = false }) {
+                            Text(
+                                pwaApp.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                            ListItem(
+                                leadingContent = { Icon(Icons.Default.Shield, null) },
+                                headlineContent = { Text("Ad blocking") },
+                                trailingContent = {
+                                    Switch(
+                                        checked = pwaApp.adBlockEnabled,
+                                        onCheckedChange = { on ->
+                                            val updated = pwaApp.copy(adBlockEnabled = on)
+                                            currentAppFlow.value = updated
+                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            engine.getCurrentUrl()?.let { engine.loadUrl(it) }
+                                        },
+                                    )
+                                },
+                            )
+                            HorizontalDivider()
+                            ListItem(
+                                leadingContent = { Icon(Icons.Default.GTranslate, null) },
+                                headlineContent = { Text("Auto-translate") },
+                                trailingContent = {
+                                    Switch(
+                                        checked = pwaApp.translateEnabled,
+                                        onCheckedChange = { on ->
+                                            val updated = pwaApp.copy(translateEnabled = on)
+                                            currentAppFlow.value = updated
+                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            if (on) {
+                                                val script = TranslateBridge.buildScript(
+                                                    targetLang = updated.translateTarget.code,
+                                                    showButton = updated.showTranslateButton,
+                                                    autoTranslate = updated.autoTranslateOnLoad,
+                                                )
+                                                engine.evaluateJavascript(script, null)
+                                            } else {
+                                                engine.getCurrentUrl()?.let { engine.loadUrl(it) }
+                                            }
+                                        },
+                                    )
+                                },
+                            )
+                            HorizontalDivider()
+                            ListItem(
+                                leadingContent = { Icon(Icons.Default.Fullscreen, null) },
+                                headlineContent = { Text("Fullscreen") },
+                                trailingContent = {
+                                    Switch(
+                                        checked = pwaApp.isFullscreen,
+                                        onCheckedChange = { on ->
+                                            val updated = pwaApp.copy(isFullscreen = on)
+                                            currentAppFlow.value = updated
+                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            applyWindowMode(updated)
+                                        },
+                                    )
+                                },
+                            )
+                            HorizontalDivider()
+                            ListItem(
+                                leadingContent = {
+                                    Icon(
+                                        if (pwaApp.lockType != LockType.NONE) Icons.Default.Lock else Icons.Default.LockOpen,
+                                        null,
+                                        tint = if (hasGlobalPassword) MaterialTheme.colorScheme.onSurface
+                                               else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                    )
+                                },
+                                headlineContent = {
+                                    Text(
+                                        "App lock",
+                                        color = if (hasGlobalPassword) MaterialTheme.colorScheme.onSurface
+                                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                    )
+                                },
+                                supportingContent = if (!hasGlobalPassword) ({
+                                    Text(
+                                        "Set an app password in Settings to enable",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                    )
+                                }) else null,
+                                trailingContent = {
+                                    Switch(
+                                        checked = pwaApp.lockType != LockType.NONE,
+                                        onCheckedChange = { on ->
+                                            val updated = pwaApp.copy(
+                                                lockType = if (on) LockType.PASSWORD else LockType.NONE,
+                                            )
+                                            currentAppFlow.value = updated
+                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                        },
+                                        enabled = hasGlobalPassword,
+                                    )
+                                },
+                            )
+
+                            Spacer(Modifier.navigationBarsPadding())
+                        }
+                    }
+                }
+            }
+        }
+        container.addView(
+            overlay,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    private fun buildCallback(app: WebApp, container: FrameLayout): BrowserEngineCallback =
+        object : BrowserEngineCallback {
+            override fun onPageStarted(url: String?) {
+                url?.let { visitedUrls += it }
             }
 
-            override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                // Track every domain visited so we can save all cookies on session end
-                visitedUrls += url
-            }
-
-            override fun onPageFinished(view: WebView, url: String) {
-                visitedUrls += url
+            override fun onPageFinished(url: String?) {
+                url?.let { visitedUrls += it }
                 if (app.translateEnabled) {
                     val script = TranslateBridge.buildScript(
                         targetLang = app.translateTarget.code,
                         showButton = app.showTranslateButton,
                         autoTranslate = app.autoTranslateOnLoad,
                     )
-                    view.evaluateJavascript(script, null)
+                    engine.evaluateJavascript(script, null)
                 }
             }
-        }
 
-        webView.webChromeClient = object : WebChromeClient() {
-            private var customView: View? = null
-
-            override fun onProgressChanged(view: WebView, newProgress: Int) {
-                progressBar.progress = newProgress
-                progressBar.visibility = if (newProgress < 100) View.VISIBLE else View.GONE
+            override fun onProgressChanged(progress: Int) {
+                progressBar.progress = progress
+                progressBar.visibility = if (progress < 100) View.VISIBLE else View.GONE
             }
 
-            override fun onShowCustomView(view: View, callback: CustomViewCallback) {
+            override fun onTitleChanged(title: String?) {}
+            override fun onIconReceived(icon: Bitmap?) {}
+            override fun onError(errorCode: Int, description: String) {}
+            override fun onSslError(error: String) {}
+
+            override fun onExternalLink(url: String) {
+                runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+            }
+
+            private var customView: View? = null
+
+            override fun onShowCustomView(view: View?, callback: Any?) {
+                view ?: return
                 customView = view
-                webView.visibility = View.GONE
-                (webView.parent as? FrameLayout)?.addView(view)
+                engine.getView()?.visibility = View.GONE
+                container.addView(view)
                 applyWindowMode(app.copy(isFullscreen = true))
             }
 
             override fun onHideCustomView() {
                 (customView?.parent as? FrameLayout)?.removeView(customView)
                 customView = null
-                webView.visibility = View.VISIBLE
+                engine.getView()?.visibility = View.VISIBLE
                 applyWindowMode(app)
             }
+
+            override fun onDownloadStart(
+                url: String, userAgent: String, contentDisposition: String,
+                mimeType: String, contentLength: Long,
+            ) {}
         }
-    }
 
     private fun applyWindowMode(app: WebApp) {
         val fullscreen = app.isFullscreen
@@ -184,19 +496,13 @@ class WebViewActivity : ComponentActivity() {
         if (fullscreen) {
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            // Selectively restore bars based on user preferences
             val showStatus = app.fullscreenShowStatusBar
             val showNav = app.fullscreenShowNavBar
-            if (showStatus && showNav) {
-                controller.show(WindowInsetsCompat.Type.systemBars())
-            } else if (showStatus) {
-                controller.hide(WindowInsetsCompat.Type.navigationBars())
-                controller.show(WindowInsetsCompat.Type.statusBars())
-            } else if (showNav) {
-                controller.hide(WindowInsetsCompat.Type.statusBars())
-                controller.show(WindowInsetsCompat.Type.navigationBars())
-            } else {
-                controller.hide(WindowInsetsCompat.Type.systemBars())
+            when {
+                showStatus && showNav -> controller.show(WindowInsetsCompat.Type.systemBars())
+                showStatus -> { controller.hide(WindowInsetsCompat.Type.navigationBars()); controller.show(WindowInsetsCompat.Type.statusBars()) }
+                showNav -> { controller.hide(WindowInsetsCompat.Type.statusBars()); controller.show(WindowInsetsCompat.Type.navigationBars()) }
+                else -> controller.hide(WindowInsetsCompat.Type.systemBars())
             }
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
@@ -205,38 +511,33 @@ class WebViewActivity : ComponentActivity() {
     }
 
     private fun applyStatusBarColor(themeColor: String?) {
-        val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
-            ?: return
+        val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: return
         window.statusBarColor = color
-        val isLight = run {
-            val r = Color.red(color)
-            val g = Color.green(color)
-            val b = Color.blue(color)
-            (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5
-        }
+        val isLight = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
     }
 
     @Suppress("DEPRECATION")
     private fun applyTaskDescription(app: WebApp) {
-        val iconBitmap: Bitmap? = app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
-        setTaskDescription(ActivityManager.TaskDescription(app.name, iconBitmap))
+        val icon: Bitmap? = app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
+        setTaskDescription(ActivityManager.TaskDescription(app.name, icon))
     }
 
     @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onBackPressed() {
-        if (webView.canGoBack()) webView.goBack()
+        if (engine.canGoBack()) engine.goBack()
         else super.onBackPressed()
     }
 
     override fun onDestroy() {
-        currentApp?.let { app ->
-            // Include the current URL in case onPageStarted wasn't called for it
-            webView.url?.let { visitedUrls += it }
-            isolationManager.onSessionEnd(app.isolationId, visitedUrls)
+        currentAppFlow.value?.let { app ->
+            engine.getCurrentUrl()?.let { visitedUrls += it }
+            if (engine is SystemWebViewEngine) {
+                isolationManager.onSessionEnd(app.isolationId, visitedUrls)
+            }
         }
-        webView.destroy()
+        engine.destroy()
         scope.cancel()
         super.onDestroy()
     }

@@ -8,12 +8,17 @@ import dev.pwaforge.core.backup.BackupManager
 import dev.pwaforge.core.backup.BackupSchedule
 import dev.pwaforge.core.backup.BackupScheduler
 import dev.pwaforge.core.backup.BackupSettings
+import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.PWAForgeApplication
+import dev.pwaforge.core.engine.GeckoEngineManager
+import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.isolation.IsolationManager
 import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.security.verifyPassword
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.core.theme.ThemeManager
 import dev.pwaforge.core.theme.ThemeMode
+import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.UserAgentMode
 import dev.pwaforge.domain.repository.CategoryRepository
 import dev.pwaforge.domain.repository.WebAppRepository
@@ -30,8 +35,11 @@ data class GlobalSettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val defaultUaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
+    val defaultEngineType: EngineType = EngineType.SYSTEM_WEBVIEW,
     // App lock password
     val hasPassword: Boolean = false,
+    val wipeOnFailedAttempts: Boolean = false,
+    val screenshotProtection: Boolean = false,
     val showPasswordDialog: Boolean = false,
     val passwordDialogMode: PasswordDialogMode = PasswordDialogMode.SET,
     // Data
@@ -39,6 +47,8 @@ data class GlobalSettingsUiState(
     val showDeleteAllAppsDialog: Boolean = false,
     val showDeleteAllCategoriesDialog: Boolean = false,
     val showDeleteAllShortcutsDialog: Boolean = false,
+    // Remove password warning
+    val showRemovePasswordWarning: Boolean = false,
     // Backup
     val backupEnabled: Boolean = false,
     val backupHasPassword: Boolean = false,
@@ -61,6 +71,7 @@ class GlobalSettingsViewModel(
     private val backupSettings: BackupSettings,
     private val backupManager: BackupManager,
     private val context: Context,
+    val geckoEngineManager: GeckoEngineManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GlobalSettingsUiState())
@@ -77,7 +88,16 @@ class GlobalSettingsViewModel(
             themeManager.defaultUaMode.collect { v -> _state.update { it.copy(defaultUaMode = v) } }
         }
         viewModelScope.launch {
+            themeManager.defaultEngineType.collect { v -> _state.update { it.copy(defaultEngineType = v) } }
+        }
+        viewModelScope.launch {
             passwordManager.passwordHash.collect { h -> _state.update { it.copy(hasPassword = h != null) } }
+        }
+        viewModelScope.launch {
+            passwordManager.wipeOnFailedAttempts.collect { v -> _state.update { it.copy(wipeOnFailedAttempts = v) } }
+        }
+        viewModelScope.launch {
+            passwordManager.screenshotProtection.collect { v -> _state.update { it.copy(screenshotProtection = v) } }
         }
         viewModelScope.launch {
             backupSettings.enabled.collect { v -> _state.update { it.copy(backupEnabled = v) } }
@@ -101,6 +121,7 @@ class GlobalSettingsViewModel(
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { themeManager.setThemeMode(mode) }
     fun setDynamicColor(v: Boolean) = viewModelScope.launch { themeManager.setDynamicColor(v) }
     fun setDefaultUaMode(mode: UserAgentMode) = viewModelScope.launch { themeManager.setDefaultUaMode(mode) }
+    fun setDefaultEngineType(engine: EngineType) = viewModelScope.launch { themeManager.setDefaultEngineType(engine) }
 
     // ── App lock password ─────────────────────────────────────────────────────
 
@@ -109,8 +130,15 @@ class GlobalSettingsViewModel(
     fun showChangePasswordDialog() =
         _state.update { it.copy(showPasswordDialog = true, passwordDialogMode = PasswordDialogMode.CHANGE) }
     fun showRemovePasswordDialog() =
-        _state.update { it.copy(showPasswordDialog = true, passwordDialogMode = PasswordDialogMode.REMOVE) }
+        _state.update { it.copy(showRemovePasswordWarning = true) }
+    fun dismissRemovePasswordWarning() =
+        _state.update { it.copy(showRemovePasswordWarning = false) }
+    fun confirmRemovePasswordWarning() =
+        _state.update { it.copy(showRemovePasswordWarning = false, showPasswordDialog = true, passwordDialogMode = PasswordDialogMode.REMOVE) }
     fun dismissPasswordDialog() = _state.update { it.copy(showPasswordDialog = false) }
+
+    fun setWipeOnFailedAttempts(v: Boolean) = viewModelScope.launch { passwordManager.setWipeOnFailedAttempts(v) }
+    fun setScreenshotProtection(v: Boolean) = viewModelScope.launch { passwordManager.setScreenshotProtection(v) }
 
     fun setPassword(password: String) = viewModelScope.launch {
         passwordManager.setPassword(password)
@@ -120,6 +148,12 @@ class GlobalSettingsViewModel(
     fun removePassword(currentPassword: String, onWrongPassword: () -> Unit) = viewModelScope.launch {
         val hash = passwordManager.passwordHash.first()
         if (hash != null && verifyPassword(currentPassword, hash)) {
+            repo.getAll().first()
+                .filter { it.lockType == LockType.PASSWORD }
+                .forEach { app ->
+                    isolationManager.clearData(app.isolationId)
+                    repo.save(app.copy(lockType = LockType.NONE))
+                }
             passwordManager.clearPassword()
             _state.update { it.copy(showPasswordDialog = false) }
         } else onWrongPassword()
@@ -237,4 +271,24 @@ class GlobalSettingsViewModel(
 
     fun showBackupPasswordDialog() = _state.update { it.copy(showBackupPasswordDialog = true) }
     fun dismissBackupPasswordDialog() = _state.update { it.copy(showBackupPasswordDialog = false) }
+
+    // ── GeckoView engine ──────────────────────────────────────────────────────
+
+    fun installGeckoEngine() = viewModelScope.launch {
+        val ok = geckoEngineManager.downloadAndInstall()
+        if (ok) (context.applicationContext as PWAForgeApplication).injectAndLoadGeckoView()
+    }
+
+    fun cancelGeckoInstall() { geckoEngineManager.cancelDownload() }
+
+    fun uninstallGeckoEngine() {
+        if (_state.value.defaultEngineType == EngineType.GECKOVIEW) {
+            viewModelScope.launch { themeManager.setDefaultEngineType(EngineType.SYSTEM_WEBVIEW) }
+        }
+        geckoEngineManager.uninstall()
+    }
+
+    fun checkForGeckoUpdate() = viewModelScope.launch { geckoEngineManager.checkForUpdate() }
+
+    fun updateGeckoEngine() = viewModelScope.launch { geckoEngineManager.updateEngine() }
 }

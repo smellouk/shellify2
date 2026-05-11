@@ -1,5 +1,6 @@
 package dev.pwaforge.domain.model
 
+import dev.pwaforge.core.engine.EngineType
 import java.util.UUID
 
 data class WebApp(
@@ -30,10 +31,12 @@ data class WebApp(
     val autoTranslateOnLoad: Boolean = false,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
+    val engineType: EngineType = EngineType.SYSTEM_WEBVIEW,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     // Security
     val lockType: LockType = LockType.NONE,
+    val wipeOnFailedAttempts: Boolean = false,
 )
 
 enum class LockType { NONE, PASSWORD, SYSTEM }

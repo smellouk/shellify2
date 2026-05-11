@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,9 +18,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -32,6 +35,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -40,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -86,20 +91,23 @@ fun AppSettingsScreen(
         ) {
             SectionLabel("Display")
             SettingsCard {
-                ToggleListItem("Full screen", app.isFullscreen, viewModel::toggleFullscreen)
+                ToggleListItem("Full screen", app.isFullscreen, viewModel::toggleFullscreen,
+                    icon = { Icon(Icons.Default.Fullscreen, null) })
             }
 
             SectionLabel("Privacy")
             SettingsCard {
-                ToggleListItem("Block ads", app.adBlockEnabled, viewModel::toggleAdBlock)
+                ToggleListItem("Block ads", app.adBlockEnabled, viewModel::toggleAdBlock,
+                    icon = { Icon(Icons.Default.Shield, null) })
                 HorizontalDivider()
-                ToggleListItem("Auto-translate", app.translateEnabled, viewModel::toggleTranslate)
+                ToggleListItem("Auto-translate", app.translateEnabled, viewModel::toggleTranslate,
+                    icon = { Icon(Icons.Default.GTranslate, null) })
                 HorizontalDivider()
                 ListItem(
                     headlineContent = { Text("Translation language") },
                     trailingContent = {
                         TextButton(onClick = onOpenTranslate) {
-                            Icon(Icons.Default.Translate, null)
+                            Icon(Icons.Default.GTranslate, null)
                             Text(app.translateTarget.displayName)
                         }
                     },
@@ -122,6 +130,12 @@ fun AppSettingsScreen(
             SectionLabel("Security")
             SettingsCard {
                 ListItem(
+                    leadingContent = {
+                        Icon(
+                            if (app.lockType != dev.pwaforge.domain.model.LockType.NONE) Icons.Default.Lock else Icons.Default.LockOpen,
+                            null,
+                        )
+                    },
                     headlineContent = { Text("App Lock") },
                     trailingContent = {
                         Switch(
@@ -139,19 +153,22 @@ fun AppSettingsScreen(
                     HorizontalDivider()
                     listOf(
                         dev.pwaforge.domain.model.LockType.PASSWORD to "App password (set in Settings)",
-                        dev.pwaforge.domain.model.LockType.SYSTEM to "System lock (fingerprint / PIN)",
+                        dev.pwaforge.domain.model.LockType.SYSTEM   to "System lock (fingerprint / PIN)",
                     ).forEach { (type, label) ->
                         Row(
                             modifier = Modifier.fillMaxWidth()
                                 .clickable { viewModel.setLockType(type) }
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            androidx.compose.material3.RadioButton(
-                                selected = app.lockType == type,
-                                onClick = { viewModel.setLockType(type) },
-                            )
+                            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                                androidx.compose.material3.RadioButton(
+                                    selected = app.lockType == type,
+                                    onClick = { viewModel.setLockType(type) },
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
                             Text(label, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
@@ -203,8 +220,13 @@ private fun SettingsCard(content: @Composable () -> Unit) =
     ) { content() }
 
 @Composable
-private fun ToggleListItem(label: String, checked: Boolean, onToggle: () -> Unit) =
-    ListItem(
-        headlineContent = { Text(label) },
-        trailingContent = { Switch(checked = checked, onCheckedChange = { onToggle() }) },
-    )
+private fun ToggleListItem(
+    label: String,
+    checked: Boolean,
+    onToggle: () -> Unit,
+    icon: @Composable (() -> Unit)? = null,
+) = ListItem(
+    headlineContent = { Text(label) },
+    leadingContent = icon,
+    trailingContent = { Switch(checked = checked, onCheckedChange = { onToggle() }) },
+)

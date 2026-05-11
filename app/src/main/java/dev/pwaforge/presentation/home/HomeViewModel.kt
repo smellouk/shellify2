@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.pwaforge.core.isolation.IsolationManager
-import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.domain.model.Category
 import dev.pwaforge.domain.model.WebApp
@@ -35,11 +34,7 @@ class HomeViewModel(
     private val saveWebApp: SaveWebAppUseCase,
     private val isolationManager: IsolationManager,
     private val context: Context,
-    passwordManager: PasswordManager,
 ) : ViewModel() {
-
-    val globalPasswordHash: StateFlow<String?> = passwordManager.passwordHash
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val _extra = MutableStateFlow(Pair<Long?, String>(null, ""))
 

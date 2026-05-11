@@ -1,5 +1,6 @@
 package dev.pwaforge.data.mapper
 
+import dev.pwaforge.core.engine.EngineType
 import dev.pwaforge.data.local.entity.WebAppEntity
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.TranslateEngine
@@ -30,9 +31,11 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     showTranslateButton = showTranslateButton,
     autoTranslateOnLoad = autoTranslateOnLoad,
     uaMode = runCatching { UserAgentMode.valueOf(uaMode) }.getOrDefault(UserAgentMode.CHROME_MOBILE),
+    engineType = runCatching { EngineType.valueOf(engineType) }.getOrDefault(EngineType.SYSTEM_WEBVIEW),
     createdAt = createdAt,
     updatedAt = updatedAt,
     lockType = runCatching { LockType.valueOf(lockType) }.getOrDefault(LockType.NONE),
+    wipeOnFailedAttempts = wipeOnFailedAttempts,
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -58,7 +61,9 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     showTranslateButton = showTranslateButton,
     autoTranslateOnLoad = autoTranslateOnLoad,
     uaMode = uaMode.name,
+    engineType = engineType.name,
     createdAt = createdAt,
     updatedAt = updatedAt,
     lockType = lockType.name,
+    wipeOnFailedAttempts = wipeOnFailedAttempts,
 )

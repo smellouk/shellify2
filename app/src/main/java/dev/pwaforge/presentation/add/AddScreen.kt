@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -92,6 +93,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.domain.model.PwaManifest
 import dev.pwaforge.domain.model.TranslateEngine
@@ -119,6 +122,7 @@ fun AddScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
+    val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState(initial = viewModel.geckoEngineManager.installState.value)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -167,7 +171,7 @@ fun AddScreen(
                     }
                 },
                 actions = {
-                    val canRun = state.url.isNotBlank() && state.name.isNotBlank() && !state.isSaving
+                    val canRun = state.url.isNotBlank() && state.name.isNotBlank() && !state.isSaving && state.duplicateError == null
                     IconButton(
                         onClick = { viewModel.run() },
                         enabled = canRun,
@@ -189,7 +193,7 @@ fun AddScreen(
                                 PwaShortcutManager.createShortcut(context, savedApp)
                             }
                         },
-                        enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving,
+                        enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving && state.duplicateError == null,
                     ) {
                         if (state.isSaving && state.launchAppId != null) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
@@ -221,15 +225,11 @@ fun AddScreen(
                     label = { Text("Website URL") },
                     leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(20.dp)) },
                     placeholder = { Text("https://example.com") },
-                    isError = state.urlError != null || state.duplicateError != null,
+                    isError = state.urlError != null,
                     supportingText = {
                         when {
                             state.urlError != null -> Text(state.urlError!!)
-                            state.duplicateError != null -> Text(state.duplicateError!!)
-                            state.analyzeError != null -> Text(
-                                state.analyzeError!!,
-                                color = MaterialTheme.colorScheme.error,
-                            )
+                            state.analyzeError != null -> Text(state.analyzeError!!, color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = {
@@ -262,8 +262,13 @@ fun AddScreen(
                     onValueChange = viewModel::setName,
                     label = { Text("App Name") },
                     leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(20.dp)) },
-                    isError = state.nameError != null,
-                    supportingText = { if (state.nameError != null) Text(state.nameError!!) },
+                    isError = state.nameError != null || state.duplicateError != null,
+                    supportingText = {
+                        when {
+                            state.nameError != null -> Text(state.nameError!!)
+                            state.duplicateError != null -> Text(state.duplicateError!!)
+                        }
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -471,6 +476,14 @@ fun AddScreen(
                     }
                 }
             }
+
+            // ── Browser Engine card ──────────────────────────────────────────
+            BrowserEngineCard(
+                selected = state.engineType,
+                geckoInstallState = geckoInstallState,
+                onSelect = viewModel::setEngineType,
+                onGoToSettings = { /* user is notified inline */ },
+            )
 
             Spacer(Modifier.height(24.dp))
         }
@@ -746,6 +759,90 @@ private fun <T> LangDropdown(label: String, selected: T, options: List<T>,
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { DropdownMenuItem(text = { Text(displayName(it)) },
                 onClick = { onSelect(it); expanded = false }) }
+        }
+    }
+}
+
+@Composable
+private fun BrowserEngineCard(
+    selected: EngineType,
+    geckoInstallState: GeckoInstallState,
+    onSelect: (EngineType) -> Unit,
+    onGoToSettings: () -> Unit,
+) {
+    val geckoAvailable = geckoInstallState is GeckoInstallState.Installed
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Default.Language, null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(22.dp))
+                }
+                Spacer(Modifier.width(12.dp))
+                Text("Browser Engine", style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                EngineType.entries.forEach { engine ->
+                    val isGecko = engine == EngineType.GECKOVIEW
+                    val enabled = !isGecko || geckoAvailable
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clickable(enabled = enabled) { onSelect(engine) }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        androidx.compose.runtime.CompositionLocalProvider(
+                            LocalMinimumInteractiveComponentSize provides 0.dp
+                        ) {
+                            androidx.compose.material3.RadioButton(
+                                selected = selected == engine,
+                                onClick = if (enabled) ({ onSelect(engine) }) else null,
+                                enabled = enabled,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                engine.displayName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (enabled) MaterialTheme.colorScheme.onSurface
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                            )
+                            if (isGecko && !geckoAvailable) {
+                                val label = when (geckoInstallState) {
+                                    is GeckoInstallState.Downloading -> "Downloading in Settings… ${(geckoInstallState.progress * 100).toInt()}%"
+                                    is GeckoInstallState.Installing -> "Installing…"
+                                    is GeckoInstallState.Error -> "Error — retry in Settings"
+                                    else -> "Not installed — go to Settings → Browser Engine to download (~${engine.estimatedSizeMb} MB)"
+                                }
+                                Text(label, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            } else {
+                                Text(engine.description, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

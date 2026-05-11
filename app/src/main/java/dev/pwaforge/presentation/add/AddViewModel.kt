@@ -2,8 +2,11 @@ package dev.pwaforge.presentation.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.core.engine.GeckoEngineManager
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
+import dev.pwaforge.core.theme.ThemeManager
 import dev.pwaforge.domain.model.PwaManifest
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
@@ -15,6 +18,7 @@ import dev.pwaforge.domain.usecase.GetCategoriesUseCase
 import dev.pwaforge.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -52,8 +56,10 @@ data class AddUiState(
     val autoTranslateOnLoad: Boolean = false,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
+    val engineType: EngineType = EngineType.SYSTEM_WEBVIEW,
     // Security
     val lockType: LockType = LockType.NONE,
+    val wipeOnFailedAttempts: Boolean = false,
     val analyzeError: String? = null,
     val urlError: String? = null,
     val nameError: String? = null,
@@ -70,6 +76,8 @@ class AddViewModel(
     getCategories: GetCategoriesUseCase,
     private val analyzer: PwaAnalyzer,
     private val faviconFetcher: FaviconFetcher,
+    val geckoEngineManager: GeckoEngineManager,
+    private val themeManager: ThemeManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddUiState(isLoading = appId != 0L))
@@ -104,16 +112,23 @@ class AddViewModel(
                         showTranslateButton = app.showTranslateButton,
                         autoTranslateOnLoad = app.autoTranslateOnLoad,
                         uaMode = app.uaMode,
+                        engineType = app.engineType,
                         lockType = app.lockType,
+                        wipeOnFailedAttempts = app.wipeOnFailedAttempts,
                     )
                 }
+            }
+        } else {
+            viewModelScope.launch {
+                val defaultEngine = themeManager.defaultEngineType.first()
+                _state.update { it.copy(engineType = defaultEngine) }
             }
         }
     }
 
     // Basic info
-    fun setName(v: String) = _state.update { it.copy(name = v, nameError = null) }
-    fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null, duplicateError = null) }
+    fun setName(v: String) = _state.update { it.copy(name = v, nameError = null, duplicateError = null) }
+    fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null) }
     fun setThemeColor(v: String?) = _state.update { it.copy(themeColor = v) }
     fun setIconPath(v: String) = _state.update { it.copy(iconPath = v) }
 
@@ -143,9 +158,11 @@ class AddViewModel(
 
     // Browser
     fun setUaMode(v: UserAgentMode) = _state.update { it.copy(uaMode = v) }
+    fun setEngineType(v: EngineType) = _state.update { it.copy(engineType = v) }
 
     // Security
     fun setLockType(v: LockType) = _state.update { it.copy(lockType = v) }
+    fun setWipeOnFailedAttempts(v: Boolean) = _state.update { it.copy(wipeOnFailedAttempts = v) }
 
     // ── Analysis ──────────────────────────────────────────────────────────────
 
@@ -221,7 +238,7 @@ class AddViewModel(
         val url = validate() ?: return
         _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            if (isDuplicate(url)) return@launch
+            if (isDuplicate()) return@launch
             val savedId = persistApp(url)
             val savedApp = repo.getById(savedId) ?: buildApp(url).copy(id = savedId)
             if (appId == 0L) onCreateShortcut?.invoke(savedApp)
@@ -229,27 +246,21 @@ class AddViewModel(
         }
     }
 
-    /** Validates, saves (or updates) the app, then signals the screen to launch it. */
     fun run() {
         val url = validate() ?: return
         _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            if (isDuplicate(url)) return@launch
+            if (isDuplicate()) return@launch
             val savedId = persistApp(url)
             _state.update { it.copy(isSaving = false, launchAppId = savedId) }
         }
     }
 
-    /** Returns true and sets duplicateError if this URL already belongs to another app. */
-    private suspend fun isDuplicate(url: String): Boolean {
-        if (appId != 0L) return false  // editing — allow same URL
-        val existing = repo.getByUrl(url) ?: return false
-        _state.update {
-            it.copy(
-                isSaving = false,
-                duplicateError = "\"${existing.name}\" already uses this URL",
-            )
-        }
+    private suspend fun isDuplicate(): Boolean {
+        if (appId != 0L) return false
+        val name = _state.value.name.trim()
+        val existing = repo.getByName(name) ?: return false
+        _state.update { it.copy(isSaving = false, duplicateError = "\"${existing.name}\" already exists") }
         return true
     }
 
@@ -283,7 +294,9 @@ class AddViewModel(
             showTranslateButton = s.showTranslateButton,
             autoTranslateOnLoad = s.autoTranslateOnLoad,
             uaMode = s.uaMode,
+            engineType = s.engineType,
             lockType = s.lockType,
+            wipeOnFailedAttempts = s.wipeOnFailedAttempts,
         )
     }
 }

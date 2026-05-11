@@ -18,20 +18,37 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Shortcut
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.NoPhotography
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -70,6 +87,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.core.backup.BackupSchedule
+import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.domain.model.UserAgentMode
 import java.util.Date
@@ -80,7 +99,14 @@ fun GlobalSettingsScreen(
     viewModel: GlobalSettingsViewModel,
 ) {
     val state by viewModel.uiState.collectAsState()
+    val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
+    val geckoLatestVersion by viewModel.geckoEngineManager.latestVersion.collectAsState()
     var showUaDialog by remember { mutableStateOf(false) }
+
+    // Trigger version check whenever the engine is installed
+    androidx.compose.runtime.LaunchedEffect(geckoInstallState) {
+        if (geckoInstallState is GeckoInstallState.Installed) viewModel.checkForGeckoUpdate()
+    }
     var showScheduleDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val version = remember {
@@ -145,6 +171,7 @@ fun GlobalSettingsScreen(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     HorizontalDivider()
                     ListItem(
+                        leadingContent = { Icon(Icons.Default.Palette, null) },
                         headlineContent = { Text("Dynamic colors") },
                         supportingContent = { Text("Follow wallpaper accent colors (Material You)") },
                         trailingContent = {
@@ -159,12 +186,134 @@ fun GlobalSettingsScreen(
             SectionLabel("Browser")
             SettingsCard {
                 ListItem(
+                    leadingContent = { Icon(Icons.Default.Language, null) },
                     headlineContent = { Text("Default user agent") },
                     supportingContent = { Text(state.defaultUaMode.label) },
                     trailingContent = {
                         TextButton(onClick = { showUaDialog = true }) { Text("Change") }
                     },
                 )
+            }
+            Spacer(Modifier.height(8.dp))
+            SettingsCard {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Default engine for new apps",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(4.dp))
+
+                    // ── System WebView option ─────────────────────────────────
+                    EngineOptionRow(
+                        selected = state.defaultEngineType == EngineType.SYSTEM_WEBVIEW,
+                        onClick = { viewModel.setDefaultEngineType(EngineType.SYSTEM_WEBVIEW) },
+                        title = "System WebView",
+                        hint = "Android's built-in Chromium engine. Always available, no extra download. Best for speed and compatibility with most websites.",
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                    // ── GeckoView option ──────────────────────────────────────
+                    val geckoInstalled = geckoInstallState is GeckoInstallState.Installed
+                    EngineOptionRow(
+                        selected = state.defaultEngineType == EngineType.GECKOVIEW,
+                        enabled = geckoInstalled,
+                        onClick = {
+                            if (geckoInstalled) viewModel.setDefaultEngineType(EngineType.GECKOVIEW)
+                        },
+                        title = "GeckoView  (Firefox)",
+                        hint = "Mozilla's Gecko engine with built-in tracker blocking, stricter privacy, and independent rendering — not tied to Android updates.",
+                    )
+
+                    // Download / status row — always visible
+                    Spacer(Modifier.height(8.dp))
+                    when (val gs = geckoInstallState) {
+                            is GeckoInstallState.NotInstalled ->
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Icon(Icons.Default.Language, null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("Not installed",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("~55 MB download required",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                    IconButton(onClick = viewModel::installGeckoEngine) {
+                                        Icon(Icons.Default.FileDownload, contentDescription = "Download GeckoView",
+                                            tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            is GeckoInstallState.Downloading ->
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                        Text("${gs.message}  ${(gs.progress * 100).toInt()}%",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            modifier = Modifier.weight(1f))
+                                        TextButton(onClick = viewModel::cancelGeckoInstall) { Text("Cancel") }
+                                    }
+                                    androidx.compose.material3.LinearProgressIndicator(
+                                        progress = { gs.progress },
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
+                                }
+                            is GeckoInstallState.Installing ->
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                    Text("Installing engine libraries…",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.weight(1f))
+                                }
+                            is GeckoInstallState.Installed -> {
+                                val installedVer = viewModel.geckoEngineManager.getInstalledVersion() ?: "—"
+                                val sizeMb = viewModel.geckoEngineManager.getInstalledSizeMb()
+                                val hasUpdate = viewModel.geckoEngineManager.updateAvailable
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Icon(Icons.Default.CheckCircle, null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary)
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text("Version $installedVer  ·  ~${sizeMb} MB",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            if (hasUpdate) Text("Update available: ${geckoLatestVersion}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()) {
+                                        if (hasUpdate) Button(onClick = viewModel::updateGeckoEngine,
+                                            modifier = Modifier.height(36.dp)) { Text("Update") }
+                                        TextButton(
+                                            onClick = viewModel::uninstallGeckoEngine,
+                                            colors = ButtonDefaults.textButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.error)) { Text("Remove") }
+                                    }
+                                }
+                            }
+                            is GeckoInstallState.Error ->
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Icon(Icons.Default.Language, null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.error)
+                                    Text("Download failed: ${gs.message}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.weight(1f))
+                                    TextButton(onClick = viewModel::installGeckoEngine) { Text("Retry") }
+                                }
+                        }
+                }
             }
 
             // ── Security ──────────────────────────────────────────────────────
@@ -186,6 +335,18 @@ fun GlobalSettingsScreen(
                             }
                         },
                     )
+                    HorizontalDivider()
+                    ListItem(
+                        leadingContent = { Icon(Icons.Default.DeleteForever, null) },
+                        headlineContent = { Text("Wipe data after 3 failed attempts") },
+                        supportingContent = { Text("Delete all app data if authentication fails 3 times") },
+                        trailingContent = {
+                            Switch(
+                                checked = state.wipeOnFailedAttempts,
+                                onCheckedChange = viewModel::setWipeOnFailedAttempts,
+                            )
+                        },
+                    )
                 } else {
                     ListItem(
                         leadingContent = { Icon(Icons.Default.LockOpen, null) },
@@ -196,6 +357,21 @@ fun GlobalSettingsScreen(
                         },
                     )
                 }
+            }
+
+            Spacer(Modifier.height(8.dp))
+            SettingsCard {
+                ListItem(
+                    leadingContent = { Icon(Icons.Default.NoPhotography, null) },
+                    headlineContent = { Text("Screenshot protection") },
+                    supportingContent = { Text("Prevent screenshots and screen recording") },
+                    trailingContent = {
+                        Switch(
+                            checked = state.screenshotProtection,
+                            onCheckedChange = viewModel::setScreenshotProtection,
+                        )
+                    },
+                )
             }
 
             // ── Backup ────────────────────────────────────────────────────────
@@ -223,6 +399,7 @@ fun GlobalSettingsScreen(
 
                         // Password
                         ListItem(
+                            leadingContent = { Icon(Icons.Default.Key, null) },
                             headlineContent = { Text("Backup password") },
                             supportingContent = {
                                 Text(if (state.backupHasPassword) "Password is set" else "No password — required to backup")
@@ -237,6 +414,7 @@ fun GlobalSettingsScreen(
 
                         // Directory
                         ListItem(
+                            leadingContent = { Icon(Icons.Default.Folder, null) },
                             headlineContent = { Text("Backup folder") },
                             supportingContent = {
                                 Text(
@@ -254,6 +432,7 @@ fun GlobalSettingsScreen(
 
                         // Schedule
                         ListItem(
+                            leadingContent = { Icon(Icons.Default.Schedule, null) },
                             headlineContent = { Text("Auto-backup schedule") },
                             supportingContent = {
                                 Text(when (state.backupSchedule) {
@@ -269,6 +448,7 @@ fun GlobalSettingsScreen(
                         if (state.backupLastTime > 0L) {
                             HorizontalDivider()
                             ListItem(
+                                leadingContent = { Icon(Icons.Default.History, null) },
                                 headlineContent = { Text("Last backup") },
                                 supportingContent = {
                                     Text(DateFormat.getMediumDateFormat(context).format(Date(state.backupLastTime)) +
@@ -320,6 +500,7 @@ fun GlobalSettingsScreen(
             SectionLabel("Data")
             SettingsCard {
                 ListItem(
+                    leadingContent = { Icon(Icons.Default.Storage, null) },
                     headlineContent = { Text("Clear all app data") },
                     supportingContent = { Text("Removes cookies and storage for all apps") },
                     trailingContent = {
@@ -331,6 +512,7 @@ fun GlobalSettingsScreen(
                 )
                 HorizontalDivider()
                 ListItem(
+                    leadingContent = { Icon(Icons.Default.Apps, null) },
                     headlineContent = { Text("Delete all apps") },
                     supportingContent = { Text("Removes all apps, their data and shortcuts") },
                     trailingContent = {
@@ -341,6 +523,7 @@ fun GlobalSettingsScreen(
                 )
                 HorizontalDivider()
                 ListItem(
+                    leadingContent = { Icon(Icons.Default.Category, null) },
                     headlineContent = { Text("Delete all categories") },
                     supportingContent = { Text("Apps become uncategorized") },
                     trailingContent = {
@@ -351,6 +534,7 @@ fun GlobalSettingsScreen(
                 )
                 HorizontalDivider()
                 ListItem(
+                    leadingContent = { Icon(Icons.AutoMirrored.Filled.Shortcut, null) },
                     headlineContent = { Text("Delete all shortcuts") },
                     supportingContent = { Text("Removes all launcher shortcuts from home screen") },
                     trailingContent = {
@@ -366,6 +550,7 @@ fun GlobalSettingsScreen(
             SectionLabel("About")
             SettingsCard {
                 ListItem(
+                    leadingContent = { Icon(Icons.Default.Info, null) },
                     headlineContent = { Text("Version") },
                     trailingContent = {
                         Text(version, style = MaterialTheme.typography.bodyMedium,
@@ -431,6 +616,30 @@ fun GlobalSettingsScreen(
                 }
             },
             confirmButton = { TextButton(onClick = { showScheduleDialog = false }) { Text("Done") } },
+        )
+    }
+
+    if (state.showRemovePasswordWarning) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissRemovePasswordWarning,
+            icon = { Icon(Icons.Default.DeleteForever, null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("Remove app password?") },
+            text = {
+                Text(
+                    "Removing the app password will immediately and permanently delete all stored data " +
+                    "(cookies, logins, local storage) for every app protected by the app password. " +
+                    "This cannot be undone."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = viewModel::confirmRemovePasswordWarning,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) { Text("Continue") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissRemovePasswordWarning) { Text("Cancel") }
+            },
         )
     }
 
@@ -710,6 +919,50 @@ private fun uriToDisplayName(uriString: String): String = runCatching {
     if (volume.equals("primary", ignoreCase = true)) "/storage/emulated/0/$path"
     else "/storage/$volume/$path"
 }.getOrDefault(uriString)
+
+@Composable
+private fun EngineOptionRow(
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+    title: String,
+    hint: String,
+) {
+    val contentAlpha = if (enabled) 1f else 0.45f
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = 4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.runtime.CompositionLocalProvider(
+                LocalMinimumInteractiveComponentSize provides 0.dp
+            ) {
+                RadioButton(
+                    selected = selected,
+                    onClick = if (enabled) onClick else null,
+                    enabled = enabled,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Text(
+                title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Medium
+                             else androidx.compose.ui.text.font.FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha),
+            )
+        }
+        Text(
+            hint,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
+            modifier = Modifier.padding(start = 32.dp),
+        )
+    }
+}
 
 @Composable
 private fun SectionLabel(text: String) =

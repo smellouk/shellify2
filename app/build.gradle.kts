@@ -45,6 +45,12 @@ android {
 
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+        jniLibs {
+            // GeckoView native libs are downloaded at runtime — exclude from APK to keep it small
+            excludes += "**/libxul.so"
+            excludes += "**/libmozglue.so"
+            excludes += "**/liblgpllibs.so"
+        }
     }
 }
 
@@ -101,6 +107,9 @@ dependencies {
 
     // DocumentFile — SAF-based file writing for backups
     implementation("androidx.documentfile:documentfile:1.0.1")
+
+    // GeckoView — Java/Kotlin API only; .so files excluded from APK (see packagingOptions) and downloaded at runtime
+    implementation("org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
