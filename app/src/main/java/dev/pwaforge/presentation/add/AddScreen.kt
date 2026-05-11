@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -225,24 +226,46 @@ fun AddScreen(
 
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("App Icon", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                        Text("Auto-fetched on Analyze, or tap the icon to pick from gallery.",
+                        Text("Click to select or use button below",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        AssistChip(
-                            onClick = {
-                                imagePicker.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                )
-                            },
-                            label = { Text("Choose Image") },
-                            leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(16.dp)) },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            ),
-                            border = null,
-                        )
+                        Spacer(Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            AssistChip(
+                                onClick = { viewModel.fetchIcon() },
+                                enabled = state.url.isNotBlank() && !state.isFetchingIcon,
+                                label = {
+                                    if (state.isFetchingIcon)
+                                        CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                    else Text("Fetch Icon")
+                                },
+                                leadingIcon = {
+                                    if (!state.isFetchingIcon)
+                                        Icon(Icons.Default.Language, null, modifier = Modifier.size(16.dp))
+                                },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
+                                border = null,
+                            )
+                            AssistChip(
+                                onClick = {
+                                    imagePicker.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                },
+                                label = { Text("Choose Image") },
+                                leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(16.dp)) },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
+                                border = null,
+                            )
+                        }
                     }
                 }
 

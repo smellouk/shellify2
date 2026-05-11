@@ -21,6 +21,7 @@ import java.util.UUID
 data class AddUiState(
     val isLoading: Boolean = false,
     val isAnalyzing: Boolean = false,
+    val isFetchingIcon: Boolean = false,
     val isSaving: Boolean = false,
     val name: String = "",
     val url: String = "",
@@ -136,6 +137,19 @@ class AddViewModel(
     fun setUaMode(v: UserAgentMode) = _state.update { it.copy(uaMode = v) }
 
     // ── Analysis ──────────────────────────────────────────────────────────────
+
+    /** Fetches only the icon for the current URL without running full PWA analysis. */
+    fun fetchIcon() {
+        val url = _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
+        if (url.isBlank()) { _state.update { it.copy(urlError = "Enter a URL first") }; return }
+        _state.update { it.copy(isFetchingIcon = true) }
+        viewModelScope.launch {
+            val path = runCatching {
+                faviconFetcher.fetch(null, url, _state.value.isolationId)
+            }.getOrNull()
+            _state.update { it.copy(isFetchingIcon = false, iconPath = path ?: it.iconPath) }
+        }
+    }
 
     fun analyze() {
         val rawUrl = _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
