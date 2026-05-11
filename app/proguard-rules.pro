@@ -1,0 +1,5 @@
+-keepattributes SourceFile,LineNumberTable
+-keep class dev.pwaforge.domain.model.** { *; }
+-keep class dev.pwaforge.data.local.entity.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
