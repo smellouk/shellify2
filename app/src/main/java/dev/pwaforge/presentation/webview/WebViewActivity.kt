@@ -66,6 +66,7 @@ class WebViewActivity : ComponentActivity() {
             currentApp = pwaApp
             setupWebView(pwaApp)
             applyWindowMode(pwaApp)
+            if (!pwaApp.isFullscreen) applyStatusBarColor(pwaApp.themeColor)
             // Apply isolation BEFORE loading the URL
             isolationManager.applyTo(webView, pwaApp.isolationId, pwaApp.url)
             webView.loadUrl(pwaApp.url)
@@ -148,6 +149,19 @@ class WebViewActivity : ComponentActivity() {
             controller.show(WindowInsetsCompat.Type.systemBars())
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
+    }
+
+    private fun applyStatusBarColor(themeColor: String?) {
+        val color = themeColor?.let { runCatching { android.graphics.Color.parseColor(it) }.getOrNull() }
+            ?: return
+        window.statusBarColor = color
+        val isLight = run {
+            val r = android.graphics.Color.red(color)
+            val g = android.graphics.Color.green(color)
+            val b = android.graphics.Color.blue(color)
+            (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5
+        }
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
     }
 
     @Deprecated("Deprecated in Java")

@@ -62,6 +62,17 @@ class FaviconFetcher(
         file
     }.getOrNull()
 
+    /** Copies a content:// URI picked by the user into the icons directory and returns the path. */
+    suspend fun saveFromContentUri(uri: android.net.Uri, isolationId: String): String? =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val dir = File(context.filesDir, "icons").also { it.mkdirs() }
+                val file = File(dir, "$isolationId.png")
+                context.contentResolver.openInputStream(uri)?.use { it.copyTo(file.outputStream()) }
+                file.absolutePath
+            }.getOrNull()
+        }
+
     private fun extractOrigin(url: String): String {
         val proto = if (url.startsWith("https")) "https" else "http"
         val host = url.removePrefix("https://").removePrefix("http://").substringBefore('/')

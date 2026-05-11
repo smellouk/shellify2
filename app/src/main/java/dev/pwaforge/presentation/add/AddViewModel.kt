@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
+import dev.pwaforge.domain.model.PwaManifest
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.UserAgentMode
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 data class AddUiState(
     val isLoading: Boolean = false,
@@ -25,6 +27,11 @@ data class AddUiState(
     val iconPath: String? = null,
     val themeColor: String? = null,
     val categoryId: Long? = null,
+    // Isolation ID — stable for the lifetime of this edit session
+    val isolationId: String = UUID.randomUUID().toString(),
+    // Analysis report waiting for user approval
+    val pendingManifest: PwaManifest? = null,
+    val pendingIconPath: String? = null,    // icon fetched during analysis, not yet applied
     // Fullscreen
     val isFullscreen: Boolean = false,
     val fullscreenShowStatusBar: Boolean = false,
@@ -75,6 +82,7 @@ class AddViewModel(
                         iconPath = app.iconPath,
                         themeColor = app.themeColor,
                         categoryId = app.categoryId,
+                        isolationId = app.isolationId,
                         isFullscreen = app.isFullscreen,
                         fullscreenShowStatusBar = app.fullscreenShowStatusBar,
                         fullscreenShowNavBar = app.fullscreenShowNavBar,
@@ -94,12 +102,19 @@ class AddViewModel(
         }
     }
 
+    // Basic info
     fun setName(v: String) = _state.update { it.copy(name = v) }
     fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null) }
+    fun setThemeColor(v: String?) = _state.update { it.copy(themeColor = v) }
+    fun setIconPath(v: String) = _state.update { it.copy(iconPath = v) }
+
+    // Fullscreen
     fun setFullscreen(v: Boolean) = _state.update { it.copy(isFullscreen = v) }
     fun setFullscreenShowStatusBar(v: Boolean) = _state.update { it.copy(fullscreenShowStatusBar = v) }
     fun setFullscreenShowNavBar(v: Boolean) = _state.update { it.copy(fullscreenShowNavBar = v) }
     fun setFullscreenShowTopToolbar(v: Boolean) = _state.update { it.copy(fullscreenShowTopToolbar = v) }
+
+    // Ad blocking
     fun setAdBlock(v: Boolean) = _state.update { it.copy(adBlockEnabled = v) }
     fun setAdBlockAllowUserToggle(v: Boolean) = _state.update { it.copy(adBlockAllowUserToggle = v) }
     fun setAdBlockCustomRuleInput(v: String) = _state.update { it.copy(adBlockCustomRuleInput = v) }
@@ -109,12 +124,18 @@ class AddViewModel(
         _state.update { it.copy(adBlockCustomRules = it.adBlockCustomRules + rule, adBlockCustomRuleInput = "") }
     }
     fun removeAdBlockCustomRule(rule: String) = _state.update { it.copy(adBlockCustomRules = it.adBlockCustomRules - rule) }
+
+    // Translation
     fun setTranslate(v: Boolean) = _state.update { it.copy(translateEnabled = v) }
     fun setTranslateTarget(v: TranslateLanguage) = _state.update { it.copy(translateTarget = v) }
     fun setTranslateEngine(v: TranslateEngine) = _state.update { it.copy(translateEngine = v) }
     fun setShowTranslateButton(v: Boolean) = _state.update { it.copy(showTranslateButton = v) }
     fun setAutoTranslateOnLoad(v: Boolean) = _state.update { it.copy(autoTranslateOnLoad = v) }
+
+    // Browser
     fun setUaMode(v: UserAgentMode) = _state.update { it.copy(uaMode = v) }
+
+    // ── Analysis ──────────────────────────────────────────────────────────────
 
     fun analyze() {
         val rawUrl = _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
@@ -123,23 +144,35 @@ class AddViewModel(
         viewModelScope.launch {
             runCatching {
                 val manifest = analyzer.analyze(rawUrl)
-                val isolationId = originalApp?.isolationId ?: WebApp(name = "", url = "").isolationId
-                val iconPath = faviconFetcher.fetch(manifest.bestIconUrl(rawUrl), rawUrl, isolationId)
-                _state.update { s ->
-                    s.copy(
-                        isAnalyzing = false,
-                        name = s.name.ifBlank { manifest.shortName ?: manifest.name ?: "" },
-                        themeColor = manifest.themeColor,
-                        iconPath = iconPath ?: s.iconPath,
-                    )
-                }
+                val iconUrl = manifest.bestIconUrl(rawUrl)
+                val iconPath = if (iconUrl != null) {
+                    faviconFetcher.fetch(iconUrl, rawUrl, _state.value.isolationId)
+                } else null
+                _state.update { it.copy(isAnalyzing = false, pendingManifest = manifest, pendingIconPath = iconPath) }
             }.onFailure {
-                _state.update { s ->
-                    s.copy(isAnalyzing = false, analyzeError = "Could not read site info. You can still save manually.")
-                }
+                _state.update { it.copy(isAnalyzing = false, analyzeError = "Could not read site info. You can still save manually.") }
             }
         }
     }
+
+    /** Apply all detected fields from the analysis report to the form. */
+    fun applyManifest() {
+        val s = _state.value
+        val m = s.pendingManifest ?: return
+        _state.update {
+            it.copy(
+                name = it.name.ifBlank { m.shortName ?: m.name ?: it.name },
+                themeColor = m.themeColor ?: it.themeColor,
+                iconPath = s.pendingIconPath ?: it.iconPath,
+                pendingManifest = null,
+                pendingIconPath = null,
+            )
+        }
+    }
+
+    fun dismissManifest() = _state.update { it.copy(pendingManifest = null, pendingIconPath = null) }
+
+    // ── Save ──────────────────────────────────────────────────────────────────
 
     fun save(onCreateShortcut: ((WebApp) -> Unit)? = null) {
         val s = _state.value
@@ -148,13 +181,14 @@ class AddViewModel(
         if (s.name.isBlank()) return
         _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            val app = (originalApp ?: WebApp(name = "", url = "")).copy(
+            val app = (originalApp ?: WebApp(name = "", url = "", isolationId = s.isolationId)).copy(
                 id = appId,
                 name = s.name.trim(),
                 url = url,
                 iconPath = s.iconPath,
                 themeColor = s.themeColor,
                 categoryId = s.categoryId,
+                isolationId = s.isolationId,
                 isFullscreen = s.isFullscreen,
                 fullscreenShowStatusBar = s.fullscreenShowStatusBar,
                 fullscreenShowNavBar = s.fullscreenShowNavBar,
