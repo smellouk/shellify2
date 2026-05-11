@@ -1,7 +1,5 @@
 package dev.pwaforge.presentation.home
 
-import android.content.Intent
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,19 +20,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -46,22 +39,14 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -74,12 +59,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import dev.pwaforge.core.theme.ThemeMode
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
+import dev.pwaforge.domain.model.Category
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.presentation.webview.WebViewActivity
 
@@ -87,21 +74,14 @@ import dev.pwaforge.presentation.webview.WebViewActivity
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    themeMode: ThemeMode,
-    dynamicColor: Boolean,
-    onThemeModeChange: (ThemeMode) -> Unit,
-    onDynamicColorChange: (Boolean) -> Unit,
     onAddApp: () -> Unit,
     onEditApp: (Long) -> Unit,
     onOpenApp: (WebApp) -> Unit,
     onOpenSettings: (Long) -> Unit,
-    onOpenCategories: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showSearch by remember { mutableStateOf(false) }
-    var showThemeSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
 
     Scaffold(
         topBar = {
@@ -128,12 +108,6 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = { showSearch = !showSearch; if (!showSearch) viewModel.setSearch("") }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                    IconButton(onClick = onOpenCategories) {
-                        Icon(Icons.Default.Category, contentDescription = "Categories")
-                    }
-                    IconButton(onClick = { showThemeSheet = true }) {
-                        Icon(Icons.Default.Palette, contentDescription = "Appearance")
                     }
                 },
             )
@@ -182,98 +156,21 @@ fun HomeScreen(
                     items(state.apps, key = { it.id }) { app ->
                         AppCard(
                             app = app,
+                            categories = state.categories,
                             onClick = {
-                                context.startActivity(
-                                    Intent(context, WebViewActivity::class.java)
-                                        .putExtra(WebViewActivity.EXTRA_APP_ID, app.id)
-                                )
+                                context.startActivity(WebViewActivity.launchIntent(context, app.id))
                             },
                             onEdit = { onEditApp(app.id) },
                             onSettings = { onOpenSettings(app.id) },
                             onDelete = { viewModel.delete(app) },
+                            onClearData = { viewModel.clearData(app) },
+                            onAssignCategory = { categoryId -> viewModel.assignCategory(app, categoryId) },
                         )
                     }
                 }
             }
         }
 
-        // Theme bottom sheet
-        if (showThemeSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showThemeSheet = false },
-                sheetState = sheetState,
-            ) {
-                ThemeSheetContent(
-                    themeMode = themeMode,
-                    dynamicColor = dynamicColor,
-                    onThemeModeChange = onThemeModeChange,
-                    onDynamicColorChange = onDynamicColorChange,
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ThemeSheetContent(
-    themeMode: ThemeMode,
-    dynamicColor: Boolean,
-    onThemeModeChange: (ThemeMode) -> Unit,
-    onDynamicColorChange: (Boolean) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .navigationBarsPadding()
-            .padding(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        Text(
-            "Appearance",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                "Theme",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val themeModes = listOf(
-                Triple(ThemeMode.SYSTEM, Icons.Default.BrightnessAuto, "System"),
-                Triple(ThemeMode.LIGHT,  Icons.Default.LightMode,      "Light"),
-                Triple(ThemeMode.DARK,   Icons.Default.DarkMode,        "Dark"),
-            )
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                themeModes.forEachIndexed { index, (mode, icon, label) ->
-                    SegmentedButton(
-                        selected = themeMode == mode,
-                        onClick = { onThemeModeChange(mode) },
-                        shape = SegmentedButtonDefaults.itemShape(index, themeModes.size),
-                        icon = {
-                            SegmentedButtonDefaults.Icon(active = themeMode == mode) {
-                                Icon(icon, null, modifier = Modifier.size(SegmentedButtonDefaults.IconSize))
-                            }
-                        },
-                    ) { Text(label) }
-                }
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            HorizontalDivider()
-            ListItem(
-                headlineContent = { Text("Dynamic colors") },
-                supportingContent = { Text("Follow wallpaper accent colors (Material You)") },
-                trailingContent = {
-                    Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange)
-                },
-                modifier = Modifier.clip(RoundedCornerShape(12.dp)),
-            )
-        }
     }
 }
 
@@ -324,12 +221,17 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 @Composable
 private fun AppCard(
     app: WebApp,
+    categories: List<Category>,
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onSettings: () -> Unit,
     onDelete: () -> Unit,
+    onClearData: () -> Unit,
+    onAssignCategory: (Long?) -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showCategoryPicker by remember { mutableStateOf(false) }
+    var showClearDataDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -352,9 +254,19 @@ private fun AppCard(
                             onClick = { showMenu = false; onEdit() },
                         )
                         DropdownMenuItem(
+                            text = { Text("Assign Category") },
+                            leadingIcon = { Icon(Icons.Default.Category, null) },
+                            onClick = { showMenu = false; showCategoryPicker = true },
+                        )
+                        DropdownMenuItem(
                             text = { Text("Settings") },
                             leadingIcon = { Icon(Icons.Default.Settings, null) },
                             onClick = { showMenu = false; onSettings() },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Clear Data") },
+                            leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
+                            onClick = { showMenu = false; showClearDataDialog = true },
                         )
                         DropdownMenuItem(
                             text = { Text("Delete") },
@@ -375,6 +287,88 @@ private fun AppCard(
             )
         }
     }
+
+    if (showCategoryPicker) {
+        CategoryPickerDialog(
+            categories = categories,
+            currentCategoryId = app.categoryId,
+            onDismiss = { showCategoryPicker = false },
+            onSelect = { categoryId ->
+                showCategoryPicker = false
+                onAssignCategory(categoryId)
+            },
+        )
+    }
+
+    if (showClearDataDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDataDialog = false },
+            icon = { Icon(Icons.Default.DeleteSweep, null) },
+            title = { Text("Clear App Data") },
+            text = { Text("This will delete all cookies, local storage, and cached data for \"${app.name}\". The app will stay in your list but you'll be logged out of all sessions.") },
+            confirmButton = {
+                TextButton(
+                    onClick = { showClearDataDialog = false; onClearData() },
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) { Text("Clear Data") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDataDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
+}
+
+@Composable
+private fun CategoryPickerDialog(
+    categories: List<Category>,
+    currentCategoryId: Long?,
+    onDismiss: () -> Unit,
+    onSelect: (Long?) -> Unit,
+) {
+    var selected by remember { mutableStateOf(currentCategoryId) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Assign Category") },
+        text = {
+            Column {
+                // "None" option
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selected = null }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = selected == null, onClick = { selected = null })
+                    Spacer(Modifier.width(8.dp))
+                    Text("None", style = MaterialTheme.typography.bodyLarge)
+                }
+                categories.forEach { cat ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selected = cat.id }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = selected == cat.id, onClick = { selected = cat.id })
+                        Spacer(Modifier.width(8.dp))
+                        Text(cat.name, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSelect(selected) }) { Text("Apply") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable

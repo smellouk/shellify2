@@ -26,8 +26,6 @@ class MainActivity : ComponentActivity() {
                 AppNavigation(
                     navController = navController,
                     app = app,
-                    themeMode = themeMode,
-                    dynamicColor = dynamicColor,
                 )
             }
         }

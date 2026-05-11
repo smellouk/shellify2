@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,7 +29,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CategoryScreen(
     viewModel: CategoryViewModel,
-    onBack: () -> Unit,
 ) {
     val categories by viewModel.categories.collectAsState()
     val state by viewModel.uiState.collectAsState()
@@ -39,9 +37,6 @@ fun CategoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Categories") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                },
             )
         },
     ) { padding ->
