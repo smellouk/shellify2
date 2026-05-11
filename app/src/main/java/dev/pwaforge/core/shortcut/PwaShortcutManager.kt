@@ -2,6 +2,7 @@ package dev.pwaforge.core.shortcut
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -49,5 +50,21 @@ object PwaShortcutManager {
 
     fun refreshIcon(context: Context, app: WebApp, currentLabel: String): Boolean = runCatching {
         ShortcutManagerCompat.updateShortcuts(context, listOf(buildInfo(context, app, currentLabel)))
+    }.getOrDefault(false)
+
+    fun changeIcon(context: Context, app: WebApp, currentLabel: String, bitmap: Bitmap): Boolean = runCatching {
+        val scaled = ShortcutIconBuilder.scaleCentered(bitmap)
+        val info = ShortcutInfoCompat.Builder(context, shortcutId(app))
+            .setShortLabel(currentLabel.take(12))
+            .setLongLabel(currentLabel)
+            .setIcon(IconCompat.createWithBitmap(scaled))
+            .setIntent(
+                Intent(context, ShortcutActivity::class.java).apply {
+                    action = Intent.ACTION_VIEW
+                    putExtra(EXTRA_APP_ID, app.id)
+                }
+            )
+            .build()
+        ShortcutManagerCompat.updateShortcuts(context, listOf(info))
     }.getOrDefault(false)
 }

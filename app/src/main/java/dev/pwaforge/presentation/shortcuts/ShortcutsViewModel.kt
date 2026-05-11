@@ -1,6 +1,8 @@
 package dev.pwaforge.presentation.shortcuts
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.pwaforge.core.shortcut.PwaShortcutManager
@@ -81,6 +83,13 @@ class ShortcutsViewModel(
 
     fun refreshIcon(item: ShortcutItem) = viewModelScope.launch(Dispatchers.IO) {
         PwaShortcutManager.refreshIcon(context, item.app, item.label)
+    }
+
+    fun applyPickedIcon(item: ShortcutItem, uri: Uri) = viewModelScope.launch(Dispatchers.IO) {
+        val bitmap = runCatching {
+            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
+        }.getOrNull() ?: return@launch
+        PwaShortcutManager.changeIcon(context, item.app, item.label, bitmap)
     }
 
     // ── Remove ────────────────────────────────────────────────────────────────

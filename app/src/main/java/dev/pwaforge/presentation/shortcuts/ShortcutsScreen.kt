@@ -8,10 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
@@ -60,12 +64,23 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
             }
             state.items.isEmpty() -> EmptyState(Modifier.fillMaxSize().padding(padding))
             else -> {
+                var iconPickItem by remember { mutableStateOf<ShortcutItem?>(null) }
+                val pickImage = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+                    val item = iconPickItem ?: return@rememberLauncherForActivityResult
+                    iconPickItem = null
+                    if (uri != null) viewModel.applyPickedIcon(item, uri)
+                }
+
                 LazyColumn(modifier = Modifier.padding(padding)) {
                     items(state.items, key = { it.shortcutId }) { item ->
                         ShortcutRow(
                             item = item,
                             onRename = { viewModel.startRename(item) },
                             onRefreshIcon = { viewModel.refreshIcon(item) },
+                            onChangeIcon = {
+                                iconPickItem = item
+                                pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                            },
                             onRemove = { viewModel.showRemove(item) },
                         )
                     }
@@ -125,6 +140,7 @@ private fun ShortcutRow(
     item: ShortcutItem,
     onRename: () -> Unit,
     onRefreshIcon: () -> Unit,
+    onChangeIcon: () -> Unit,
     onRemove: () -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -151,6 +167,11 @@ private fun ShortcutRow(
                         text = { Text("Rename") },
                         leadingIcon = { Icon(Icons.Default.Edit, null) },
                         onClick = { showMenu = false; onRename() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Change icon") },
+                        leadingIcon = { Icon(Icons.Default.Image, null) },
+                        onClick = { showMenu = false; onChangeIcon() },
                     )
                     DropdownMenuItem(
                         text = { Text("Refresh icon") },

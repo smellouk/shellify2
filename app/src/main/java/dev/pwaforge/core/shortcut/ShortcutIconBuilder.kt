@@ -35,7 +35,7 @@ object ShortcutIconBuilder {
             .toBitmap(SIZE, SIZE)
     }.getOrNull()
 
-    private fun scaleCentered(src: Bitmap): Bitmap {
+    fun scaleCentered(src: Bitmap): Bitmap {
         val out = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
         val scale = SIZE.toFloat() / maxOf(src.width, src.height)
