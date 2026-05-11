@@ -1,6 +1,7 @@
 package dev.pwaforge.presentation.home
 
 import android.content.Intent
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -25,10 +28,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -39,14 +46,22 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,10 +74,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.presentation.webview.WebViewActivity
 
@@ -70,6 +87,10 @@ import dev.pwaforge.presentation.webview.WebViewActivity
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    themeMode: ThemeMode,
+    dynamicColor: Boolean,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    onDynamicColorChange: (Boolean) -> Unit,
     onAddApp: () -> Unit,
     onEditApp: (Long) -> Unit,
     onOpenApp: (WebApp) -> Unit,
@@ -79,6 +100,8 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showSearch by remember { mutableStateOf(false) }
+    var showThemeSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
 
     Scaffold(
         topBar = {
@@ -108,6 +131,9 @@ fun HomeScreen(
                     }
                     IconButton(onClick = onOpenCategories) {
                         Icon(Icons.Default.Category, contentDescription = "Categories")
+                    }
+                    IconButton(onClick = { showThemeSheet = true }) {
+                        Icon(Icons.Default.Palette, contentDescription = "Appearance")
                     }
                 },
             )
@@ -170,6 +196,84 @@ fun HomeScreen(
                 }
             }
         }
+
+        // Theme bottom sheet
+        if (showThemeSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showThemeSheet = false },
+                sheetState = sheetState,
+            ) {
+                ThemeSheetContent(
+                    themeMode = themeMode,
+                    dynamicColor = dynamicColor,
+                    onThemeModeChange = onThemeModeChange,
+                    onDynamicColorChange = onDynamicColorChange,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ThemeSheetContent(
+    themeMode: ThemeMode,
+    dynamicColor: Boolean,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    onDynamicColorChange: (Boolean) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .navigationBarsPadding()
+            .padding(bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        Text(
+            "Appearance",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                "Theme",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            val themeModes = listOf(
+                Triple(ThemeMode.SYSTEM, Icons.Default.BrightnessAuto, "System"),
+                Triple(ThemeMode.LIGHT,  Icons.Default.LightMode,      "Light"),
+                Triple(ThemeMode.DARK,   Icons.Default.DarkMode,        "Dark"),
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                themeModes.forEachIndexed { index, (mode, icon, label) ->
+                    SegmentedButton(
+                        selected = themeMode == mode,
+                        onClick = { onThemeModeChange(mode) },
+                        shape = SegmentedButtonDefaults.itemShape(index, themeModes.size),
+                        icon = {
+                            SegmentedButtonDefaults.Icon(active = themeMode == mode) {
+                                Icon(icon, null, modifier = Modifier.size(SegmentedButtonDefaults.IconSize))
+                            }
+                        },
+                    ) { Text(label) }
+                }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            HorizontalDivider()
+            ListItem(
+                headlineContent = { Text("Dynamic colors") },
+                supportingContent = { Text("Follow wallpaper accent colors (Material You)") },
+                trailingContent = {
+                    Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange)
+                },
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+            )
+        }
     }
 }
 
@@ -181,7 +285,6 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(horizontal = 48.dp),
         ) {
-            // Phone + sparkle icon stack
             Box(
                 modifier = Modifier.size(120.dp),
                 contentAlignment = Alignment.Center,

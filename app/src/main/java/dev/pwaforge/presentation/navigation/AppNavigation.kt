@@ -1,12 +1,14 @@
 package dev.pwaforge.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import dev.pwaforge.PWAForgeApplication
+import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.presentation.add.AddScreen
 import dev.pwaforge.presentation.add.AddViewModel
 import dev.pwaforge.presentation.category.CategoryScreen
@@ -17,14 +19,26 @@ import dev.pwaforge.presentation.settings.AppSettingsScreen
 import dev.pwaforge.presentation.settings.AppSettingsViewModel
 import dev.pwaforge.presentation.translate.TranslateConfigScreen
 import dev.pwaforge.presentation.translate.TranslateConfigViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun AppNavigation(navController: NavHostController, app: PWAForgeApplication) {
+fun AppNavigation(
+    navController: NavHostController,
+    app: PWAForgeApplication,
+    themeMode: ThemeMode,
+    dynamicColor: Boolean,
+) {
+    val scope = rememberCoroutineScope()
+
     NavHost(navController = navController, startDestination = Screen.Home.route) {
 
         composable(Screen.Home.route) {
             HomeScreen(
                 viewModel = HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories),
+                themeMode = themeMode,
+                dynamicColor = dynamicColor,
+                onThemeModeChange = { mode -> scope.launch { app.themeManager.setThemeMode(mode) } },
+                onDynamicColorChange = { enabled -> scope.launch { app.themeManager.setDynamicColor(enabled) } },
                 onAddApp = { navController.navigate(Screen.Add.createRoute()) },
                 onEditApp = { id -> navController.navigate(Screen.Add.createRoute(id)) },
                 onOpenApp = { /* handled in HomeScreen via context */ },

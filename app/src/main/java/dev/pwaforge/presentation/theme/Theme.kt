@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import dev.pwaforge.core.theme.ThemeMode
 
 private val DarkColors = darkColorScheme(
     primary = Purple80,
@@ -24,16 +25,23 @@ private val LightColors = lightColorScheme(
 
 @Composable
 fun PWAForgeTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    val systemDark = isSystemInDarkTheme()
+    val useDark = when (themeMode) {
+        ThemeMode.SYSTEM -> systemDark
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val ctx = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
+            if (useDark) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
         }
-        darkTheme -> DarkColors
+        useDark -> DarkColors
         else -> LightColors
     }
 
