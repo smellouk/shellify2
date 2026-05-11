@@ -49,7 +49,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.R
 import dev.pwaforge.presentation.home.AppIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +63,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     Scaffold(
         containerColor = screenBg,
         topBar = {
-            TopAppBar(title = { Text("Shortcuts") })
+            TopAppBar(title = { Text(stringResource(R.string.shortcuts_title)) })
         },
     ) { padding ->
         when {
@@ -111,12 +113,12 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     if (state.renameTarget != null) {
         AlertDialog(
             onDismissRequest = viewModel::dismissRename,
-            title = { Text("Rename shortcut") },
+            title = { Text(stringResource(R.string.shortcuts_rename_dialog_title)) },
             text = {
                 OutlinedTextField(
                     value = state.renameText,
                     onValueChange = viewModel::setRenameText,
-                    label = { Text("Shortcut name") },
+                    label = { Text(stringResource(R.string.shortcuts_name_label)) },
                     singleLine = true,
                 )
             },
@@ -124,10 +126,10 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 TextButton(
                     onClick = viewModel::confirmRename,
                     enabled = state.renameText.isNotBlank(),
-                ) { Text("Rename") }
+                ) { Text(stringResource(R.string.shortcuts_rename_button)) }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::dismissRename) { Text("Cancel") }
+                TextButton(onClick = viewModel::dismissRename) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }
@@ -136,19 +138,18 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
         AlertDialog(
             onDismissRequest = viewModel::dismissRemove,
             icon = { Icon(Icons.Default.Delete, null) },
-            title = { Text("Remove shortcut?") },
+            title = { Text(stringResource(R.string.shortcuts_remove_dialog_title)) },
             text = {
-                Text("\"${state.removeTarget!!.label}\" will be disabled on the launcher. " +
-                    "To fully remove it, long-press the shortcut on your home screen and select Remove.")
+                Text(stringResource(R.string.shortcuts_remove_body, state.removeTarget!!.label))
             },
             confirmButton = {
                 TextButton(
                     onClick = viewModel::confirmRemove,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text("Disable") }
+                ) { Text(stringResource(R.string.shortcuts_disable_button)) }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::dismissRemove) { Text("Cancel") }
+                TextButton(onClick = viewModel::dismissRemove) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }
@@ -180,26 +181,26 @@ private fun ShortcutRow(
         trailingContent = {
             Box {
                 IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.shortcuts_options_cd))
                 }
                 DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                     DropdownMenuItem(
-                        text = { Text("Rename") },
+                        text = { Text(stringResource(R.string.shortcuts_menu_rename)) },
                         leadingIcon = { Icon(Icons.Default.Edit, null) },
                         onClick = { showMenu = false; onRename() },
                     )
                     DropdownMenuItem(
-                        text = { Text("Change icon") },
+                        text = { Text(stringResource(R.string.shortcuts_menu_change_icon)) },
                         leadingIcon = { Icon(Icons.Default.Image, null) },
                         onClick = { showMenu = false; onChangeIcon() },
                     )
                     DropdownMenuItem(
-                        text = { Text("Refresh icon") },
+                        text = { Text(stringResource(R.string.shortcuts_menu_refresh_icon)) },
                         leadingIcon = { Icon(Icons.Default.Refresh, null) },
                         onClick = { showMenu = false; onRefreshIcon() },
                     )
                     DropdownMenuItem(
-                        text = { Text("Remove") },
+                        text = { Text(stringResource(R.string.shortcuts_menu_remove)) },
                         leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
                         onClick = { showMenu = false; onRemove() },
                     )
@@ -224,12 +225,12 @@ private fun EmptyState(modifier: Modifier = Modifier) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
             )
             Text(
-                "No shortcuts yet",
+                stringResource(R.string.shortcuts_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                "Open an app's menu and tap \"Add to home screen\" to create a launcher shortcut.",
+                stringResource(R.string.shortcuts_empty_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

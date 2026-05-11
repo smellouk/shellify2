@@ -91,6 +91,14 @@ import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.domain.model.UserAgentMode
+import android.app.Activity
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
+import dev.pwaforge.R
+import dev.pwaforge.core.theme.LocalThemeRevealState
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,6 +116,12 @@ fun GlobalSettingsScreen(
         if (geckoInstallState is GeckoInstallState.Installed) viewModel.checkForGeckoUpdate()
     }
     var showScheduleDialog by remember { mutableStateOf(false) }
+    val backupPwdTitle = stringResource(R.string.global_settings_backup_password_dialog_title)
+    val backupPwdDesc = stringResource(R.string.global_settings_backup_password_dialog_desc)
+    val importPwdTitle = stringResource(R.string.global_settings_import_password_dialog_title)
+    val importPwdDesc = stringResource(R.string.global_settings_import_password_dialog_desc)
+    val strSave = stringResource(R.string.common_save)
+    val strRestore = stringResource(R.string.common_restore)
     val context = LocalContext.current
     val version = remember {
         @Suppress("DEPRECATION")
@@ -128,7 +142,7 @@ fun GlobalSettingsScreen(
     val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     Scaffold(
         containerColor = screenBg,
-        topBar = { TopAppBar(title = { Text("Settings") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.global_settings_title)) }) },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -140,29 +154,53 @@ fun GlobalSettingsScreen(
         ) {
 
             // ── Appearance ────────────────────────────────────────────────────
-            SectionLabel("Appearance")
+            SectionLabel(stringResource(R.string.global_settings_section_appearance))
             SettingsCard {
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("Theme", style = MaterialTheme.typography.labelLarge,
+                    Text(stringResource(R.string.global_settings_theme_label), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val revealState = LocalThemeRevealState.current
+                    val view = LocalView.current
+                    val activity = context as? Activity
+                    var buttonCenters by remember { mutableStateOf(mapOf<ThemeMode, Offset>()) }
+
                     val themeModes = listOf(
-                        Triple(ThemeMode.SYSTEM, Icons.Default.BrightnessAuto, "System"),
-                        Triple(ThemeMode.LIGHT,  Icons.Default.LightMode,      "Light"),
-                        Triple(ThemeMode.DARK,   Icons.Default.DarkMode,        "Dark"),
+                        Triple(ThemeMode.SYSTEM, Icons.Default.BrightnessAuto, stringResource(R.string.global_settings_theme_system)),
+                        Triple(ThemeMode.LIGHT,  Icons.Default.LightMode,      stringResource(R.string.global_settings_theme_light)),
+                        Triple(ThemeMode.DARK,   Icons.Default.DarkMode,        stringResource(R.string.global_settings_theme_dark)),
                     )
                     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                         themeModes.forEachIndexed { index, (mode, icon, label) ->
                             SegmentedButton(
                                 selected = state.themeMode == mode,
-                                onClick = { viewModel.setThemeMode(mode) },
+                                onClick = {
+                                    val center = buttonCenters[mode] ?: Offset.Zero
+                                    if (revealState != null) {
+                                        revealState.triggerReveal(
+                                            center = center,
+                                            switchToDark = mode == ThemeMode.DARK,
+                                            view = view,
+                                            window = activity?.window,
+                                        ) { viewModel.setThemeMode(mode) }
+                                    } else {
+                                        viewModel.setThemeMode(mode)
+                                    }
+                                },
                                 shape = SegmentedButtonDefaults.itemShape(index, themeModes.size),
                                 icon = {
                                     SegmentedButtonDefaults.Icon(active = state.themeMode == mode) {
                                         Icon(icon, null, modifier = Modifier.size(SegmentedButtonDefaults.IconSize))
                                     }
+                                },
+                                modifier = Modifier.onGloballyPositioned { coords ->
+                                    val bounds = coords.boundsInRoot()
+                                    buttonCenters = buttonCenters + (mode to Offset(
+                                        bounds.left + bounds.width / 2,
+                                        bounds.top + bounds.height / 2,
+                                    ))
                                 },
                             ) { Text(label) }
                         }
@@ -172,8 +210,8 @@ fun GlobalSettingsScreen(
                     HorizontalDivider()
                     ListItem(
                         leadingContent = { Icon(Icons.Default.Palette, null) },
-                        headlineContent = { Text("Dynamic colors") },
-                        supportingContent = { Text("Follow wallpaper accent colors (Material You)") },
+                        headlineContent = { Text(stringResource(R.string.global_settings_dynamic_colors)) },
+                        supportingContent = { Text(stringResource(R.string.global_settings_dynamic_colors_desc)) },
                         trailingContent = {
                             Switch(checked = state.dynamicColor, onCheckedChange = viewModel::setDynamicColor)
                         },
@@ -183,14 +221,14 @@ fun GlobalSettingsScreen(
 
             // ── Browser ───────────────────────────────────────────────────────
             Spacer(Modifier.height(8.dp))
-            SectionLabel("Browser")
+            SectionLabel(stringResource(R.string.global_settings_section_browser))
             SettingsCard {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.Language, null) },
-                    headlineContent = { Text("Default user agent") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_default_ua)) },
                     supportingContent = { Text(state.defaultUaMode.label) },
                     trailingContent = {
-                        TextButton(onClick = { showUaDialog = true }) { Text("Change") }
+                        TextButton(onClick = { showUaDialog = true }) { Text(stringResource(R.string.common_change)) }
                     },
                 )
             }
@@ -198,7 +236,7 @@ fun GlobalSettingsScreen(
             SettingsCard {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Default engine for new apps",
+                    Text(stringResource(R.string.global_settings_default_engine_label),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(4.dp))
@@ -207,8 +245,8 @@ fun GlobalSettingsScreen(
                     EngineOptionRow(
                         selected = state.defaultEngineType == EngineType.SYSTEM_WEBVIEW,
                         onClick = { viewModel.setDefaultEngineType(EngineType.SYSTEM_WEBVIEW) },
-                        title = "System WebView",
-                        hint = "Android's built-in Chromium engine. Always available, no extra download. Best for speed and compatibility with most websites.",
+                        title = stringResource(R.string.global_settings_engine_webview_title),
+                        hint = stringResource(R.string.global_settings_engine_webview_desc),
                     )
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -221,8 +259,8 @@ fun GlobalSettingsScreen(
                         onClick = {
                             if (geckoInstalled) viewModel.setDefaultEngineType(EngineType.GECKOVIEW)
                         },
-                        title = "GeckoView  (Firefox)",
-                        hint = "Mozilla's Gecko engine with built-in tracker blocking, stricter privacy, and independent rendering — not tied to Android updates.",
+                        title = stringResource(R.string.global_settings_engine_gecko_title),
+                        hint = stringResource(R.string.global_settings_engine_gecko_desc),
                     )
 
                     // Download / status row — always visible
@@ -235,15 +273,15 @@ fun GlobalSettingsScreen(
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("Not installed",
+                                        Text(stringResource(R.string.global_settings_gecko_not_installed),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text("~55 MB download required",
+                                        Text(stringResource(R.string.global_settings_gecko_download_size),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                     IconButton(onClick = viewModel::installGeckoEngine) {
-                                        Icon(Icons.Default.FileDownload, contentDescription = "Download GeckoView",
+                                        Icon(Icons.Default.FileDownload, contentDescription = stringResource(R.string.global_settings_download_gecko_cd),
                                             tint = MaterialTheme.colorScheme.primary)
                                     }
                                 }
@@ -255,7 +293,7 @@ fun GlobalSettingsScreen(
                                         Text("${gs.message}  ${(gs.progress * 100).toInt()}%",
                                             style = MaterialTheme.typography.bodySmall,
                                             modifier = Modifier.weight(1f))
-                                        TextButton(onClick = viewModel::cancelGeckoInstall) { Text("Cancel") }
+                                        TextButton(onClick = viewModel::cancelGeckoInstall) { Text(stringResource(R.string.common_cancel)) }
                                     }
                                     androidx.compose.material3.LinearProgressIndicator(
                                         progress = { gs.progress },
@@ -266,7 +304,7 @@ fun GlobalSettingsScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                                    Text("Installing engine libraries…",
+                                    Text(stringResource(R.string.global_settings_gecko_installing),
                                         style = MaterialTheme.typography.bodySmall,
                                         modifier = Modifier.weight(1f))
                                 }
@@ -281,10 +319,10 @@ fun GlobalSettingsScreen(
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.primary)
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text("Version $installedVer  ·  ~${sizeMb} MB",
+                                            Text(stringResource(R.string.global_settings_gecko_version, installedVer, sizeMb),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            if (hasUpdate) Text("Update available: ${geckoLatestVersion}",
+                                            if (hasUpdate) Text(stringResource(R.string.global_settings_gecko_update_available, geckoLatestVersion ?: ""),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.primary)
                                         }
@@ -292,11 +330,11 @@ fun GlobalSettingsScreen(
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.fillMaxWidth()) {
                                         if (hasUpdate) Button(onClick = viewModel::updateGeckoEngine,
-                                            modifier = Modifier.height(36.dp)) { Text("Update") }
+                                            modifier = Modifier.height(36.dp)) { Text(stringResource(R.string.common_update)) }
                                         TextButton(
                                             onClick = viewModel::uninstallGeckoEngine,
                                             colors = ButtonDefaults.textButtonColors(
-                                                contentColor = MaterialTheme.colorScheme.error)) { Text("Remove") }
+                                                contentColor = MaterialTheme.colorScheme.error)) { Text(stringResource(R.string.common_remove)) }
                                     }
                                 }
                             }
@@ -306,11 +344,11 @@ fun GlobalSettingsScreen(
                                     Icon(Icons.Default.Language, null,
                                         modifier = Modifier.size(16.dp),
                                         tint = MaterialTheme.colorScheme.error)
-                                    Text("Download failed: ${gs.message}",
+                                    Text(stringResource(R.string.global_settings_gecko_download_failed, gs.message),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.error,
                                         modifier = Modifier.weight(1f))
-                                    TextButton(onClick = viewModel::installGeckoEngine) { Text("Retry") }
+                                    TextButton(onClick = viewModel::installGeckoEngine) { Text(stringResource(R.string.common_retry)) }
                                 }
                         }
                 }
@@ -318,28 +356,28 @@ fun GlobalSettingsScreen(
 
             // ── Security ──────────────────────────────────────────────────────
             Spacer(Modifier.height(8.dp))
-            SectionLabel("Security")
+            SectionLabel(stringResource(R.string.global_settings_section_security))
             SettingsCard {
                 if (state.hasPassword) {
                     ListItem(
                         leadingContent = { Icon(Icons.Default.Lock, null) },
-                        headlineContent = { Text("App password") },
-                        supportingContent = { Text("Password is set") },
+                        headlineContent = { Text(stringResource(R.string.global_settings_app_password_headline)) },
+                        supportingContent = { Text(stringResource(R.string.global_settings_password_set)) },
                         trailingContent = {
                             Row {
-                                TextButton(onClick = viewModel::showChangePasswordDialog) { Text("Change") }
+                                TextButton(onClick = viewModel::showChangePasswordDialog) { Text(stringResource(R.string.common_change)) }
                                 TextButton(
                                     onClick = viewModel::showRemovePasswordDialog,
                                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                                ) { Text("Remove") }
+                                ) { Text(stringResource(R.string.common_remove)) }
                             }
                         },
                     )
                     HorizontalDivider()
                     ListItem(
                         leadingContent = { Icon(Icons.Default.DeleteForever, null) },
-                        headlineContent = { Text("Wipe data after 3 failed attempts") },
-                        supportingContent = { Text("Delete all app data if authentication fails 3 times") },
+                        headlineContent = { Text(stringResource(R.string.global_settings_wipe_on_failed)) },
+                        supportingContent = { Text(stringResource(R.string.global_settings_wipe_on_failed_desc)) },
                         trailingContent = {
                             Switch(
                                 checked = state.wipeOnFailedAttempts,
@@ -350,10 +388,10 @@ fun GlobalSettingsScreen(
                 } else {
                     ListItem(
                         leadingContent = { Icon(Icons.Default.LockOpen, null) },
-                        headlineContent = { Text("App password") },
-                        supportingContent = { Text("No password set") },
+                        headlineContent = { Text(stringResource(R.string.global_settings_app_password_headline)) },
+                        supportingContent = { Text(stringResource(R.string.global_settings_password_not_set)) },
                         trailingContent = {
-                            TextButton(onClick = viewModel::showSetPasswordDialog) { Text("Set") }
+                            TextButton(onClick = viewModel::showSetPasswordDialog) { Text(stringResource(R.string.common_set)) }
                         },
                     )
                 }
@@ -363,8 +401,8 @@ fun GlobalSettingsScreen(
             SettingsCard {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.NoPhotography, null) },
-                    headlineContent = { Text("Screenshot protection") },
-                    supportingContent = { Text("Prevent screenshots and screen recording") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_screenshot_protection)) },
+                    supportingContent = { Text(stringResource(R.string.global_settings_screenshot_protection_desc)) },
                     trailingContent = {
                         Switch(
                             checked = state.screenshotProtection,
@@ -376,12 +414,12 @@ fun GlobalSettingsScreen(
 
             // ── Backup ────────────────────────────────────────────────────────
             Spacer(Modifier.height(8.dp))
-            SectionLabel("Backup")
+            SectionLabel(stringResource(R.string.global_settings_section_backup))
             SettingsCard {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.Backup, null) },
-                    headlineContent = { Text("Encrypted backup") },
-                    supportingContent = { Text(if (state.backupEnabled) "Enabled" else "Disabled") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_encrypted_backup)) },
+                    supportingContent = { Text(if (state.backupEnabled) stringResource(R.string.global_settings_backup_enabled) else stringResource(R.string.global_settings_backup_disabled)) },
                     trailingContent = {
                         Switch(
                             checked = state.backupEnabled,
@@ -400,13 +438,13 @@ fun GlobalSettingsScreen(
                         // Password
                         ListItem(
                             leadingContent = { Icon(Icons.Default.Key, null) },
-                            headlineContent = { Text("Backup password") },
+                            headlineContent = { Text(stringResource(R.string.global_settings_backup_password_headline)) },
                             supportingContent = {
-                                Text(if (state.backupHasPassword) "Password is set" else "No password — required to backup")
+                                Text(if (state.backupHasPassword) stringResource(R.string.global_settings_backup_password_set) else stringResource(R.string.global_settings_backup_password_required))
                             },
                             trailingContent = {
                                 TextButton(onClick = viewModel::showBackupPasswordDialog) {
-                                    Text(if (state.backupHasPassword) "Change" else "Set")
+                                    Text(if (state.backupHasPassword) stringResource(R.string.common_change) else stringResource(R.string.common_set))
                                 }
                             },
                         )
@@ -415,41 +453,42 @@ fun GlobalSettingsScreen(
                         // Directory
                         ListItem(
                             leadingContent = { Icon(Icons.Default.Folder, null) },
-                            headlineContent = { Text("Backup folder") },
+                            headlineContent = { Text(stringResource(R.string.global_settings_backup_folder_headline)) },
                             supportingContent = {
                                 Text(
                                     state.backupDirectoryUri?.let { uriToDisplayName(it) }
-                                        ?: "No folder selected"
+                                        ?: stringResource(R.string.global_settings_backup_folder_not_selected)
                                 )
                             },
                             trailingContent = {
                                 IconButton(onClick = { folderPicker.launch(null) }) {
-                                    Icon(Icons.Default.FolderOpen, "Select folder")
+                                    Icon(Icons.Default.FolderOpen, contentDescription = stringResource(R.string.global_settings_select_folder_cd))
                                 }
                             },
                         )
                         HorizontalDivider()
 
                         // Schedule
+                        val scheduleLabel = when (state.backupSchedule) {
+                            BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
+                            BackupSchedule.DAILY -> stringResource(R.string.global_settings_schedule_daily)
+                            BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
+                        }
                         ListItem(
                             leadingContent = { Icon(Icons.Default.Schedule, null) },
-                            headlineContent = { Text("Auto-backup schedule") },
+                            headlineContent = { Text(stringResource(R.string.global_settings_backup_schedule_headline)) },
                             supportingContent = {
-                                Text(when (state.backupSchedule) {
-                                    BackupSchedule.NONE -> "Disabled"
-                                    BackupSchedule.DAILY -> "Daily"
-                                    BackupSchedule.WEEKLY -> "Weekly"
-                                })
+                                Text(scheduleLabel)
                             },
                             trailingContent = {
-                                TextButton(onClick = { showScheduleDialog = true }) { Text("Change") }
+                                TextButton(onClick = { showScheduleDialog = true }) { Text(stringResource(R.string.common_change)) }
                             },
                         )
                         if (state.backupLastTime > 0L) {
                             HorizontalDivider()
                             ListItem(
                                 leadingContent = { Icon(Icons.Default.History, null) },
-                                headlineContent = { Text("Last backup") },
+                                headlineContent = { Text(stringResource(R.string.global_settings_last_backup_headline)) },
                                 supportingContent = {
                                     Text(DateFormat.getMediumDateFormat(context).format(Date(state.backupLastTime)) +
                                         " " + DateFormat.getTimeFormat(context).format(Date(state.backupLastTime)))
@@ -475,7 +514,7 @@ fun GlobalSettingsScreen(
                                 }
                                 Icon(Icons.Default.Backup, null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Backup Now")
+                                Text(stringResource(R.string.global_settings_backup_now))
                             }
                             Button(
                                 onClick = { filePicker.launch(arrayOf("application/octet-stream", "*/*")) },
@@ -488,7 +527,7 @@ fun GlobalSettingsScreen(
                             ) {
                                 Icon(Icons.Default.Restore, null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Import Backup")
+                                Text(stringResource(R.string.global_settings_import_backup))
                             }
                         }
                     }
@@ -497,15 +536,15 @@ fun GlobalSettingsScreen(
 
             // ── Data ──────────────────────────────────────────────────────────
             Spacer(Modifier.height(8.dp))
-            SectionLabel("Data")
+            SectionLabel(stringResource(R.string.global_settings_section_data))
             SettingsCard {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.Storage, null) },
-                    headlineContent = { Text("Clear all app data") },
-                    supportingContent = { Text("Removes cookies and storage for all apps") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_clear_all_data_headline)) },
+                    supportingContent = { Text(stringResource(R.string.global_settings_clear_all_data_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showClearAllDialog) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = "Clear all",
+                            Icon(Icons.Default.DeleteSweep, contentDescription = stringResource(R.string.global_settings_clear_all_cd),
                                 tint = MaterialTheme.colorScheme.error)
                         }
                     },
@@ -513,8 +552,8 @@ fun GlobalSettingsScreen(
                 HorizontalDivider()
                 ListItem(
                     leadingContent = { Icon(Icons.Default.Apps, null) },
-                    headlineContent = { Text("Delete all apps") },
-                    supportingContent = { Text("Removes all apps, their data and shortcuts") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_apps_headline)) },
+                    supportingContent = { Text(stringResource(R.string.global_settings_delete_all_apps_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showDeleteAllAppsDialog) {
                             Icon(Icons.Default.DeleteSweep, null, tint = MaterialTheme.colorScheme.error)
@@ -524,8 +563,8 @@ fun GlobalSettingsScreen(
                 HorizontalDivider()
                 ListItem(
                     leadingContent = { Icon(Icons.Default.Category, null) },
-                    headlineContent = { Text("Delete all categories") },
-                    supportingContent = { Text("Apps become uncategorized") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_categories_headline)) },
+                    supportingContent = { Text(stringResource(R.string.global_settings_delete_all_categories_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showDeleteAllCategoriesDialog) {
                             Icon(Icons.Default.DeleteSweep, null, tint = MaterialTheme.colorScheme.error)
@@ -535,8 +574,8 @@ fun GlobalSettingsScreen(
                 HorizontalDivider()
                 ListItem(
                     leadingContent = { Icon(Icons.AutoMirrored.Filled.Shortcut, null) },
-                    headlineContent = { Text("Delete all shortcuts") },
-                    supportingContent = { Text("Removes all launcher shortcuts from home screen") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_headline)) },
+                    supportingContent = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showDeleteAllShortcutsDialog) {
                             Icon(Icons.Default.DeleteSweep, null, tint = MaterialTheme.colorScheme.error)
@@ -547,11 +586,11 @@ fun GlobalSettingsScreen(
 
             // ── About ─────────────────────────────────────────────────────────
             Spacer(Modifier.height(8.dp))
-            SectionLabel("About")
+            SectionLabel(stringResource(R.string.global_settings_section_about))
             SettingsCard {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.Info, null) },
-                    headlineContent = { Text("Version") },
+                    headlineContent = { Text(stringResource(R.string.global_settings_version_headline)) },
                     trailingContent = {
                         Text(version, style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -566,7 +605,7 @@ fun GlobalSettingsScreen(
     if (showUaDialog) {
         AlertDialog(
             onDismissRequest = { showUaDialog = false },
-            title = { Text("Default user agent") },
+            title = { Text(stringResource(R.string.global_settings_ua_dialog_title)) },
             text = {
                 Column {
                     @Suppress("DEPRECATION")
@@ -585,21 +624,21 @@ fun GlobalSettingsScreen(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showUaDialog = false }) { Text("Done") } },
+            confirmButton = { TextButton(onClick = { showUaDialog = false }) { Text(stringResource(R.string.common_done)) } },
         )
     }
 
     if (showScheduleDialog) {
         AlertDialog(
             onDismissRequest = { showScheduleDialog = false },
-            title = { Text("Auto-backup schedule") },
+            title = { Text(stringResource(R.string.global_settings_schedule_dialog_title)) },
             text = {
                 Column {
                     BackupSchedule.entries.forEach { schedule ->
                         val label = when (schedule) {
-                            BackupSchedule.NONE -> "Disabled"
-                            BackupSchedule.DAILY -> "Daily"
-                            BackupSchedule.WEEKLY -> "Weekly"
+                            BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
+                            BackupSchedule.DAILY -> stringResource(R.string.global_settings_schedule_daily)
+                            BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth()
@@ -615,7 +654,7 @@ fun GlobalSettingsScreen(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showScheduleDialog = false }) { Text("Done") } },
+            confirmButton = { TextButton(onClick = { showScheduleDialog = false }) { Text(stringResource(R.string.common_done)) } },
         )
     }
 
@@ -623,22 +662,18 @@ fun GlobalSettingsScreen(
         AlertDialog(
             onDismissRequest = viewModel::dismissRemovePasswordWarning,
             icon = { Icon(Icons.Default.DeleteForever, null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("Remove app password?") },
+            title = { Text(stringResource(R.string.global_settings_remove_password_title)) },
             text = {
-                Text(
-                    "Removing the app password will immediately and permanently delete all stored data " +
-                    "(cookies, logins, local storage) for every app protected by the app password. " +
-                    "This cannot be undone."
-                )
+                Text(stringResource(R.string.global_settings_remove_password_warning))
             },
             confirmButton = {
                 TextButton(
                     onClick = viewModel::confirmRemovePasswordWarning,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text("Continue") }
+                ) { Text(stringResource(R.string.common_continue)) }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::dismissRemovePasswordWarning) { Text("Cancel") }
+                TextButton(onClick = viewModel::dismissRemovePasswordWarning) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }
@@ -655,9 +690,9 @@ fun GlobalSettingsScreen(
 
     if (state.showBackupPasswordDialog) {
         SinglePasswordDialog(
-            title = "Backup password",
-            description = "This password encrypts your backup file. Keep it safe — you'll need it to restore.",
-            confirmLabel = "Save",
+            title = backupPwdTitle,
+            description = backupPwdDesc,
+            confirmLabel = strSave,
             onDismiss = viewModel::dismissBackupPasswordDialog,
             onConfirm = viewModel::setBackupPassword,
         )
@@ -665,9 +700,9 @@ fun GlobalSettingsScreen(
 
     if (state.showImportPasswordDialog) {
         SinglePasswordDialog(
-            title = "Enter backup password",
-            description = "Enter the password used when this backup was created.",
-            confirmLabel = "Restore",
+            title = importPwdTitle,
+            description = importPwdDesc,
+            confirmLabel = strRestore,
             onDismiss = viewModel::dismissImportDialog,
             onConfirm = viewModel::importBackup,
         )
@@ -677,14 +712,14 @@ fun GlobalSettingsScreen(
         AlertDialog(
             onDismissRequest = viewModel::dismissDeleteAllAppsDialog,
             icon = { Icon(Icons.Default.DeleteSweep, null) },
-            title = { Text("Delete all apps?") },
-            text = { Text("This will permanently delete all apps, their WebView data, and all launcher shortcuts. This cannot be undone.") },
+            title = { Text(stringResource(R.string.global_settings_delete_all_apps_confirm_title)) },
+            text = { Text(stringResource(R.string.global_settings_delete_all_apps_confirm_body)) },
             confirmButton = {
                 TextButton(onClick = viewModel::deleteAllApps,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text("Delete All") }
+                ) { Text(stringResource(R.string.common_delete_all)) }
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissDeleteAllAppsDialog) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = viewModel::dismissDeleteAllAppsDialog) { Text(stringResource(R.string.common_cancel)) } },
         )
     }
 
@@ -692,14 +727,14 @@ fun GlobalSettingsScreen(
         AlertDialog(
             onDismissRequest = viewModel::dismissDeleteAllCategoriesDialog,
             icon = { Icon(Icons.Default.DeleteSweep, null) },
-            title = { Text("Delete all categories?") },
-            text = { Text("All categories will be removed. Apps will become uncategorized.") },
+            title = { Text(stringResource(R.string.global_settings_delete_all_categories_confirm_title)) },
+            text = { Text(stringResource(R.string.global_settings_delete_all_categories_confirm_body)) },
             confirmButton = {
                 TextButton(onClick = viewModel::deleteAllCategories,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text("Delete All") }
+                ) { Text(stringResource(R.string.common_delete_all)) }
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissDeleteAllCategoriesDialog) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = viewModel::dismissDeleteAllCategoriesDialog) { Text(stringResource(R.string.common_cancel)) } },
         )
     }
 
@@ -707,14 +742,14 @@ fun GlobalSettingsScreen(
         AlertDialog(
             onDismissRequest = viewModel::dismissDeleteAllShortcutsDialog,
             icon = { Icon(Icons.Default.DeleteSweep, null) },
-            title = { Text("Delete all shortcuts?") },
-            text = { Text("All launcher shortcuts will be removed from your home screen. The apps themselves will remain.") },
+            title = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_confirm_title)) },
+            text = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_confirm_body)) },
             confirmButton = {
                 TextButton(onClick = viewModel::deleteAllShortcuts,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text("Delete All") }
+                ) { Text(stringResource(R.string.common_delete_all)) }
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissDeleteAllShortcutsDialog) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = viewModel::dismissDeleteAllShortcutsDialog) { Text(stringResource(R.string.common_cancel)) } },
         )
     }
 
@@ -722,14 +757,14 @@ fun GlobalSettingsScreen(
         AlertDialog(
             onDismissRequest = viewModel::dismissClearAllDialog,
             icon = { Icon(Icons.Default.DeleteSweep, null) },
-            title = { Text("Clear all app data?") },
-            text = { Text("This will delete cookies, local storage, and cached data for all apps. You will be logged out of all sessions.") },
+            title = { Text(stringResource(R.string.global_settings_clear_all_confirm_title)) },
+            text = { Text(stringResource(R.string.global_settings_clear_all_confirm_body)) },
             confirmButton = {
                 TextButton(onClick = viewModel::clearAll,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text("Clear All") }
+                ) { Text(stringResource(R.string.common_clear_all)) }
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissClearAllDialog) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = viewModel::dismissClearAllDialog) { Text(stringResource(R.string.common_cancel)) } },
         )
     }
 
@@ -737,9 +772,9 @@ fun GlobalSettingsScreen(
         AlertDialog(
             onDismissRequest = viewModel::clearBackupMessage,
             icon = { Icon(Icons.Default.Backup, null) },
-            title = { Text("Backup") },
+            title = { Text(stringResource(R.string.global_settings_backup_result_title)) },
             text = { Text(msg) },
-            confirmButton = { TextButton(onClick = viewModel::clearBackupMessage) { Text("OK") } },
+            confirmButton = { TextButton(onClick = viewModel::clearBackupMessage) { Text(stringResource(R.string.common_ok)) } },
         )
     }
 }
@@ -758,6 +793,8 @@ private fun SinglePasswordDialog(
     var confirm by remember { mutableStateOf("") }
     var show by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    val errTooShort = stringResource(R.string.global_settings_password_too_short)
+    val errDontMatch = stringResource(R.string.global_settings_passwords_dont_match)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -769,7 +806,7 @@ private fun SinglePasswordDialog(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it; error = null },
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.common_password)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
@@ -783,7 +820,7 @@ private fun SinglePasswordDialog(
                 OutlinedTextField(
                     value = confirm,
                     onValueChange = { confirm = it; error = null },
-                    label = { Text("Confirm password") },
+                    label = { Text(stringResource(R.string.common_confirm_password)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = PasswordVisualTransformation(),
@@ -796,13 +833,13 @@ private fun SinglePasswordDialog(
         confirmButton = {
             TextButton(onClick = {
                 when {
-                    password.length < 4 -> error = "At least 4 characters"
-                    password != confirm -> error = "Passwords don't match"
+                    password.length < 4 -> error = errTooShort
+                    password != confirm -> error = errDontMatch
                     else -> onConfirm(password)
                 }
             }) { Text(confirmLabel) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) } },
     )
 }
 
@@ -822,36 +859,40 @@ private fun PasswordDialog(
     var currentError by remember { mutableStateOf<String?>(null) }
     var newError by remember { mutableStateOf<String?>(null) }
 
-    val title = when (mode) {
-        PasswordDialogMode.SET -> "Set app password"
-        PasswordDialogMode.CHANGE -> "Change app password"
-        PasswordDialogMode.REMOVE -> "Remove app password"
-    }
+    val titleStr = stringResource(when (mode) {
+        PasswordDialogMode.SET -> R.string.global_settings_set_password_title
+        PasswordDialogMode.CHANGE -> R.string.global_settings_change_password_title
+        PasswordDialogMode.REMOVE -> R.string.global_settings_remove_password_dialog_title
+    })
+    val errCurrentRequired = stringResource(R.string.global_settings_enter_current_password)
+    val errTooShort = stringResource(R.string.global_settings_password_too_short)
+    val errDontMatch = stringResource(R.string.global_settings_passwords_dont_match)
+    val errWrongPassword = stringResource(R.string.common_wrong_password)
 
     fun validate(): Boolean {
         currentError = null; newError = null
         if (mode == PasswordDialogMode.REMOVE) {
-            if (currentPassword.isBlank()) { currentError = "Enter your current password"; return false }
+            if (currentPassword.isBlank()) { currentError = errCurrentRequired; return false }
             return true
         }
         if (mode == PasswordDialogMode.CHANGE && currentPassword.isBlank()) {
-            currentError = "Enter your current password"; return false
+            currentError = errCurrentRequired; return false
         }
-        if (newPassword.length < 4) { newError = "At least 4 characters"; return false }
-        if (newPassword != confirmPassword) { newError = "Passwords don't match"; return false }
+        if (newPassword.length < 4) { newError = errTooShort; return false }
+        if (newPassword != confirmPassword) { newError = errDontMatch; return false }
         return true
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Lock, null) },
-        title = { Text(title) },
+        title = { Text(titleStr) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (mode == PasswordDialogMode.CHANGE || mode == PasswordDialogMode.REMOVE) {
                     OutlinedTextField(
                         value = currentPassword, onValueChange = { currentPassword = it; currentError = null },
-                        label = { Text("Current password") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.common_current_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                         visualTransformation = if (showCurrent) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         trailingIcon = {
@@ -866,7 +907,7 @@ private fun PasswordDialog(
                 if (mode == PasswordDialogMode.SET || mode == PasswordDialogMode.CHANGE) {
                     OutlinedTextField(
                         value = newPassword, onValueChange = { newPassword = it; newError = null },
-                        label = { Text("New password") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.common_new_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                         visualTransformation = if (showNew) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         trailingIcon = {
@@ -878,7 +919,7 @@ private fun PasswordDialog(
                     )
                     OutlinedTextField(
                         value = confirmPassword, onValueChange = { confirmPassword = it; newError = null },
-                        label = { Text("Confirm password") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.common_confirm_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         isError = newError != null,
@@ -893,16 +934,16 @@ private fun PasswordDialog(
                     if (!validate()) return@TextButton
                     when (mode) {
                         PasswordDialogMode.SET -> onSet(newPassword)
-                        PasswordDialogMode.CHANGE -> onChange(currentPassword, newPassword) { currentError = "Wrong password" }
-                        PasswordDialogMode.REMOVE -> onRemove(currentPassword) { currentError = "Wrong password" }
+                        PasswordDialogMode.CHANGE -> onChange(currentPassword, newPassword) { currentError = errWrongPassword }
+                        PasswordDialogMode.REMOVE -> onRemove(currentPassword) { currentError = errWrongPassword }
                     }
                 },
                 colors = if (mode == PasswordDialogMode.REMOVE)
                     ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 else ButtonDefaults.textButtonColors(),
-            ) { Text(if (mode == PasswordDialogMode.REMOVE) "Remove" else "Save") }
+            ) { Text(if (mode == PasswordDialogMode.REMOVE) stringResource(R.string.common_remove) else stringResource(R.string.common_save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) } },
     )
 }
 

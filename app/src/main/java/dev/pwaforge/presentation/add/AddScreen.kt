@@ -89,10 +89,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.R
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.shortcut.PwaShortcutManager
@@ -154,20 +156,27 @@ fun AddScreen(
 
     val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
 
+    val createAppTitle = stringResource(R.string.add_create_app)
+    val editAppTitle = stringResource(R.string.edit_title)
+    val themeColorLabel = stringResource(R.string.add_theme_color)
+    val themeColorNotSet = stringResource(R.string.add_theme_color_not_set)
+    val lockPasswordLabel = stringResource(R.string.add_lock_password)
+    val lockSystemLabel = stringResource(R.string.add_lock_system)
+
     Scaffold(
         containerColor = screenBg,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        if (state.name.isEmpty() && state.url.isEmpty()) "Create App" else "Edit App",
+                        if (state.name.isEmpty() && state.url.isEmpty()) createAppTitle else editAppTitle,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back))
                     }
                 },
                 actions = {
@@ -181,7 +190,7 @@ fun AddScreen(
                         } else {
                             Icon(
                                 Icons.Default.PlayArrow,
-                                contentDescription = "Run app",
+                                contentDescription = stringResource(R.string.add_run_app_cd),
                                 tint = if (canRun) MaterialTheme.colorScheme.primary
                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                             )
@@ -198,7 +207,7 @@ fun AddScreen(
                         if (state.isSaving && state.launchAppId != null) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("Save", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.common_save), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 },
@@ -215,16 +224,16 @@ fun AddScreen(
         ) {
             // ── Basic Info card ───────────────────────────────────────────────
             SectionCard {
-                Text("Basic Info", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.add_basic_info), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(16.dp))
 
                 // 1. URL + inline Analyze
                 OutlinedTextField(
                     value = state.url,
                     onValueChange = viewModel::setUrl,
-                    label = { Text("Website URL") },
+                    label = { Text(stringResource(R.string.add_url_label)) },
                     leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(20.dp)) },
-                    placeholder = { Text("https://example.com") },
+                    placeholder = { Text(stringResource(R.string.add_url_hint)) },
                     isError = state.urlError != null,
                     supportingText = {
                         when {
@@ -242,7 +251,7 @@ fun AddScreen(
                             } else {
                                 Icon(
                                     Icons.Default.TravelExplore,
-                                    contentDescription = "Analyze site",
+                                    contentDescription = stringResource(R.string.add_analyze_site_cd),
                                     tint = if (state.url.isNotBlank()) MaterialTheme.colorScheme.primary
                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                 )
@@ -260,7 +269,7 @@ fun AddScreen(
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = viewModel::setName,
-                    label = { Text("App Name") },
+                    label = { Text(stringResource(R.string.add_name_label)) },
                     leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(20.dp)) },
                     isError = state.nameError != null || state.duplicateError != null,
                     supportingText = {
@@ -322,7 +331,7 @@ fun AddScreen(
                         if (state.isFetchingIcon) {
                             CircularProgressIndicator(modifier = Modifier.size(13.dp), strokeWidth = 1.5.dp)
                         } else {
-                            Icon(Icons.Default.Language, "Fetch icon", modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Language, stringResource(R.string.add_fetch_icon_cd), modifier = Modifier.size(16.dp))
                         }
                     }
 
@@ -338,7 +347,7 @@ fun AddScreen(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                     ) {
-                        Icon(Icons.Default.AutoAwesome, "Choose image", modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.AutoAwesome, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(16.dp))
                     }
 
                     Spacer(Modifier.weight(1f))
@@ -365,10 +374,10 @@ fun AddScreen(
                                 ),
                         )
                         Column {
-                            Text("Theme Color", style = MaterialTheme.typography.labelSmall,
+                            Text(themeColorLabel, style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Medium)
                             Text(
-                                state.themeColor ?: "Not set",
+                                state.themeColor ?: themeColorNotSet,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -379,16 +388,16 @@ fun AddScreen(
 
             // ── Feature cards ────────────────────────────────────────────────
 
-            FeatureCard(Icons.Default.Shield, "Ad Blocking", state.adBlockEnabled, viewModel::setAdBlock) {
-                Text("When enabled, ads in web pages will be automatically blocked",
+            FeatureCard(Icons.Default.Shield, stringResource(R.string.add_feature_adblock), state.adBlockEnabled, viewModel::setAdBlock) {
+                Text(stringResource(R.string.add_feature_adblock_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(12.dp))
-                SubToggleRow("Allow User Toggle",
-                    "User can toggle ad blocking via floating button at runtime",
+                SubToggleRow(stringResource(R.string.add_adblock_user_toggle),
+                    stringResource(R.string.add_adblock_user_toggle_desc),
                     state.adBlockAllowUserToggle, viewModel::setAdBlockAllowUserToggle)
                 Spacer(Modifier.height(12.dp))
-                Text("Custom Block Rules (optional)", style = MaterialTheme.typography.labelLarge,
+                Text(stringResource(R.string.add_adblock_custom_rules_label), style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically,
@@ -396,7 +405,7 @@ fun AddScreen(
                     OutlinedTextField(
                         value = state.adBlockCustomRuleInput,
                         onValueChange = viewModel::setAdBlockCustomRuleInput,
-                        placeholder = { Text("e.g.: ads.example.com") },
+                        placeholder = { Text(stringResource(R.string.add_adblock_rule_placeholder)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
@@ -404,7 +413,7 @@ fun AddScreen(
                     FilledIconButton(onClick = viewModel::addAdBlockCustomRule, shape = CircleShape,
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary)) {
-                        Icon(Icons.Default.Add, "Add rule")
+                        Icon(Icons.Default.Add, stringResource(R.string.add_adblock_add_rule_cd))
                     }
                 }
                 if (state.adBlockCustomRules.isNotEmpty()) {
@@ -416,7 +425,7 @@ fun AddScreen(
                                 trailingIcon = {
                                     IconButton(onClick = { viewModel.removeAdBlockCustomRule(rule) },
                                         modifier = Modifier.size(18.dp)) {
-                                        Icon(Icons.Default.Close, "Remove", modifier = Modifier.size(14.dp))
+                                        Icon(Icons.Default.Close, stringResource(R.string.common_remove), modifier = Modifier.size(14.dp))
                                     }
                                 })
                         }
@@ -424,44 +433,44 @@ fun AddScreen(
                 }
             }
 
-            FeatureCard(Icons.Default.GTranslate, "Auto Translate", state.translateEnabled, viewModel::setTranslate) {
-                Text("Auto translate to specified language after page loads with multi-engine fallback (Google / MyMemory / LibreTranslate / Lingva)",
+            FeatureCard(Icons.Default.GTranslate, stringResource(R.string.add_feature_translate), state.translateEnabled, viewModel::setTranslate) {
+                Text(stringResource(R.string.add_feature_translate_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(16.dp))
-                LangDropdown("Translation Target Language", state.translateTarget,
+                LangDropdown(stringResource(R.string.add_translate_target_lang), state.translateTarget,
                     TranslateLanguage.entries, { it.displayName }, viewModel::setTranslateTarget)
                 Spacer(Modifier.height(12.dp))
                 EngineDropdown(state.translateEngine, viewModel::setTranslateEngine)
                 Spacer(Modifier.height(12.dp))
-                SubToggleRow("Show Translate Button", "Show a draggable translate FAB at bottom right",
+                SubToggleRow(stringResource(R.string.add_translate_show_button), stringResource(R.string.add_translate_show_button_desc),
                     state.showTranslateButton, viewModel::setShowTranslateButton)
-                SubToggleRow("Auto Translate on Load",
-                    "Automatically translate after page loads without manual click",
+                SubToggleRow(stringResource(R.string.add_translate_auto_load),
+                    stringResource(R.string.add_translate_auto_load_desc),
                     state.autoTranslateOnLoad, viewModel::setAutoTranslateOnLoad)
             }
 
-            FeatureCard(Icons.Default.Fullscreen, "Fullscreen Mode", state.isFullscreen, viewModel::setFullscreen) {
-                SubToggleRow("Show Status Bar",
-                    "Show status bar in fullscreen mode, can fix navigation bar issues",
+            FeatureCard(Icons.Default.Fullscreen, stringResource(R.string.add_feature_fullscreen), state.isFullscreen, viewModel::setFullscreen) {
+                SubToggleRow(stringResource(R.string.add_fullscreen_status_bar),
+                    stringResource(R.string.add_fullscreen_status_bar_desc),
                     state.fullscreenShowStatusBar, viewModel::setFullscreenShowStatusBar)
-                SubToggleRow("Show Navigation Bar",
-                    "Keep bottom navigation bar visible in fullscreen mode (Back, Home, Recents)",
+                SubToggleRow(stringResource(R.string.add_fullscreen_nav_bar),
+                    stringResource(R.string.add_fullscreen_nav_bar_desc),
                     state.fullscreenShowNavBar, viewModel::setFullscreenShowNavBar)
-                SubToggleRow("Show Top Toolbar",
-                    "Keep browser toolbar visible in fullscreen mode (title, URL, back/forward/refresh)",
+                SubToggleRow(stringResource(R.string.add_fullscreen_top_toolbar),
+                    stringResource(R.string.add_fullscreen_top_toolbar_desc),
                     state.fullscreenShowTopToolbar, viewModel::setFullscreenShowTopToolbar)
             }
 
-            FeatureCard(Icons.Default.Lock, "App Lock",
+            FeatureCard(Icons.Default.Lock, stringResource(R.string.add_feature_applock),
                 enabled = state.lockType != dev.pwaforge.domain.model.LockType.NONE,
                 onToggle = { on ->
                     viewModel.setLockType(if (on) dev.pwaforge.domain.model.LockType.PASSWORD else dev.pwaforge.domain.model.LockType.NONE)
                 },
             ) {
                 listOf(
-                    dev.pwaforge.domain.model.LockType.PASSWORD to "App password (set in Settings)",
-                    dev.pwaforge.domain.model.LockType.SYSTEM to "System lock (fingerprint / PIN)",
+                    dev.pwaforge.domain.model.LockType.PASSWORD to lockPasswordLabel,
+                    dev.pwaforge.domain.model.LockType.SYSTEM to lockSystemLabel,
                 ).forEach { (type, label) ->
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable { viewModel.setLockType(type) }.padding(vertical = 4.dp),
@@ -533,34 +542,34 @@ private fun PwaAnalysisDialog(
                         modifier = Modifier.size(20.dp))
                 }
                 Spacer(Modifier.width(10.dp))
-                Text("PWA Configuration Detected",
+                Text(stringResource(R.string.add_pwa_config_detected),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f))
                 IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Close, "Dismiss", modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Close, stringResource(R.string.add_dismiss_cd), modifier = Modifier.size(18.dp))
                 }
             }
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 val source = if (manifest.display != null || manifest.icons.isNotEmpty()) "manifest.json" else "meta tags"
-                Text("Source: $source", style = MaterialTheme.typography.bodySmall,
+                Text(stringResource(R.string.add_manifest_source, source), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(8.dp))
                 HorizontalDivider()
                 Spacer(Modifier.height(8.dp))
 
                 manifest.name?.let {
-                    ManifestRow("App Name:", it)
+                    ManifestRow(stringResource(R.string.add_manifest_name_label), it)
                 }
                 manifest.bestIconUrl("")?.let { url ->
-                    ManifestRow("App Icon:", url, maxLines = 2)
+                    ManifestRow(stringResource(R.string.add_manifest_icon_label), url, maxLines = 2)
                 }
                 manifest.themeColor?.let { hex ->
                     Row(verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 3.dp)) {
-                        Text("Theme Color:", style = MaterialTheme.typography.bodyMedium,
+                        Text(stringResource(R.string.add_manifest_color_label), style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium)
                         Spacer(Modifier.width(6.dp))
                         val parsed = runCatching {
@@ -576,8 +585,8 @@ private fun PwaAnalysisDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                manifest.display?.let { ManifestRow("Display Mode:", it) }
-                manifest.startUrl?.let { ManifestRow("Start URL:", it, maxLines = 2) }
+                manifest.display?.let { ManifestRow(stringResource(R.string.add_manifest_display_label), it) }
+                manifest.startUrl?.let { ManifestRow(stringResource(R.string.add_manifest_start_url_label), it, maxLines = 2) }
             }
         },
         confirmButton = {
@@ -588,7 +597,7 @@ private fun PwaAnalysisDialog(
             ) {
                 Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Apply All", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.add_apply_all), fontWeight = FontWeight.SemiBold)
             }
         },
     )
@@ -619,7 +628,7 @@ private fun ColorPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Pick Theme Color") },
+        title = { Text(stringResource(R.string.add_pick_color_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 // Preview swatch
@@ -666,7 +675,7 @@ private fun ColorPickerDialog(
                         hexInput = filtered
                         if (filtered.length == 6) selected = "#$filtered"
                     },
-                    label = { Text("Hex color") },
+                    label = { Text(stringResource(R.string.add_hex_color)) },
                     prefix = { Text("#") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -675,10 +684,10 @@ private fun ColorPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onColorSelected(selected); onDismiss() }) { Text("OK") }
+            TextButton(onClick = { onColorSelected(selected); onDismiss() }) { Text(stringResource(R.string.common_ok)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
     )
 }
@@ -793,7 +802,7 @@ private fun BrowserEngineCard(
                         modifier = Modifier.size(22.dp))
                 }
                 Spacer(Modifier.width(12.dp))
-                Text("Browser Engine", style = MaterialTheme.typography.titleMedium,
+                Text(stringResource(R.string.add_engine_section), style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -828,10 +837,10 @@ private fun BrowserEngineCard(
                             )
                             if (isGecko && !geckoAvailable) {
                                 val label = when (geckoInstallState) {
-                                    is GeckoInstallState.Downloading -> "Downloading in Settings… ${(geckoInstallState.progress * 100).toInt()}%"
-                                    is GeckoInstallState.Installing -> "Installing…"
-                                    is GeckoInstallState.Error -> "Error — retry in Settings"
-                                    else -> "Not installed — go to Settings → Browser Engine to download (~${engine.estimatedSizeMb} MB)"
+                                    is GeckoInstallState.Downloading -> stringResource(R.string.add_engine_gecko_downloading, (geckoInstallState.progress * 100).toInt())
+                                    is GeckoInstallState.Installing -> stringResource(R.string.add_engine_gecko_installing)
+                                    is GeckoInstallState.Error -> stringResource(R.string.add_engine_gecko_error)
+                                    else -> stringResource(R.string.add_engine_gecko_not_installed, engine.estimatedSizeMb)
                                 }
                                 Text(label, style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -853,7 +862,7 @@ private fun EngineDropdown(selected: TranslateEngine, onSelect: (TranslateEngine
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(value = selected.displayName, onValueChange = {}, readOnly = true,
-            label = { Text("Translation Engine") },
+            label = { Text(stringResource(R.string.add_translate_engine_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
             shape = RoundedCornerShape(12.dp))

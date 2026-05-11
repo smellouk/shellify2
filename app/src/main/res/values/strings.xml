@@ -101,7 +101,8 @@
     <string name="add_lock_password">App password (set in Settings)</string>
     <string name="add_lock_system">System lock (fingerprint / PIN)</string>
     <string name="add_pwa_config_detected">PWA Configuration Detected</string>
-    <string name="add_manifest_source_label">Source: </string>
+    <string name="add_dismiss_cd">Dismiss</string>
+    <string name="add_manifest_source">Source: %s</string>
     <string name="add_manifest_name_label">App Name:</string>
     <string name="add_manifest_icon_label">App Icon:</string>
     <string name="add_manifest_color_label">Theme Color:</string>
@@ -110,6 +111,12 @@
     <string name="add_apply_all">Apply All</string>
     <string name="add_pick_color_title">Pick Theme Color</string>
     <string name="add_hex_color">Hex color</string>
+    <string name="add_engine_section">Browser Engine</string>
+    <string name="add_engine_gecko_not_installed">Not installed — go to Settings → Browser Engine to download (~%d MB)</string>
+    <string name="add_engine_gecko_downloading">Downloading in Settings… %d%%</string>
+    <string name="add_engine_gecko_installing">Installing…</string>
+    <string name="add_engine_gecko_error">Error — retry in Settings</string>
+    <string name="add_translate_engine_label">Translation Engine</string>
 
     <!-- WebView -->
     <string name="webview_reload">Reload</string>

@@ -27,7 +27,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.R
 import dev.pwaforge.domain.model.TranslateLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +45,9 @@ fun TranslateConfigScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Translation settings") },
+                title = { Text(stringResource(R.string.translate_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back)) }
                 },
             )
         },
@@ -60,7 +62,7 @@ fun TranslateConfigScreen(
                     value = app.translateTarget.displayName,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Target language") },
+                    label = { Text(stringResource(R.string.translate_target_language)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable).padding(bottom = 16.dp),
                 )
@@ -77,8 +79,8 @@ fun TranslateConfigScreen(
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text("Show translate button in app") },
-                supportingContent = { Text("Floating 🌐 button inside the WebView") },
+                headlineContent = { Text(stringResource(R.string.translate_show_button)) },
+                supportingContent = { Text(stringResource(R.string.translate_show_button_desc)) },
                 trailingContent = {
                     Switch(checked = app.showTranslateButton, onCheckedChange = viewModel::setShowButton)
                 },
@@ -87,8 +89,8 @@ fun TranslateConfigScreen(
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text("Auto-translate on page load") },
-                supportingContent = { Text("Translate automatically after each page loads") },
+                headlineContent = { Text(stringResource(R.string.translate_auto)) },
+                supportingContent = { Text(stringResource(R.string.translate_auto_desc)) },
                 trailingContent = {
                     Switch(checked = app.autoTranslateOnLoad, onCheckedChange = viewModel::setAutoTranslate)
                 },

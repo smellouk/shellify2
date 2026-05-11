@@ -5,12 +5,18 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
 import dev.pwaforge.PWAForgeApplication
+import dev.pwaforge.core.theme.CircularRevealOverlay
+import dev.pwaforge.core.theme.LocalThemeRevealState
 import dev.pwaforge.core.theme.ThemeMode
+import dev.pwaforge.core.theme.rememberThemeRevealState
 import dev.pwaforge.presentation.navigation.AppNavigation
 import dev.pwaforge.presentation.theme.PWAForgeTheme
 
@@ -20,6 +26,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val app = application as PWAForgeApplication
         setContent {
+            // Created outside PWAForgeTheme so screenshots capture the current theme
+            val themeRevealState = rememberThemeRevealState()
+
             val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
             val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
             val screenshotProtection by app.passwordManager.screenshotProtection.collectAsState(false)
@@ -30,11 +39,16 @@ class MainActivity : AppCompatActivity() {
             }
 
             PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
-                val navController = rememberNavController()
-                AppNavigation(
-                    navController = navController,
-                    app = app,
-                )
+                CompositionLocalProvider(LocalThemeRevealState provides themeRevealState) {
+                    Box(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
+                        val navController = rememberNavController()
+                        AppNavigation(
+                            navController = navController,
+                            app = app,
+                        )
+                        CircularRevealOverlay(revealState = themeRevealState)
+                    }
+                }
             }
         }
     }

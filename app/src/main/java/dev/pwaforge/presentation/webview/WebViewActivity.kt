@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.core.view.WindowCompat
@@ -75,6 +76,7 @@ import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.core.translate.TranslateBridge
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.WebApp
+import dev.pwaforge.R
 import dev.pwaforge.presentation.theme.PWAForgeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -184,11 +186,14 @@ class WebViewActivity : FragmentActivity() {
                 val remaining = maxAttempts - failedAttempts
                 val wipe by app.passwordManager.wipeOnFailedAttempts.collectAsState(initial = false)
 
+                val err2 = stringResource(R.string.webview_password_error_2_attempts)
+                val err1 = stringResource(R.string.webview_password_error_1_attempt)
+                val errBasic = stringResource(R.string.webview_password_error)
                 val error = when {
                     failedAttempts == 0 -> null
-                    wipe && remaining == 2 -> "Wrong password — 2 attempts remaining before data wipe"
-                    wipe && remaining == 1 -> "Wrong password — 1 attempt remaining before data wipe"
-                    !wipe -> "Wrong password"
+                    wipe && remaining == 2 -> err2
+                    wipe && remaining == 1 -> err1
+                    !wipe -> errBasic
                     else -> null
                 }
 
@@ -199,12 +204,12 @@ class WebViewActivity : FragmentActivity() {
                         title = { Text(pwaApp.name) },
                         text = {
                             Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
-                                Text("Enter password to open this app")
+                                Text(stringResource(R.string.webview_password_prompt))
                                 Spacer(Modifier.height(8.dp))
                                 OutlinedTextField(
                                     value = input,
                                     onValueChange = { input = it },
-                                    label = { Text("Password") },
+                                    label = { Text(stringResource(R.string.common_password)) },
                                     singleLine = true,
                                     modifier = Modifier.fillMaxWidth(),
                                     visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -232,10 +237,10 @@ class WebViewActivity : FragmentActivity() {
                                         wipeAndUnlock(app, pwaApp)
                                     }
                                 }
-                            }) { Text("Open") }
+                            }) { Text(stringResource(R.string.webview_unlock_button)) }
                         },
                         dismissButton = {
-                            TextButton(onClick = { finish() }) { Text("Cancel") }
+                            TextButton(onClick = { finish() }) { Text(stringResource(R.string.common_cancel)) }
                         },
                     )
                 }
@@ -255,7 +260,7 @@ class WebViewActivity : FragmentActivity() {
         fun prompt() {
             showSystemLockPrompt(
                 activity = this,
-                title = "Open ${pwaApp.name}",
+                title = getString(R.string.webview_lock_prompt_title, pwaApp.name),
                 onSuccess = { startLoading(pwaApp) },
                 onFailed = {
                     failedAttempts++
@@ -313,7 +318,7 @@ class WebViewActivity : FragmentActivity() {
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         ) {
-                            Icon(Icons.Default.Tune, contentDescription = "App controls")
+                            Icon(Icons.Default.Tune, contentDescription = stringResource(R.string.webview_controls_fab_cd))
                         }
                     }
 
@@ -328,7 +333,7 @@ class WebViewActivity : FragmentActivity() {
 
                             ListItem(
                                 leadingContent = { Icon(Icons.Default.Shield, null) },
-                                headlineContent = { Text("Ad blocking") },
+                                headlineContent = { Text(stringResource(R.string.webview_control_adblock)) },
                                 trailingContent = {
                                     Switch(
                                         checked = pwaApp.adBlockEnabled,
@@ -344,7 +349,7 @@ class WebViewActivity : FragmentActivity() {
                             HorizontalDivider()
                             ListItem(
                                 leadingContent = { Icon(Icons.Default.GTranslate, null) },
-                                headlineContent = { Text("Auto-translate") },
+                                headlineContent = { Text(stringResource(R.string.webview_control_translate)) },
                                 trailingContent = {
                                     Switch(
                                         checked = pwaApp.translateEnabled,
@@ -369,7 +374,7 @@ class WebViewActivity : FragmentActivity() {
                             HorizontalDivider()
                             ListItem(
                                 leadingContent = { Icon(Icons.Default.Fullscreen, null) },
-                                headlineContent = { Text("Fullscreen") },
+                                headlineContent = { Text(stringResource(R.string.webview_control_fullscreen)) },
                                 trailingContent = {
                                     Switch(
                                         checked = pwaApp.isFullscreen,
@@ -394,14 +399,14 @@ class WebViewActivity : FragmentActivity() {
                                 },
                                 headlineContent = {
                                     Text(
-                                        "App lock",
+                                        stringResource(R.string.webview_control_applock),
                                         color = if (hasGlobalPassword) MaterialTheme.colorScheme.onSurface
                                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                     )
                                 },
                                 supportingContent = if (!hasGlobalPassword) ({
                                     Text(
-                                        "Set an app password in Settings to enable",
+                                        stringResource(R.string.webview_applock_disabled_hint),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                     )

@@ -41,6 +41,8 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.res.stringResource
+import dev.pwaforge.R
 import dev.pwaforge.domain.model.EngineType
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -97,6 +99,11 @@ fun HomeScreen(
     var showSearch by remember { mutableStateOf(false) }
     var hideDetails by remember { mutableStateOf(false) }
 
+    val showDetailsCd = stringResource(R.string.home_show_details_cd)
+    val hideDetailsCd = stringResource(R.string.home_hide_details_cd)
+    val searchCd = stringResource(R.string.home_search_cd)
+    val addFabCd = stringResource(R.string.home_add_fab_cd)
+
     val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     Scaffold(
         containerColor = screenBg,
@@ -107,7 +114,7 @@ fun HomeScreen(
                         TextField(
                             value = state.searchQuery,
                             onValueChange = viewModel::setSearch,
-                            placeholder = { Text("Search apps…") },
+                            placeholder = { Text(stringResource(R.string.home_search_hint)) },
                             singleLine = true,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -118,16 +125,16 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
-                        Text("PWAForge")
+                        Text(stringResource(R.string.home_title))
                     }
                 },
                 actions = {
                     IconButton(onClick = { hideDetails = !hideDetails }) {
                         Icon(if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (hideDetails) "Show details" else "Hide details")
+                            contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd)
                     }
                     IconButton(onClick = { showSearch = !showSearch; if (!showSearch) viewModel.setSearch("") }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        Icon(Icons.Default.Search, contentDescription = searchCd)
                     }
                 },
             )
@@ -137,7 +144,7 @@ fun HomeScreen(
                 onClick = onAddApp,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add PWA")
+                Icon(Icons.Default.Add, contentDescription = addFabCd)
             }
         },
     ) { padding ->
@@ -154,7 +161,7 @@ fun HomeScreen(
                         FilterChip(
                             selected = state.selectedCategoryId == null,
                             onClick = { viewModel.selectCategory(null) },
-                            label = { Text("All") },
+                            label = { Text(stringResource(R.string.home_all_categories)) },
                         )
                     }
                     items(state.categories) { cat ->
@@ -227,6 +234,13 @@ private sealed class HomeEmptyState {
 
 @Composable
 private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = HomeEmptyState.NoApps) {
+    val noAppsTitle = stringResource(R.string.home_empty_title)
+    val noAppsSubtitle = stringResource(R.string.home_empty_subtitle_action)
+    val filteredTitle = if (reason is HomeEmptyState.FilteredCategory)
+        stringResource(R.string.home_empty_filtered_category, reason.name)
+        else ""
+    val filteredSubtitle = stringResource(R.string.home_empty_filtered_subtitle)
+
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -258,8 +272,8 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             }
             Text(
                 when (reason) {
-                    is HomeEmptyState.NoApps -> "No apps yet"
-                    is HomeEmptyState.FilteredCategory -> "No apps in \"${reason.name}\""
+                    is HomeEmptyState.NoApps -> noAppsTitle
+                    is HomeEmptyState.FilteredCategory -> filteredTitle
                 },
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -267,8 +281,8 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             )
             Text(
                 when (reason) {
-                    is HomeEmptyState.NoApps -> "Tap the button below to create your first app"
-                    is HomeEmptyState.FilteredCategory -> "Apps assigned to this category will appear here"
+                    is HomeEmptyState.NoApps -> noAppsSubtitle
+                    is HomeEmptyState.FilteredCategory -> filteredSubtitle
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -327,27 +341,27 @@ private fun AppCard(
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
-                            text = { Text("Edit") },
+                            text = { Text(stringResource(R.string.home_menu_edit)) },
                             leadingIcon = { Icon(Icons.Default.Edit, null) },
                             onClick = { showMenu = false; onEdit() },
                         )
                         DropdownMenuItem(
-                            text = { Text("Assign Category") },
+                            text = { Text(stringResource(R.string.home_menu_assign_category)) },
                             leadingIcon = { Icon(Icons.Default.Category, null) },
                             onClick = { showMenu = false; showCategoryPicker = true },
                         )
                         DropdownMenuItem(
-                            text = { Text("Settings") },
+                            text = { Text(stringResource(R.string.home_menu_settings)) },
                             leadingIcon = { Icon(Icons.Default.Settings, null) },
                             onClick = { showMenu = false; onSettings() },
                         )
                         DropdownMenuItem(
-                            text = { Text("Clear Data") },
+                            text = { Text(stringResource(R.string.home_menu_clear_data)) },
                             leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
                             onClick = { showMenu = false; showClearDataDialog = true },
                         )
                         DropdownMenuItem(
-                            text = { Text("Delete") },
+                            text = { Text(stringResource(R.string.home_menu_delete)) },
                             leadingIcon = { Icon(Icons.Default.Delete, null) },
                             onClick = { showMenu = false; onDelete() },
                         )
@@ -382,7 +396,7 @@ private fun AppCard(
                         tint = androidx.compose.ui.graphics.Color(0xFFFF9800),
                     )
                     Text(
-                        "GeckoView required",
+                        stringResource(R.string.home_gecko_required),
                         style = MaterialTheme.typography.labelSmall,
                         color = androidx.compose.ui.graphics.Color(0xFFFF9800),
                     )
@@ -407,18 +421,18 @@ private fun AppCard(
         AlertDialog(
             onDismissRequest = { showClearDataDialog = false },
             icon = { Icon(Icons.Default.DeleteSweep, null) },
-            title = { Text("Clear App Data") },
-            text = { Text("This will delete all cookies, local storage, and cached data for \"${app.name}\". The app will stay in your list but you'll be logged out of all sessions.") },
+            title = { Text(stringResource(R.string.home_clear_data_title)) },
+            text = { Text(stringResource(R.string.home_clear_data_body, app.name)) },
             confirmButton = {
                 TextButton(
                     onClick = { showClearDataDialog = false; onClearData() },
                     colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error,
                     ),
-                ) { Text("Clear Data") }
+                ) { Text(stringResource(R.string.home_clear_data_button)) }
             },
             dismissButton = {
-                TextButton(onClick = { showClearDataDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showClearDataDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }
@@ -435,7 +449,7 @@ private fun CategoryPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Assign Category") },
+        title = { Text(stringResource(R.string.home_assign_category_title)) },
         text = {
             Column {
                 // "None" option
@@ -448,7 +462,7 @@ private fun CategoryPickerDialog(
                 ) {
                     RadioButton(selected = selected == null, onClick = { selected = null })
                     Spacer(Modifier.width(8.dp))
-                    Text("None", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.common_none), style = MaterialTheme.typography.bodyLarge)
                 }
                 categories.forEach { cat ->
                     Row(
@@ -466,10 +480,10 @@ private fun CategoryPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSelect(selected) }) { Text("Apply") }
+            TextButton(onClick = { onSelect(selected) }) { Text(stringResource(R.string.common_apply)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
     )
 }

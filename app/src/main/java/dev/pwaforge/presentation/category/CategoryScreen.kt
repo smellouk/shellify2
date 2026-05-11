@@ -74,7 +74,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.R
 
 val CATEGORY_ICON_KEYS = listOf(
     "folder", "folder_open", "phone_android", "laptop",
@@ -132,14 +134,14 @@ fun CategoryScreen(
     Scaffold(
         containerColor = screenBg,
         topBar = {
-            TopAppBar(title = { Text("Categories") })
+            TopAppBar(title = { Text(stringResource(R.string.categories_title)) })
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = viewModel::showDialog,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add category")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.categories_add_fab_cd))
             }
         },
     ) { padding ->
@@ -166,13 +168,13 @@ fun CategoryScreen(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
                     Text(
-                        "No categories yet",
+                        stringResource(R.string.categories_empty),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                     )
                     Text(
-                        "Tap the button below to create your first category",
+                        stringResource(R.string.categories_empty_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -217,7 +219,7 @@ fun CategoryScreen(
                         headlineContent = { Text(cat.name) },
                         trailingContent = {
                             IconButton(onClick = { viewModel.delete(cat) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.categories_delete_cd))
                             }
                         },
                     )
@@ -250,7 +252,7 @@ private fun AddCategoryDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Category") },
+        title = { Text(stringResource(R.string.categories_new_dialog_title)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -259,12 +261,12 @@ private fun AddCategoryDialog(
                 OutlinedTextField(
                     value = state.newName,
                     onValueChange = onNameChange,
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.categories_name_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Text("Icon", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.categories_icon_label), style = MaterialTheme.typography.labelLarge)
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     CATEGORY_ICON_KEYS.chunked(6).forEach { rowKeys ->
                         Row(
@@ -302,7 +304,7 @@ private fun AddCategoryDialog(
                 }
 
                 Spacer(Modifier.height(0.dp))
-                Text("Color", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.categories_color_label), style = MaterialTheme.typography.labelLarge)
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     CATEGORY_COLORS.chunked(8).forEach { rowColors ->
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -329,11 +331,11 @@ private fun AddCategoryDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm, enabled = state.newName.isNotBlank()) {
-                Text("Add")
+                Text(stringResource(R.string.categories_add_button))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
     )
 }

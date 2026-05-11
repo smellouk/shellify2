@@ -54,7 +54,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.R
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +70,8 @@ fun AppSettingsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val app = state.app
+    val lockPasswordLabel = stringResource(R.string.settings_lock_password)
+    val lockSystemLabel = stringResource(R.string.settings_lock_system)
 
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
 
@@ -76,9 +80,9 @@ fun AppSettingsScreen(
         containerColor = screenBg,
         topBar = {
             TopAppBar(
-                title = { Text(app?.name ?: "App settings") },
+                title = { Text(app?.name ?: stringResource(R.string.settings_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back)) }
                 },
             )
         },
@@ -89,22 +93,22 @@ fun AppSettingsScreen(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SectionLabel("Display")
+            SectionLabel(stringResource(R.string.settings_display))
             SettingsCard {
-                ToggleListItem("Full screen", app.isFullscreen, viewModel::toggleFullscreen,
+                ToggleListItem(stringResource(R.string.settings_fullscreen), app.isFullscreen, viewModel::toggleFullscreen,
                     icon = { Icon(Icons.Default.Fullscreen, null) })
             }
 
-            SectionLabel("Privacy")
+            SectionLabel(stringResource(R.string.settings_privacy))
             SettingsCard {
-                ToggleListItem("Block ads", app.adBlockEnabled, viewModel::toggleAdBlock,
+                ToggleListItem(stringResource(R.string.settings_adblock), app.adBlockEnabled, viewModel::toggleAdBlock,
                     icon = { Icon(Icons.Default.Shield, null) })
                 HorizontalDivider()
-                ToggleListItem("Auto-translate", app.translateEnabled, viewModel::toggleTranslate,
+                ToggleListItem(stringResource(R.string.settings_translate), app.translateEnabled, viewModel::toggleTranslate,
                     icon = { Icon(Icons.Default.GTranslate, null) })
                 HorizontalDivider()
                 ListItem(
-                    headlineContent = { Text("Translation language") },
+                    headlineContent = { Text(stringResource(R.string.settings_translate_lang)) },
                     trailingContent = {
                         TextButton(onClick = onOpenTranslate) {
                             Icon(Icons.Default.GTranslate, null)
@@ -114,20 +118,20 @@ fun AppSettingsScreen(
                 )
             }
 
-            SectionLabel("Shortcut")
+            SectionLabel(stringResource(R.string.settings_shortcut))
             SettingsCard {
                 ListItem(
-                    headlineContent = { Text("Add to home screen") },
-                    supportingContent = { Text("Creates a shortcut on your launcher") },
+                    headlineContent = { Text(stringResource(R.string.settings_create_shortcut)) },
+                    supportingContent = { Text(stringResource(R.string.settings_create_shortcut_desc)) },
                     trailingContent = {
                         IconButton(onClick = { PwaShortcutManager.createShortcut(context, app) }) {
-                            Icon(Icons.AutoMirrored.Filled.Shortcut, "Create shortcut")
+                            Icon(Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.settings_create_shortcut_cd))
                         }
                     },
                 )
             }
 
-            SectionLabel("Security")
+            SectionLabel(stringResource(R.string.settings_security))
             SettingsCard {
                 ListItem(
                     leadingContent = {
@@ -136,7 +140,7 @@ fun AppSettingsScreen(
                             null,
                         )
                     },
-                    headlineContent = { Text("App Lock") },
+                    headlineContent = { Text(stringResource(R.string.settings_applock)) },
                     trailingContent = {
                         Switch(
                             checked = app.lockType != dev.pwaforge.domain.model.LockType.NONE,
@@ -152,8 +156,8 @@ fun AppSettingsScreen(
                 if (app.lockType != dev.pwaforge.domain.model.LockType.NONE) {
                     HorizontalDivider()
                     listOf(
-                        dev.pwaforge.domain.model.LockType.PASSWORD to "App password (set in Settings)",
-                        dev.pwaforge.domain.model.LockType.SYSTEM   to "System lock (fingerprint / PIN)",
+                        dev.pwaforge.domain.model.LockType.PASSWORD to lockPasswordLabel,
+                        dev.pwaforge.domain.model.LockType.SYSTEM   to lockSystemLabel,
                     ).forEach { (type, label) ->
                         Row(
                             modifier = Modifier.fillMaxWidth()
@@ -176,7 +180,7 @@ fun AppSettingsScreen(
             }
 
             Spacer(Modifier.height(16.dp))
-            SectionLabel("Danger zone")
+            SectionLabel(stringResource(R.string.settings_danger_zone))
 
             Button(
                 onClick = viewModel::showDeleteDialog,
@@ -184,20 +188,20 @@ fun AppSettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Default.Delete, null)
-                Text("  Delete app")
+                Text(stringResource(R.string.settings_delete_app))
             }
         }
 
         if (state.showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = viewModel::dismissDeleteDialog,
-                title = { Text("Delete \"${app.name}\"?") },
-                text = { Text("This will remove the app and all its stored data.") },
+                title = { Text(stringResource(R.string.settings_delete_confirm, app.name)) },
+                text = { Text(stringResource(R.string.settings_delete_confirm_body)) },
                 confirmButton = {
-                    TextButton(onClick = viewModel::deleteApp) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                    TextButton(onClick = viewModel::deleteApp) { Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error) }
                 },
                 dismissButton = {
-                    TextButton(onClick = viewModel::dismissDeleteDialog) { Text("Cancel") }
+                    TextButton(onClick = viewModel::dismissDeleteDialog) { Text(stringResource(R.string.common_cancel)) }
                 },
             )
         }
