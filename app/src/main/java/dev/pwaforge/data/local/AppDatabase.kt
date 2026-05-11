@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import dev.pwaforge.core.crypto.CryptoManager
 import dev.pwaforge.data.local.dao.CategoryDao
 import dev.pwaforge.data.local.dao.WebAppDao
 import dev.pwaforge.data.local.entity.CategoryEntity
 import dev.pwaforge.data.local.entity.WebAppEntity
+import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
@@ -21,13 +23,24 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile private var instance: AppDatabase? = null
 
-        fun getInstance(context: Context): AppDatabase =
+        fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
-                instance ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "pwaforge.db",
-                ).build().also { instance = it }
+                instance ?: buildDatabase(context, crypto).also { instance = it }
             }
+
+        private fun buildDatabase(context: Context, crypto: CryptoManager): AppDatabase {
+            // Passphrase is a random 32-byte secret encrypted at rest in SharedPreferences.
+            // Decrypted here via Android Keystore, passed directly to SupportFactory, then zeroed.
+            val passphrase = crypto.databasePassphrase()
+            val factory = SupportFactory(passphrase)
+            return Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                "pwaforge.db",
+            )
+                .openHelperFactory(factory)
+                .build()
+                .also { passphrase.fill(0) }
+        }
     }
 }

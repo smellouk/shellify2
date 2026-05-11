@@ -2,6 +2,7 @@ package dev.pwaforge
 
 import android.app.Application
 import dev.pwaforge.core.adblock.AdBlocker
+import dev.pwaforge.core.crypto.CryptoManager
 import dev.pwaforge.core.isolation.IsolationManager
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
@@ -16,7 +17,10 @@ import dev.pwaforge.domain.usecase.SaveWebAppUseCase
 
 class PWAForgeApplication : Application() {
 
-    private val database by lazy { AppDatabase.getInstance(this) }
+    // Crypto first — everything else depends on it
+    val cryptoManager by lazy { CryptoManager(this) }
+
+    private val database by lazy { AppDatabase.getInstance(this, cryptoManager) }
 
     val webAppRepository by lazy { WebAppRepositoryImpl(database.webAppDao()) }
     val categoryRepository by lazy { CategoryRepositoryImpl(database.categoryDao()) }
@@ -30,5 +34,5 @@ class PWAForgeApplication : Application() {
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
     val faviconFetcher by lazy { FaviconFetcher(this) }
     val adBlocker by lazy { AdBlocker() }
-    val isolationManager by lazy { IsolationManager(this) }
+    val isolationManager by lazy { IsolationManager(this, cryptoManager) }
 }

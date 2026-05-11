@@ -68,6 +68,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    // SQLCipher — encrypted SQLite database
+    implementation("net.zetetic:android-database-sqlcipher:4.5.4") { isTransitive = true }
+    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+
     // WebKit — WebView profiles (API 33+) and other compat APIs
     implementation("androidx.webkit:webkit:1.12.1")
 
