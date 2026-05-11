@@ -7,13 +7,26 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import dev.pwaforge.domain.model.WebApp
-import dev.pwaforge.presentation.shortcut.ShortcutActivity
 
 object PwaShortcutManager {
 
     const val EXTRA_APP_ID = "app_id"
 
+    private var shortcutActivityClass: Class<*>? = null
+
+    fun init(activityClass: Class<*>) {
+        shortcutActivityClass = activityClass
+    }
+
     private fun shortcutId(app: WebApp) = "pwa_${app.isolationId}"
+
+    private fun buildIntent(context: Context, appId: Long): Intent {
+        val cls = checkNotNull(shortcutActivityClass) { "PwaShortcutManager.init() must be called before use" }
+        return Intent(context, cls).apply {
+            action = Intent.ACTION_VIEW
+            putExtra(EXTRA_APP_ID, appId)
+        }
+    }
 
     private fun buildInfo(context: Context, app: WebApp, label: String): ShortcutInfoCompat {
         val icon = ShortcutIconBuilder.build(context, app)
@@ -21,12 +34,7 @@ object PwaShortcutManager {
             .setShortLabel(label.take(12))
             .setLongLabel(label)
             .setIcon(IconCompat.createWithBitmap(icon))
-            .setIntent(
-                Intent(context, ShortcutActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    putExtra(EXTRA_APP_ID, app.id)
-                }
-            )
+            .setIntent(buildIntent(context, app.id))
             .build()
     }
 
@@ -58,12 +66,7 @@ object PwaShortcutManager {
             .setShortLabel(currentLabel.take(12))
             .setLongLabel(currentLabel)
             .setIcon(IconCompat.createWithBitmap(scaled))
-            .setIntent(
-                Intent(context, ShortcutActivity::class.java).apply {
-                    action = Intent.ACTION_VIEW
-                    putExtra(EXTRA_APP_ID, app.id)
-                }
-            )
+            .setIntent(buildIntent(context, app.id))
             .build()
         ShortcutManagerCompat.updateShortcuts(context, listOf(info))
     }.getOrDefault(false)

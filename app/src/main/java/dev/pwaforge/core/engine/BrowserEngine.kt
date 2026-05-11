@@ -2,6 +2,7 @@ package dev.pwaforge.core.engine
 
 import android.content.Context
 import android.view.View
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.WebApp
 
 interface BrowserEngine {

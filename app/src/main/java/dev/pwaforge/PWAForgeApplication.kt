@@ -4,6 +4,8 @@ import android.app.Application
 import android.os.Build
 import dev.pwaforge.core.adblock.AdBlocker
 import dev.pwaforge.core.engine.GeckoNativeLoader
+import dev.pwaforge.core.shortcut.PwaShortcutManager
+import dev.pwaforge.presentation.shortcut.ShortcutActivity
 import dev.pwaforge.core.crypto.CryptoManager
 import dev.pwaforge.core.engine.GeckoEngineManager
 import dev.pwaforge.core.isolation.IsolationManager
@@ -52,6 +54,7 @@ class PWAForgeApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        PwaShortcutManager.init(ShortcutActivity::class.java)
         // Preload all GeckoView .so files for every process (main + tab/gpu children).
         // Classloader injection alone is insufficient: libxul.so's transitive dep on
         // liblgpllibs.so is resolved by the native linker namespace, not the Java classloader.

@@ -9,6 +9,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import dev.pwaforge.core.adblock.AdBlocker
 import dev.pwaforge.core.webview.WebViewManager
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.WebApp
 
 class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {

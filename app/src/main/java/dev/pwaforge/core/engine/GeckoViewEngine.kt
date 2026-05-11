@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.view.View
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.UserAgentMode
 import dev.pwaforge.domain.model.WebApp
 import org.mozilla.geckoview.AllowOrDeny

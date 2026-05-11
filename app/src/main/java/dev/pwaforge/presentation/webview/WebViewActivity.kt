@@ -64,7 +64,7 @@ import androidx.fragment.app.FragmentActivity
 import dev.pwaforge.PWAForgeApplication
 import dev.pwaforge.core.engine.BrowserEngine
 import dev.pwaforge.core.engine.BrowserEngineCallback
-import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoViewEngine
 import dev.pwaforge.core.engine.SystemWebViewEngine
 import dev.pwaforge.core.isolation.IsolationManager

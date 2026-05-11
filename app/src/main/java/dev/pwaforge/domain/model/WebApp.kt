@@ -1,6 +1,5 @@
 package dev.pwaforge.domain.model
 
-import dev.pwaforge.core.engine.EngineType
 import java.util.UUID
 
 data class WebApp(

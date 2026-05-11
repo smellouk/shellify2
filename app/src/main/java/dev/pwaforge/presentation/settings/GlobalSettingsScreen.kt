@@ -87,7 +87,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.core.backup.BackupSchedule
-import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.domain.model.UserAgentMode

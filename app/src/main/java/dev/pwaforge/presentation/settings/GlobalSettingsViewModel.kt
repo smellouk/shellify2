@@ -8,7 +8,7 @@ import dev.pwaforge.core.backup.BackupManager
 import dev.pwaforge.core.backup.BackupSchedule
 import dev.pwaforge.core.backup.BackupScheduler
 import dev.pwaforge.core.backup.BackupSettings
-import dev.pwaforge.core.engine.EngineType
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.PWAForgeApplication
 import dev.pwaforge.core.engine.GeckoEngineManager
 import dev.pwaforge.core.engine.GeckoInstallState

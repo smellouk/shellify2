@@ -2,8 +2,8 @@ package dev.pwaforge.presentation.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.pwaforge.core.engine.EngineType
 import dev.pwaforge.core.engine.GeckoEngineManager
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
 import dev.pwaforge.core.theme.ThemeManager

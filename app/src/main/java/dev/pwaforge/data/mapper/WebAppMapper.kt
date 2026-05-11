@@ -1,7 +1,7 @@
 package dev.pwaforge.data.mapper
 
-import dev.pwaforge.core.engine.EngineType
 import dev.pwaforge.data.local.entity.WebAppEntity
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage

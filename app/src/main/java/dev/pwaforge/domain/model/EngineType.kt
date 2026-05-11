@@ -1,4 +1,4 @@
-package dev.pwaforge.core.engine
+package dev.pwaforge.domain.model
 
 enum class EngineType(
     val displayName: String,
