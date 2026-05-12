@@ -306,6 +306,48 @@
     <string name="language_dialog_title">اللغة</string>
     <string name="language_change_cd">تغيير اللغة</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_skip_setup">تخطي الإعداد</string>
+    <string name="onboarding_next">التالي</string>
+    <string name="onboarding_skip_for_now">تخطي الآن</string>
+    <string name="onboarding_welcome_to">مرحباً بك في</string>
+    <string name="onboarding_welcome_tagline">مشغّل خاص للويب. حوّل أي موقع إلى تطبيق معزول وخالٍ من الإعلانات على شاشتك الرئيسية.</string>
+    <string name="onboarding_language_label">اللغة</string>
+    <string name="onboarding_what_eyebrow">أربع ميزات</string>
+    <string name="onboarding_what_title">ما تحصل عليه مع PWAForge</string>
+    <string name="onboarding_what_desc">أضف أي موقع كتطبيق مستقل مع التحكم الكامل في الخصوصية وعزل التطبيقات وحجب الإعلانات المدمج.</string>
+    <string name="onboarding_feature_apps_title">أي موقع، تطبيق</string>
+    <string name="onboarding_feature_apps_desc">ثبّت المواقع كنوافذ مستقلة وخالية من التشتيت.</string>
+    <string name="onboarding_feature_adblock_title">حظر الإعلانات والمتتبعين</string>
+    <string name="onboarding_feature_adblock_desc">قوائم حظر لكل تطبيق تبقي الصفحات سريعة ونظيفة.</string>
+    <string name="onboarding_feature_isolation_title">معزول افتراضياً</string>
+    <string name="onboarding_feature_isolation_desc">كل تطبيق يحصل على ملفات تعريف الارتباط والتخزين والهوية الخاصة به.</string>
+    <string name="onboarding_feature_translate_title">ترجمة تلقائية</string>
+    <string name="onboarding_feature_translate_desc">ترجم أي صفحة إلى لغتك عند التحميل.</string>
+    <string name="onboarding_appearance_title">خصِّص تجربتك</string>
+    <string name="onboarding_appearance_subtitle">اختر كيف يبدو التطبيق. يمكنك تغيير ذلك في الإعدادات.</string>
+    <string name="onboarding_appearance_preview_label">معاينة</string>
+    <string name="onboarding_security_title">قفل المشغّل</string>
+    <string name="onboarding_security_subtitle">تحمي كلمة المرور الرئيسية جميع التطبيقات داخل PWAForge. اختياري — يمكنك إعدادها لاحقاً.</string>
+    <string name="onboarding_security_set">تعيين كلمة المرور</string>
+    <string name="onboarding_security_set_done">تم تعيين كلمة المرور</string>
+    <string name="onboarding_strength">قوة كلمة المرور</string>
+    <string name="onboarding_strength_weak">ضعيفة</string>
+    <string name="onboarding_strength_fair">مقبولة</string>
+    <string name="onboarding_strength_good">جيدة</string>
+    <string name="onboarding_strength_strong">قوية</string>
+    <string name="onboarding_backup_title">احتفظ بنسخة احتياطية</string>
+    <string name="onboarding_backup_subtitle">لقطات مشفرة من تطبيقاتك وإعداداتك — محفوظة بالكامل على جهازك أو مجلدك الخاص.</string>
+    <string name="onboarding_backup_hint">AES-256، مفتاح مشتق من كلمة مرورك</string>
+    <string name="onboarding_backup_enable">نسخ احتياطي تلقائي مشفر</string>
+    <string name="onboarding_backup_folder_label">مجلد النسخ الاحتياطي</string>
+    <string name="onboarding_schedule_manual">يدوي</string>
+    <string name="onboarding_get_started">ابدأ بإضافة التطبيقات</string>
+    <string name="onboarding_all_set">لقد اكتملت الإعداد.</string>
+    <string name="onboarding_ready">لنضف موقعك الأول. أدخل رابطاً في الشاشة التالية وسيحوله PWAForge إلى تطبيق معزول.</string>
+    <string name="onboarding_done_tip_title">نصيحة — اضغط مطولاً على أي بلاطة</string>
+    <string name="onboarding_done_tip_body">لضبط حظر الإعلانات والعزل والأذونات لكل تطبيق.</string>
+
     <!-- Errors -->
     <string name="error_invalid_url">يرجى إدخال رابط صحيح</string>
     <string name="error_analyze_failed">تعذَّر قراءة معلومات الموقع. يمكنك الحفظ يدوياً.</string>

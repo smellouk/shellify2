@@ -3,6 +3,7 @@ package dev.pwaforge.core.theme
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dev.pwaforge.domain.model.EngineType
@@ -71,4 +72,13 @@ class ThemeManager(private val context: Context) {
     suspend fun setDefaultEngineType(engine: EngineType) {
         context.themeStore.edit { it[keyDefaultEngine] = engine.name }
     }
+
+    private val keyOnboardingDone = booleanPreferencesKey("onboarding_done")
+    private val keyOnboardingPage = intPreferencesKey("onboarding_page")
+
+    val onboardingDone: Flow<Boolean> = context.themeStore.data.map { it[keyOnboardingDone] ?: false }
+    val onboardingPage: Flow<Int> = context.themeStore.data.map { it[keyOnboardingPage] ?: 0 }
+
+    suspend fun setOnboardingDone() { context.themeStore.edit { it[keyOnboardingDone] = true } }
+    suspend fun saveOnboardingPage(p: Int) { context.themeStore.edit { it[keyOnboardingPage] = p } }
 }

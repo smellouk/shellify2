@@ -1,7 +1,11 @@
 package dev.pwaforge.presentation.home
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +20,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -25,6 +33,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -44,15 +56,17 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import dev.pwaforge.R
 import dev.pwaforge.domain.model.EngineType
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -142,9 +156,11 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { hideDetails = !hideDetails }) {
-                        Icon(if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd)
+                    if (state.apps.isNotEmpty()) {
+                        IconButton(onClick = { hideDetails = !hideDetails }) {
+                            Icon(if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd)
+                        }
                     }
                     IconButton(onClick = { showLanguagePicker = true }) {
                         Icon(Icons.Default.Language, contentDescription = languageChangeCd)
@@ -156,11 +172,15 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddApp,
-                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
-            ) {
-                Icon(Icons.Default.Add, contentDescription = addFabCd)
+            if (state.apps.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    onClick = onAddApp,
+                    icon = { Icon(Icons.Default.Add, null) },
+                    text = { Text("New app") },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(6.dp),
+                )
             }
         },
     ) { padding ->
@@ -224,6 +244,7 @@ fun HomeScreen(
                 EmptyState(
                     modifier = Modifier.fillMaxSize(),
                     reason = emptyReason,
+                    onAddApp = onAddApp,
                 )
             } else {
                 LazyVerticalGrid(
@@ -323,62 +344,195 @@ private sealed class HomeEmptyState {
 }
 
 @Composable
-private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = HomeEmptyState.NoApps) {
-    val noAppsTitle = stringResource(R.string.home_empty_title)
-    val noAppsSubtitle = stringResource(R.string.home_empty_subtitle_action)
+private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = HomeEmptyState.NoApps, onAddApp: () -> Unit = {}) {
     val filteredTitle = if (reason is HomeEmptyState.FilteredCategory)
         stringResource(R.string.home_empty_filtered_category, reason.name)
         else ""
     val filteredSubtitle = stringResource(R.string.home_empty_filtered_subtitle)
 
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
-            modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
-        ) {
-            Box(
-                modifier = Modifier.size(Dimens.sizeEmptyBox),
-                contentAlignment = Alignment.Center,
+    if (reason is HomeEmptyState.FilteredCategory) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
             ) {
                 Icon(
-                    imageVector = when (reason) {
-                        is HomeEmptyState.NoApps -> Icons.Default.PhoneAndroid
-                        is HomeEmptyState.FilteredCategory -> Icons.Default.Category
-                    },
+                    imageVector = Icons.Default.Category,
                     contentDescription = null,
                     modifier = Modifier.size(Dimens.sizeEmptyIconLg),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
-                Icon(
-                    imageVector = Icons.Default.AutoAwesome,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(Dimens.sizeCard)
-                        .offset(x = 28.dp, y = (-16).dp)
-                        .align(Alignment.TopEnd),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                Text(
+                    filteredTitle,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    filteredSubtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
-            Text(
-                when (reason) {
-                    is HomeEmptyState.NoApps -> noAppsTitle
-                    is HomeEmptyState.FilteredCategory -> filteredTitle
-                },
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
+        }
+        return
+    }
+
+    // NoApps empty state — pixel-accurate from design handoff
+    val p97 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+    val p95 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+    val p90 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
+    val p40 = MaterialTheme.colorScheme.primary
+    val surfDim = MaterialTheme.colorScheme.outlineVariant
+    val surface = MaterialTheme.colorScheme.surface
+
+    Column(
+        modifier = modifier.padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        Spacer(Modifier.height(24.dp))
+
+        // 160×160 illustration — 3 filled rings + single dashed orbit
+        Box(
+            modifier = Modifier.size(160.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            // Outermost tinted ring
+            Box(modifier = Modifier.size(160.dp).background(p97, CircleShape))
+            // Middle ring
+            Box(modifier = Modifier.size(116.dp).background(p95, CircleShape))
+            // Inner ring
+            Box(modifier = Modifier.size(72.dp).background(p90, CircleShape))
+            // Single dashed orbit at r=70
+            Canvas(modifier = Modifier.size(160.dp)) {
+                drawCircle(
+                    color = p40.copy(alpha = 0.35f),
+                    radius = 70.dp.toPx(),
+                    style = Stroke(
+                        width = 1.2.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(
+                            floatArrayOf(3.dp.toPx(), 7.dp.toPx()), 0f,
+                        ),
+                    ),
+                )
+            }
+            // Center tile: 64dp / radius 20dp / icon 30dp
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(p40, RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Default.GridView, null, modifier = Modifier.size(30.dp), tint = Color.White)
+            }
+            // Ghost tiles — positions match design handoff absolute coords
+            Box(
+                modifier = Modifier.size(26.dp).offset(x = (-49).dp, y = (-57).dp)
+                    .background(surface, RoundedCornerShape(8.dp))
+                    .border(1.dp, surfDim, RoundedCornerShape(8.dp)),
             )
-            Text(
-                when (reason) {
-                    is HomeEmptyState.NoApps -> noAppsSubtitle
-                    is HomeEmptyState.FilteredCategory -> filteredSubtitle
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
+            Box(
+                modifier = Modifier.size(22.dp).offset(x = 57.dp, y = (-45).dp)
+                    .background(surface, RoundedCornerShape(7.dp))
+                    .border(1.dp, surfDim, RoundedCornerShape(7.dp)),
+            )
+            Box(
+                modifier = Modifier.size(22.dp).offset(x = (-61).dp, y = 51.dp)
+                    .background(surface, RoundedCornerShape(7.dp))
+                    .border(1.dp, surfDim, RoundedCornerShape(7.dp)),
+            )
+            Box(
+                modifier = Modifier.size(26.dp).offset(x = 41.dp, y = 59.dp)
+                    .background(surface, RoundedCornerShape(8.dp))
+                    .border(1.dp, surfDim, RoundedCornerShape(8.dp)),
             )
         }
+
+        Spacer(Modifier.height(14.dp))
+        Text(
+            "Forge your first app",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-0.3).sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            "Drop a URL and PWAForge wraps it as a private, isolated tile on your home screen.",
+            fontSize = 13.sp,
+            lineHeight = 19.5.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(18.dp))
+        Button(
+            onClick = onAddApp,
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.height(48.dp),
+            contentPadding = PaddingValues(horizontal = 22.dp),
+        ) {
+            Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Add a website", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        }
+        Spacer(Modifier.height(22.dp))
+
+        // Quick suggestions
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.widthIn(max = 300.dp).fillMaxWidth(),
+        ) {
+            Text(
+                "QUICK SUGGESTIONS",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            )
+            Spacer(Modifier.height(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf(
+                    Triple("Zattoo TV", "zattoo.com", Icons.Default.Bolt),
+                    Triple("GitHub", "github.com", Icons.Default.Layers),
+                    Triple("Reader", "reader.example.com", Icons.Default.Home),
+                ).forEach { (name, host, icon) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(surface, RoundedCornerShape(14.dp))
+                            .border(1.dp, surfDim, RoundedCornerShape(14.dp))
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = onAddApp,
+                            )
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .background(p95, RoundedCornerShape(9.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(icon, null, modifier = Modifier.size(16.dp), tint = p40)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(name, fontSize = 13.sp, lineHeight = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(host, fontSize = 11.sp, lineHeight = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp), tint = p40)
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
     }
 }
 
@@ -405,6 +559,7 @@ private fun AppCard(
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(modifier = Modifier.padding(Dimens.spaceMd)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -580,14 +735,14 @@ private fun CategoryPickerDialog(
 
 @Composable
 private fun FeatureTags(app: WebApp) {
-    data class Tag(val icon: androidx.compose.ui.graphics.vector.ImageVector, val desc: String, val color: Color)
+    data class Tag(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String)
     val tags = buildList {
-        if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", TagFullscreen))
-        if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", TagAdBlock))
-        if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", TagTranslate))
+        if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen"))
+        if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block"))
+        if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate"))
         when (app.lockType) {
-            LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password lock", TagLockPassword))
-            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "System lock", TagLockSystem))
+            LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password"))
+            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "Lock"))
             LockType.NONE     -> Unit
         }
     }
@@ -595,13 +750,28 @@ private fun FeatureTags(app: WebApp) {
     Spacer(Modifier.height(Dimens.spaceXxs))
     Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
         tags.forEach { tag ->
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(Dimens.sizeLg)
-                    .background(tag.color.copy(alpha = 0.15f), RoundedCornerShape(Dimens.cornerXs)),
-                contentAlignment = Alignment.Center,
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        RoundedCornerShape(100.dp),
+                    )
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
             ) {
-                Icon(tag.icon, contentDescription = tag.desc, modifier = Modifier.size(Dimens.sizeTagIcon), tint = tag.color)
+                Icon(
+                    tag.icon,
+                    contentDescription = tag.label,
+                    modifier = Modifier.size(12.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    tag.label,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }

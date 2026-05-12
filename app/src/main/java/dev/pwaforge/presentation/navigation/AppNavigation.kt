@@ -7,31 +7,52 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import dev.pwaforge.R
 import dev.pwaforge.core.locale.LocaleHelper
+import dev.pwaforge.presentation.onboarding.OnboardingScreen
+import dev.pwaforge.presentation.onboarding.OnboardingViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -78,42 +99,75 @@ fun AppNavigation(
     val currentLanguage = remember { LocaleHelper.getLanguageCode(context) }
     val coroutineScope = rememberCoroutineScope()
 
+    // null = not yet loaded, false = show onboarding, true = show home
+    val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
+    if (onboardingDone == null) return
+
+    val startDestination = if (onboardingDone == true) Screen.Home.route else Screen.Onboarding.route
 
     Scaffold(
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    NavigationBarItem(
-                        selected = currentRoute == Screen.Home.route,
-                        onClick = { navController.navigateToTab(Screen.Home.route) },
-                        icon = { Icon(Icons.Default.PhoneAndroid, null) },
-                        label = { Text(stringResource(R.string.nav_apps)) },
-                    )
-                    NavigationBarItem(
-                        selected = currentRoute == Screen.Categories.route,
-                        onClick = { navController.navigateToTab(Screen.Categories.route) },
-                        icon = { Icon(Icons.Default.Category, null) },
-                        label = { Text(stringResource(R.string.nav_categories)) },
-                    )
-                    NavigationBarItem(
-                        selected = currentRoute == Screen.Shortcuts.route,
-                        onClick = { navController.navigateToTab(Screen.Shortcuts.route) },
-                        icon = { Icon(Icons.AutoMirrored.Filled.Shortcut, null) },
-                        label = { Text(stringResource(R.string.nav_shortcuts)) },
-                    )
-                    NavigationBarItem(
-                        selected = currentRoute == Screen.GlobalSettings.route,
-                        onClick = { navController.navigateToTab(Screen.GlobalSettings.route) },
-                        icon = { Icon(Icons.Default.Settings, null) },
-                        label = { Text(stringResource(R.string.nav_settings)) },
-                    )
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 0.dp,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(modifier = Modifier.navigationBarsPadding()) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                        ) {
+                            data class NavItem(val route: String, val icon: ImageVector, val label: String)
+                            listOf(
+                                NavItem(Screen.Home.route, Icons.Default.PhoneAndroid, stringResource(R.string.nav_apps)),
+                                NavItem(Screen.Categories.route, Icons.Default.Layers, stringResource(R.string.nav_categories)),
+                                NavItem(Screen.Shortcuts.route, Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.nav_shortcuts)),
+                                NavItem(Screen.GlobalSettings.route, Icons.Default.Settings, stringResource(R.string.nav_settings)),
+                            ).forEach { item ->
+                                val active = currentRoute == item.route
+                                Column(
+                                    modifier = Modifier.weight(1f).clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() },
+                                    ) { navController.navigateToTab(item.route) },
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(width = 64.dp, height = 32.dp)
+                                            .background(
+                                                if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                                RoundedCornerShape(16.dp),
+                                            ),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Icon(
+                                            item.icon,
+                                            null,
+                                            modifier = Modifier.size(22.dp),
+                                            tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    Text(
+                                        item.label,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
+                                        color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = startDestination,
             modifier = Modifier
                 .padding(padding)
                 .consumeWindowInsets(padding),
@@ -211,6 +265,29 @@ fun AppNavigation(
                             app.backupSettings, app.backupManager, app,
                             app.geckoEngineManager,
                         )
+                    },
+                )
+            }
+
+            composable(Screen.Onboarding.route) {
+                OnboardingScreen(
+                    viewModel = remember {
+                        OnboardingViewModel(
+                            themeManager = app.themeManager,
+                            passwordManager = app.passwordManager,
+                            backupSettings = app.backupSettings,
+                            onFinished = {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Onboarding.route) { inclusive = true }
+                                }
+                            },
+                        )
+                    },
+                    onFinished = {},
+                    onLanguageChange = { code ->
+                        coroutineScope.launch { app.themeManager.setLanguageCode(code) }
+                        LocaleHelper.setLanguageCode(context, code)
+                        (context as? Activity)?.recreate()
                     },
                 )
             }

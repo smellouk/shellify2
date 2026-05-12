@@ -306,6 +306,48 @@
     <string name="language_dialog_title">Langue</string>
     <string name="language_change_cd">Changer la langue</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_skip_setup">Passer la config</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_skip_for_now">Passer pour l\'instant</string>
+    <string name="onboarding_welcome_to">Bienvenue sur</string>
+    <string name="onboarding_welcome_tagline">Un lanceur privé pour le web. Transformez n\'importe quel site en application isolée et sans publicité.</string>
+    <string name="onboarding_language_label">Langue</string>
+    <string name="onboarding_what_eyebrow">Quatre fonctions</string>
+    <string name="onboarding_what_title">Ce que vous obtenez avec PWAForge</string>
+    <string name="onboarding_what_desc">Ajoutez n\'importe quel site comme application autonome avec contrôle total de la confidentialité, isolation par application et blocage des publicités intégré.</string>
+    <string name="onboarding_feature_apps_title">Tout site, une appli</string>
+    <string name="onboarding_feature_apps_desc">Épinglez des sites en fenêtres autonomes et sans distractions.</string>
+    <string name="onboarding_feature_adblock_title">Bloquer les publicités et traceurs</string>
+    <string name="onboarding_feature_adblock_desc">Des listes de blocage par application pour des pages rapides et propres.</string>
+    <string name="onboarding_feature_isolation_title">Isolé par défaut</string>
+    <string name="onboarding_feature_isolation_desc">Chaque application a ses propres cookies, stockage et identité.</string>
+    <string name="onboarding_feature_translate_title">Traduction automatique</string>
+    <string name="onboarding_feature_translate_desc">Traduisez n\'importe quelle page dans votre langue au chargement.</string>
+    <string name="onboarding_appearance_title">Personnalisez votre expérience</string>
+    <string name="onboarding_appearance_subtitle">Choisissez l\'apparence. Vous pouvez la modifier à tout moment dans les Paramètres.</string>
+    <string name="onboarding_appearance_preview_label">Aperçu</string>
+    <string name="onboarding_security_title">Verrouiller le lanceur</string>
+    <string name="onboarding_security_subtitle">Un mot de passe principal protège toutes les applications dans PWAForge. Facultatif — vous pouvez le configurer plus tard.</string>
+    <string name="onboarding_security_set">Définir le mot de passe</string>
+    <string name="onboarding_security_set_done">Mot de passe défini</string>
+    <string name="onboarding_strength">Force du mot de passe</string>
+    <string name="onboarding_strength_weak">Faible</string>
+    <string name="onboarding_strength_fair">Correct</string>
+    <string name="onboarding_strength_good">Bon</string>
+    <string name="onboarding_strength_strong">Fort</string>
+    <string name="onboarding_backup_title">Sauvegardez</string>
+    <string name="onboarding_backup_subtitle">Des instantanés chiffrés de vos applications et paramètres — entièrement conservés sur votre appareil ou votre propre dossier.</string>
+    <string name="onboarding_backup_hint">AES-256, clé dérivée de votre mot de passe</string>
+    <string name="onboarding_backup_enable">Sauvegarde automatique chiffrée</string>
+    <string name="onboarding_backup_folder_label">Dossier de sauvegarde</string>
+    <string name="onboarding_schedule_manual">Manuel</string>
+    <string name="onboarding_get_started">Commencer à ajouter des applications</string>
+    <string name="onboarding_all_set">Tout est prêt.</string>
+    <string name="onboarding_ready">Ajoutons votre premier site. Saisissez une URL sur l\'écran suivant et PWAForge en fera une application isolée.</string>
+    <string name="onboarding_done_tip_title">Astuce — appui long sur une tuile</string>
+    <string name="onboarding_done_tip_body">Pour configurer le blocage des publicités, l\'isolation et les permissions par application.</string>
+
     <!-- Errors -->
     <string name="error_invalid_url">Veuillez entrer une URL valide</string>
     <string name="error_analyze_failed">Impossible de lire les informations du site. Vous pouvez toujours enregistrer manuellement.</string>

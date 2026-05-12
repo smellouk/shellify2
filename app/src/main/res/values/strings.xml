@@ -307,6 +307,48 @@
     <string name="language_dialog_title">Language</string>
 <string name="language_change_cd">Change language</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_skip_setup">Skip setup</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip_for_now">Skip for now</string>
+    <string name="onboarding_welcome_to">Welcome to</string>
+    <string name="onboarding_welcome_tagline">A private launcher for the web. Turn any site into an isolated, ad-free app on your home screen.</string>
+    <string name="onboarding_language_label">Language</string>
+    <string name="onboarding_what_eyebrow">Four things</string>
+    <string name="onboarding_what_title">What you get with PWAForge</string>
+    <string name="onboarding_what_desc">Add any website as a standalone app with full privacy control, per-app isolation, and built-in ad blocking.</string>
+    <string name="onboarding_feature_apps_title">Any site, an app</string>
+    <string name="onboarding_feature_apps_desc">Pin sites as standalone, distraction-free windows.</string>
+    <string name="onboarding_feature_adblock_title">Block ads &amp; trackers</string>
+    <string name="onboarding_feature_adblock_desc">Per-app blocklists keep pages fast and clean.</string>
+    <string name="onboarding_feature_isolation_title">Isolated by default</string>
+    <string name="onboarding_feature_isolation_desc">Each app gets its own cookies, storage, and identity.</string>
+    <string name="onboarding_feature_translate_title">Auto-translate</string>
+    <string name="onboarding_feature_translate_desc">Drop any page into your language on load.</string>
+    <string name="onboarding_appearance_title">Make it yours</string>
+    <string name="onboarding_appearance_subtitle">Pick how it should look. You can change this any time in Settings.</string>
+    <string name="onboarding_appearance_preview_label">Preview</string>
+    <string name="onboarding_security_title">Lock the launcher</string>
+    <string name="onboarding_security_subtitle">A master password protects every app inside PWAForge. Optional — you can set it up later.</string>
+    <string name="onboarding_security_set">Set password</string>
+    <string name="onboarding_security_set_done">Password set</string>
+    <string name="onboarding_strength">Password strength</string>
+    <string name="onboarding_strength_weak">Weak</string>
+    <string name="onboarding_strength_fair">Okay</string>
+    <string name="onboarding_strength_good">Good</string>
+    <string name="onboarding_strength_strong">Strong</string>
+    <string name="onboarding_backup_title">Back it up</string>
+    <string name="onboarding_backup_subtitle">Encrypted snapshots of your apps and settings — kept entirely on your device or your own folder.</string>
+    <string name="onboarding_backup_hint">AES-256, your password-derived key</string>
+    <string name="onboarding_backup_enable">Encrypted auto-backup</string>
+    <string name="onboarding_backup_folder_label">Backup folder</string>
+    <string name="onboarding_schedule_manual">Manual</string>
+    <string name="onboarding_get_started">Start adding apps</string>
+    <string name="onboarding_all_set">You\'re set up.</string>
+    <string name="onboarding_ready">Let\'s add your first site. Drop a URL on the next screen and PWAForge will turn it into an isolated app.</string>
+    <string name="onboarding_done_tip_title">Tip — long-press any tile</string>
+    <string name="onboarding_done_tip_body">To configure ad-blocking, isolation, and per-app permissions.</string>
+
     <!-- Errors -->
     <string name="error_invalid_url">Please enter a valid URL</string>
     <string name="error_analyze_failed">Could not read site info. You can still save manually.</string>

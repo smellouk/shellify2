@@ -9,11 +9,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +29,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -68,6 +69,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -92,6 +94,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -163,7 +166,7 @@ fun GlobalSettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(Dimens.spaceLg),
+                .padding(start = Dimens.spaceLg, end = Dimens.spaceLg, top = Dimens.spaceXxs, bottom = Dimens.spaceLg),
             verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
         ) {
 
@@ -221,17 +224,23 @@ fun GlobalSettingsScreen(
                     }
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    HorizontalDivider()
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
-                        leadingContent = { Icon(Icons.Default.Palette, null) },
-                        headlineContent = { Text(stringResource(R.string.global_settings_dynamic_colors)) },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Default.Palette, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                        },
+                        headlineContent = { Text(stringResource(R.string.global_settings_dynamic_colors), style = MaterialTheme.typography.bodyMedium) },
                         supportingContent = { Text(stringResource(R.string.global_settings_dynamic_colors_desc)) },
                         trailingContent = {
                             Switch(checked = state.dynamicColor, onCheckedChange = viewModel::setDynamicColor)
                         },
                     )
                 }
-                HorizontalDivider()
+                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                 AccentColorRow(
                     current = state.accentColor,
                     onSelect = viewModel::setAccentColor,
@@ -239,19 +248,23 @@ fun GlobalSettingsScreen(
             }
 
             // ── Browser ───────────────────────────────────────────────────────
-            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_browser))
             SettingsCard {
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.Language, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_default_ua)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.Language, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_default_ua), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(state.defaultUaMode.label) },
                     trailingContent = {
                         TextButton(onClick = { showUaDialog = true }) { Text(stringResource(R.string.common_change)) }
                     },
                 )
             }
-            Spacer(Modifier.height(Dimens.spaceSm))
             SettingsCard {
                 Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
@@ -373,13 +386,18 @@ fun GlobalSettingsScreen(
             }
 
             // ── Security ──────────────────────────────────────────────────────
-            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_security))
             SettingsCard {
                 if (state.hasPassword) {
                     ListItem(
-                        leadingContent = { Icon(Icons.Default.Lock, null) },
-                        headlineContent = { Text(stringResource(R.string.global_settings_app_password_headline)) },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Default.Lock, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                        },
+                        headlineContent = { Text(stringResource(R.string.global_settings_app_password_headline), style = MaterialTheme.typography.bodyMedium) },
                         supportingContent = { Text(stringResource(R.string.global_settings_password_set)) },
                         trailingContent = {
                             Row {
@@ -391,10 +409,16 @@ fun GlobalSettingsScreen(
                             }
                         },
                     )
-                    HorizontalDivider()
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
-                        leadingContent = { Icon(Icons.Default.DeleteForever, null) },
-                        headlineContent = { Text(stringResource(R.string.global_settings_wipe_on_failed)) },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Default.DeleteForever, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                        },
+                        headlineContent = { Text(stringResource(R.string.global_settings_wipe_on_failed), style = MaterialTheme.typography.bodyMedium) },
                         supportingContent = { Text(stringResource(R.string.global_settings_wipe_on_failed_desc)) },
                         trailingContent = {
                             Switch(
@@ -405,8 +429,14 @@ fun GlobalSettingsScreen(
                     )
                 } else {
                     ListItem(
-                        leadingContent = { Icon(Icons.Default.LockOpen, null) },
-                        headlineContent = { Text(stringResource(R.string.global_settings_app_password_headline)) },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Default.LockOpen, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                        },
+                        headlineContent = { Text(stringResource(R.string.global_settings_app_password_headline), style = MaterialTheme.typography.bodyMedium) },
                         supportingContent = { Text(stringResource(R.string.global_settings_password_not_set)) },
                         trailingContent = {
                             TextButton(onClick = viewModel::showSetPasswordDialog) { Text(stringResource(R.string.common_set)) }
@@ -414,12 +444,16 @@ fun GlobalSettingsScreen(
                     )
                 }
             }
-
-            Spacer(Modifier.height(Dimens.spaceSm))
             SettingsCard {
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.NoPhotography, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_screenshot_protection)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.NoPhotography, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_screenshot_protection), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(stringResource(R.string.global_settings_screenshot_protection_desc)) },
                     trailingContent = {
                         Switch(
@@ -431,12 +465,17 @@ fun GlobalSettingsScreen(
             }
 
             // ── Backup ────────────────────────────────────────────────────────
-            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_backup))
             SettingsCard {
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.Backup, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_encrypted_backup)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.Backup, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_encrypted_backup), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(if (state.backupEnabled) stringResource(R.string.global_settings_backup_enabled) else stringResource(R.string.global_settings_backup_disabled)) },
                     trailingContent = {
                         Switch(
@@ -451,12 +490,18 @@ fun GlobalSettingsScreen(
                     exit = shrinkVertically(),
                 ) {
                     Column {
-                        HorizontalDivider()
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
 
                         // Password
                         ListItem(
-                            leadingContent = { Icon(Icons.Default.Key, null) },
-                            headlineContent = { Text(stringResource(R.string.global_settings_backup_password_headline)) },
+                            leadingContent = {
+                                Box(
+                                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                    contentAlignment = Alignment.Center,
+                                ) { Icon(Icons.Default.Key, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                            },
+                            headlineContent = { Text(stringResource(R.string.global_settings_backup_password_headline), style = MaterialTheme.typography.bodyMedium) },
                             supportingContent = {
                                 Text(if (state.backupHasPassword) stringResource(R.string.global_settings_backup_password_set) else stringResource(R.string.global_settings_backup_password_required))
                             },
@@ -466,12 +511,18 @@ fun GlobalSettingsScreen(
                                 }
                             },
                         )
-                        HorizontalDivider()
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
 
                         // Directory
                         ListItem(
-                            leadingContent = { Icon(Icons.Default.Folder, null) },
-                            headlineContent = { Text(stringResource(R.string.global_settings_backup_folder_headline)) },
+                            leadingContent = {
+                                Box(
+                                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                    contentAlignment = Alignment.Center,
+                                ) { Icon(Icons.Default.Folder, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                            },
+                            headlineContent = { Text(stringResource(R.string.global_settings_backup_folder_headline), style = MaterialTheme.typography.bodyMedium) },
                             supportingContent = {
                                 Text(
                                     state.backupDirectoryUri?.let { uriToDisplayName(it) }
@@ -484,7 +535,7 @@ fun GlobalSettingsScreen(
                                 }
                             },
                         )
-                        HorizontalDivider()
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
 
                         // Schedule
                         val scheduleLabel = when (state.backupSchedule) {
@@ -493,8 +544,14 @@ fun GlobalSettingsScreen(
                             BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
                         }
                         ListItem(
-                            leadingContent = { Icon(Icons.Default.Schedule, null) },
-                            headlineContent = { Text(stringResource(R.string.global_settings_backup_schedule_headline)) },
+                            leadingContent = {
+                                Box(
+                                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                    contentAlignment = Alignment.Center,
+                                ) { Icon(Icons.Default.Schedule, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                            },
+                            headlineContent = { Text(stringResource(R.string.global_settings_backup_schedule_headline), style = MaterialTheme.typography.bodyMedium) },
                             supportingContent = {
                                 Text(scheduleLabel)
                             },
@@ -503,17 +560,23 @@ fun GlobalSettingsScreen(
                             },
                         )
                         if (state.backupLastTime > 0L) {
-                            HorizontalDivider()
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                             ListItem(
-                                leadingContent = { Icon(Icons.Default.History, null) },
-                                headlineContent = { Text(stringResource(R.string.global_settings_last_backup_headline)) },
+                                leadingContent = {
+                                    Box(
+                                        modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                                        contentAlignment = Alignment.Center,
+                                    ) { Icon(Icons.Default.History, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                                },
+                                headlineContent = { Text(stringResource(R.string.global_settings_last_backup_headline), style = MaterialTheme.typography.bodyMedium) },
                                 supportingContent = {
                                     Text(DateFormat.getMediumDateFormat(context).format(Date(state.backupLastTime)) +
                                         " " + DateFormat.getTimeFormat(context).format(Date(state.backupLastTime)))
                                 },
                             )
                         }
-                        HorizontalDivider()
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
 
                         // Actions
                         Column(
@@ -553,12 +616,17 @@ fun GlobalSettingsScreen(
             }
 
             // ── Data ──────────────────────────────────────────────────────────
-            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_data))
             SettingsCard {
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.Storage, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_clear_all_data_headline)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.Storage, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_clear_all_data_headline), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(stringResource(R.string.global_settings_clear_all_data_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showClearAllDialog) {
@@ -567,10 +635,16 @@ fun GlobalSettingsScreen(
                         }
                     },
                 )
-                HorizontalDivider()
+                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.Apps, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_apps_headline)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.Apps, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_apps_headline), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(stringResource(R.string.global_settings_delete_all_apps_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showDeleteAllAppsDialog) {
@@ -578,10 +652,16 @@ fun GlobalSettingsScreen(
                         }
                     },
                 )
-                HorizontalDivider()
+                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.Category, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_categories_headline)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.Category, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_categories_headline), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(stringResource(R.string.global_settings_delete_all_categories_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showDeleteAllCategoriesDialog) {
@@ -589,10 +669,16 @@ fun GlobalSettingsScreen(
                         }
                     },
                 )
-                HorizontalDivider()
+                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                 ListItem(
-                    leadingContent = { Icon(Icons.AutoMirrored.Filled.Shortcut, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_headline)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.AutoMirrored.Filled.Shortcut, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_headline), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_desc)) },
                     trailingContent = {
                         IconButton(onClick = viewModel::showDeleteAllShortcutsDialog) {
@@ -603,12 +689,17 @@ fun GlobalSettingsScreen(
             }
 
             // ── About ─────────────────────────────────────────────────────────
-            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_about))
             SettingsCard {
                 ListItem(
-                    leadingContent = { Icon(Icons.Default.Info, null) },
-                    headlineContent = { Text(stringResource(R.string.global_settings_version_headline)) },
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Default.Info, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.global_settings_version_headline), style = MaterialTheme.typography.bodyMedium) },
                     trailingContent = {
                         Text(version, style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -1023,22 +1114,16 @@ private fun EngineOptionRow(
     }
 }
 
-private val ACCENT_COLORS = listOf(
-    0xFFEF5350.toInt(), // Red
-    0xFFEC407A.toInt(), // Pink
-    0xFF7E57C2.toInt(), // Purple
-    0xFF5C6BC0.toInt(), // Indigo
-    0xFF42A5F5.toInt(), // Blue
-    0xFF26A69A.toInt(), // Teal
-    0xFF66BB6A.toInt(), // Green
-    0xFFFFA726.toInt(), // Orange
-    0xFFFF7043.toInt(), // Deep Orange
-    0xFF8D6E63.toInt(), // Brown
-    0xFF78909C.toInt(), // Blue Grey
+internal val ACCENT_COLORS = listOf(
+    0xFF5B3FBF.toInt(), // Violet
+    0xFF3F4FBF.toInt(), // Indigo
+    0xFF006B5F.toInt(), // Teal
+    0xFFB5365E.toInt(), // Rose
+    0xFF7A5300.toInt(), // Amber
 )
 
 @Composable
-private fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
+internal fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
     Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd)) {
         Text(
             stringResource(R.string.global_settings_accent_color),
@@ -1050,7 +1135,7 @@ private fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
             modifier = Modifier.horizontalScroll(rememberScrollState()),
         ) {
-            // "None" circle — uses current primary
+            // "None" — uses system/dynamic primary
             Box(
                 modifier = Modifier
                     .size(Dimens.sizeCard)
@@ -1098,8 +1183,14 @@ private fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
 
 @Composable
 private fun SectionLabel(text: String) =
-    Text(text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = Dimens.spaceXxs))
+    Text(
+        text,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 10.dp, bottom = 0.dp, start = 4.dp, end = 4.dp),
+    )
 
 @Composable
 private fun SettingsCard(content: @Composable () -> Unit) =
@@ -1108,4 +1199,5 @@ private fun SettingsCard(content: @Composable () -> Unit) =
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) { content() }

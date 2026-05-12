@@ -1,21 +1,35 @@
 package dev.pwaforge.presentation.shortcuts
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Shortcut
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
@@ -24,6 +38,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -47,10 +62,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.pwaforge.R
 import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.presentation.home.AppIcon
@@ -73,7 +96,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     CircularProgressIndicator()
                 }
             }
-            state.items.isEmpty() -> EmptyState(Modifier.fillMaxSize().padding(padding))
+            state.items.isEmpty() -> EmptyState(modifier = Modifier.fillMaxSize().padding(padding))
             else -> {
                 var iconPickItem by remember { mutableStateOf<ShortcutItem?>(null) }
                 val pickImage = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -87,23 +110,32 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     contentPadding = PaddingValues(Dimens.spaceLg),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                 ) {
-                    items(state.items, key = { it.shortcutId }) { item ->
+                    item {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(Dimens.cornerXl),
+                            shape = RoundedCornerShape(20.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         ) {
-                            ShortcutRow(
-                                item = item,
-                                onRename = { viewModel.startRename(item) },
-                                onRefreshIcon = { viewModel.refreshIcon(item) },
-                                onChangeIcon = {
-                                    iconPickItem = item
-                                    pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                                },
-                                onRemove = { viewModel.showRemove(item) },
-                            )
+                            state.items.forEachIndexed { index, shortcutItem ->
+                                if (index > 0) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 14.dp),
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    )
+                                }
+                                ShortcutRow(
+                                    item = shortcutItem,
+                                    onRename = { viewModel.startRename(shortcutItem) },
+                                    onRefreshIcon = { viewModel.refreshIcon(shortcutItem) },
+                                    onChangeIcon = {
+                                        iconPickItem = shortcutItem
+                                        pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                                    },
+                                    onRemove = { viewModel.showRemove(shortcutItem) },
+                                )
+                            }
                         }
                     }
                 }
@@ -168,7 +200,17 @@ private fun ShortcutRow(
 
     ListItem(
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
-        leadingContent = { AppIcon(app = item.app, modifier = Modifier.size(Dimens.sizeApp)) },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppIcon(app = item.app, modifier = Modifier.size(Dimens.sizeApp))
+            }
+        },
         headlineContent = { Text(item.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
             Text(
@@ -213,29 +255,127 @@ private fun ShortcutRow(
 
 @Composable
 private fun EmptyState(modifier: Modifier = Modifier) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
-            modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Shortcut,
-                contentDescription = null,
-                modifier = Modifier.size(Dimens.sizeEmptyIcon),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-            )
-            Text(
-                stringResource(R.string.shortcuts_empty_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                stringResource(R.string.shortcuts_empty_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+    val p97  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+    val p95  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+    val p90  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
+    val p40  = MaterialTheme.colorScheme.primary
+    val surfDim = MaterialTheme.colorScheme.outlineVariant
+
+    Column(
+        modifier = modifier.padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.height(24.dp))
+
+        // 160×160 illustration — 3 filled rings + single dashed orbit
+        Box(modifier = Modifier.size(160.dp), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(160.dp).background(p97, CircleShape))
+            Box(modifier = Modifier.size(116.dp).background(p95, CircleShape))
+            Box(modifier = Modifier.size(72.dp).background(p90, CircleShape))
+            Canvas(modifier = Modifier.size(160.dp)) {
+                drawCircle(
+                    color = p40.copy(alpha = 0.35f),
+                    radius = 70.dp.toPx(),
+                    style = Stroke(
+                        width = 1.2.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(3.dp.toPx(), 7.dp.toPx()), 0f),
+                    ),
+                )
+            }
+            Box(
+                modifier = Modifier.size(64.dp).background(p40, RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Shortcut, null, modifier = Modifier.size(30.dp), tint = Color.White)
+            }
+            Box(modifier = Modifier.size(26.dp).offset(x = (-49).dp, y = (-57).dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                .border(1.dp, surfDim, RoundedCornerShape(8.dp)))
+            Box(modifier = Modifier.size(22.dp).offset(x = 57.dp, y = (-45).dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(7.dp))
+                .border(1.dp, surfDim, RoundedCornerShape(7.dp)))
+            Box(modifier = Modifier.size(22.dp).offset(x = (-61).dp, y = 51.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(7.dp))
+                .border(1.dp, surfDim, RoundedCornerShape(7.dp)))
+            Box(modifier = Modifier.size(26.dp).offset(x = 41.dp, y = 59.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                .border(1.dp, surfDim, RoundedCornerShape(8.dp)))
         }
+
+        Spacer(Modifier.height(14.dp))
+        Text(
+            "Skip straight to the page",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-0.3).sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            "Pin deep links — your inbox, the live channel, today's agenda — and open them in one tap.",
+            fontSize = 13.sp,
+            lineHeight = 19.5.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(18.dp))
+        Button(
+            onClick = {},
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.height(48.dp),
+            contentPadding = PaddingValues(horizontal = 22.dp),
+        ) {
+            Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Add a shortcut", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        }
+        Spacer(Modifier.height(18.dp))
+
+        // Tip card — dashed border, maxWidth 300dp
+        Row(
+            modifier = Modifier
+                .widthIn(max = 300.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
+                .drawBehind {
+                    drawRoundRect(
+                        color = surfDim,
+                        cornerRadius = CornerRadius(18.dp.toPx()),
+                        style = Stroke(
+                            width = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f),
+                        ),
+                    )
+                }
+                .padding(14.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Box(
+                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(p90),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(18.dp), tint = p40)
+            }
+            Column {
+                Text(
+                    "TIP",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.6.sp,
+                    color = p40,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Long-press any app in the drawer to pull a deep link out into a shortcut.",
+                    fontSize = 12.sp,
+                    lineHeight = 17.4.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
     }
 }
