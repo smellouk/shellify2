@@ -348,7 +348,7 @@ fun CategoryScreen(
                             }
                             Text(
                                 cat.name,
-                                fontSize = 14.sp,
+                                fontSize = Dimens.textSizeCta,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )

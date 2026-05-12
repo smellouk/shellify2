@@ -1178,11 +1178,11 @@ internal fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
 private fun SectionLabel(text: String) =
     Text(
         text,
-        fontSize = 12.sp,
+        fontSize = Dimens.textSizeSectionLabel,
         fontWeight = FontWeight.Bold,
-        letterSpacing = 1.sp,
+        letterSpacing = Dimens.letterSpacingCaps,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 10.dp, bottom = 0.dp, start = 4.dp, end = 4.dp),
+        modifier = Modifier.padding(top = Dimens.space10, bottom = 0.dp, start = Dimens.spaceXxs, end = Dimens.spaceXxs),
     )
 
 @Composable
