@@ -502,6 +502,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(Dimens.sizeApp)
                             .background(surface, RoundedCornerShape(Dimens.corner14))
                             .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.corner14))
                             .clickable(
@@ -509,7 +510,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = onAddApp,
                             )
-                            .padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceXs),
+                            .padding(horizontal = Dimens.spaceXs),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                     ) {
