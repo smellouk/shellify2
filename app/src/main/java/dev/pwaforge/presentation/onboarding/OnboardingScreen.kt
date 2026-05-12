@@ -454,21 +454,21 @@ private fun WelcomePage(
                                 }
                                 .padding(horizontal = Dimens.spaceMd),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.Center,
                         ) {
                             Text(
                                 text = label,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                             )
-                            if (isSelected) {
-                                Icon(
-                                    Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
+                            Spacer(Modifier.width(Dimens.spaceSm))
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary
+                                       else androidx.compose.ui.graphics.Color.Transparent,
+                                modifier = Modifier.size(16.dp),
+                            )
                         }
                     }
                     // If odd number, add empty spacer
