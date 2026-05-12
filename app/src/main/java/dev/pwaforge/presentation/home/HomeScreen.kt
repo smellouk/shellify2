@@ -456,7 +456,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
         Spacer(Modifier.height(Dimens.space14))
         Text(
             stringResource(R.string.home_empty_title),
-            fontSize = Dimens.textSizeEmptyTitle,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = Dimens.letterSpacingTight,
             color = MaterialTheme.colorScheme.onSurface,
