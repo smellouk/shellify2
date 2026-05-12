@@ -179,7 +179,7 @@ fun AppNavigation(
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    viewModel = remember { HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories, app.saveWebApp, app.isolationManager, app) },
+                    viewModel = remember { HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories, app.saveWebApp, app.isolationManager, app, app.pwaAnalyzer, app.faviconFetcher) },
                     geckoInstalled = geckoInstalled,
                     currentLanguage = currentLanguage,
                     onLanguageChange = { code ->

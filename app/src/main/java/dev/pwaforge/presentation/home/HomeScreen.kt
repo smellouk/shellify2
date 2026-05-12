@@ -39,10 +39,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
@@ -76,6 +77,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -261,7 +263,7 @@ fun HomeScreen(
             }
 
             // Category filter chips
-            if (state.categories.isNotEmpty()) {
+            if (state.categories.isNotEmpty() && state.hasAnyApps) {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = Dimens.spaceLg),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
@@ -308,6 +310,9 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     reason = emptyReason,
                     onAddApp = onAddApp,
+                    onQuickAdd = viewModel::quickAdd,
+                    quickAddLoadingUrl = state.quickAddLoadingUrl,
+                    quickAddDoneUrl = state.quickAddDoneUrl,
                 )
             } else if (isGridView) {
                 LazyVerticalGrid(
@@ -427,7 +432,14 @@ private sealed class HomeEmptyState {
 }
 
 @Composable
-private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = HomeEmptyState.NoApps, onAddApp: () -> Unit = {}) {
+private fun EmptyState(
+    modifier: Modifier = Modifier,
+    reason: HomeEmptyState = HomeEmptyState.NoApps,
+    onAddApp: () -> Unit = {},
+    onQuickAdd: (name: String, url: String) -> Unit = { _, _ -> },
+    quickAddLoadingUrl: String? = null,
+    quickAddDoneUrl: String? = null,
+) {
     val filteredTitle = if (reason is HomeEmptyState.FilteredCategory)
         stringResource(R.string.home_empty_filtered_category, reason.name)
         else ""
@@ -579,10 +591,13 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             Spacer(Modifier.height(Dimens.spaceSm))
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                 listOf(
-                    Triple("Zattoo TV", "zattoo.com", Icons.Default.Bolt),
-                    Triple("GitHub", "github.com", Icons.Default.Layers),
-                    Triple("Reader", "reader.example.com", Icons.Default.Home),
+                    Triple("YouTube", "youtube.com", Icons.Default.PlayArrow),
+                    Triple("WhatsApp", "web.whatsapp.com", Icons.Default.Chat),
+                    Triple("Spotify", "open.spotify.com", Icons.Default.MusicNote),
                 ).forEach { (name, host, icon) ->
+                    val isLoading = quickAddLoadingUrl == host
+                    val isDone = quickAddDoneUrl == host
+                    val isIdle = !isLoading && !isDone
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -590,9 +605,10 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                             .background(surface, RoundedCornerShape(Dimens.corner14))
                             .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.corner14))
                             .clickable(
+                                enabled = quickAddLoadingUrl == null && !isDone,
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() },
-                                onClick = onAddApp,
+                                onClick = { onQuickAdd(name, host) },
                             )
                             .padding(horizontal = Dimens.space10),
                         verticalAlignment = Alignment.CenterVertically,
@@ -611,7 +627,15 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                             Text(name, fontSize = Dimens.textSizeBody, lineHeight = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, style = noFontPadding)
                             Text(host, fontSize = Dimens.textSizeCaption, lineHeight = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant, style = noFontPadding)
                         }
-                        Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
+                        when {
+                            isLoading -> CircularProgressIndicator(
+                                modifier = Modifier.size(Dimens.sizeXs),
+                                strokeWidth = 2.dp,
+                                color = p40,
+                            )
+                            isDone -> Icon(Icons.Default.Check, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
+                            isIdle -> Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
+                        }
                     }
                 }
             }

@@ -264,7 +264,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
         modifier = modifier.padding(horizontal = Dimens.size4xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(Dimens.spaceXl))
+        Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd + Dimens.sizeApp))
 
         // 160×160 illustration — 3 filled rings + single dashed orbit
         Box(modifier = Modifier.size(Dimens.illustrationSize), contentAlignment = Alignment.Center) {
