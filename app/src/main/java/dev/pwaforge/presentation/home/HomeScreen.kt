@@ -565,12 +565,15 @@ private fun AppCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column(modifier = Modifier.padding(Dimens.spaceMd)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column {
+            Row(
+                modifier = Modifier.padding(Dimens.spaceMd),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 if (hideDetails) {
                     Box(
                         modifier = Modifier
-                            .size(Dimens.sizeApp)
+                            .size(Dimens.sizeCard)
                             .clip(RoundedCornerShape(Dimens.cornerLg))
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center,
@@ -580,61 +583,68 @@ private fun AppCard(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
-                    AppIcon(app = app, modifier = Modifier.size(Dimens.sizeApp))
+                    AppIcon(app = app, modifier = Modifier.size(Dimens.sizeCard))
                 }
-                Spacer(Modifier.weight(1f))
-                Box {
-                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu",
-                            modifier = Modifier.size(Dimens.sizeXs))
-                    }
-                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_edit)) },
-                            leadingIcon = { Icon(Icons.Default.Edit, null) },
-                            onClick = { showMenu = false; onEdit() },
+                Spacer(Modifier.width(Dimens.spaceMd))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        if (hideDetails) "•".repeat(app.name.length.coerceIn(4, 12)) else app.name,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+                    ) {
+                        Text(
+                            if (hideDetails) "••••••••••••" else app.url.removePrefix("https://").removePrefix("http://"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
                         )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_assign_category)) },
-                            leadingIcon = { Icon(Icons.Default.Category, null) },
-                            onClick = { showMenu = false; showCategoryPicker = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_settings)) },
-                            leadingIcon = { Icon(Icons.Default.Settings, null) },
-                            onClick = { showMenu = false; onSettings() },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_clear_data)) },
-                            leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
-                            onClick = { showMenu = false; showClearDataDialog = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_delete)) },
-                            leadingIcon = { Icon(Icons.Default.Delete, null) },
-                            onClick = { showMenu = false; onDelete() },
-                        )
+                        FeatureTags(app)
+                        Box {
+                            IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
+                                Icon(Icons.Default.MoreVert, contentDescription = "Menu",
+                                    modifier = Modifier.size(Dimens.sizeXs))
+                            }
+                            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.home_menu_edit)) },
+                                    leadingIcon = { Icon(Icons.Default.Edit, null) },
+                                    onClick = { showMenu = false; onEdit() },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.home_menu_assign_category)) },
+                                    leadingIcon = { Icon(Icons.Default.Category, null) },
+                                    onClick = { showMenu = false; showCategoryPicker = true },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.home_menu_settings)) },
+                                    leadingIcon = { Icon(Icons.Default.Settings, null) },
+                                    onClick = { showMenu = false; onSettings() },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.home_menu_clear_data)) },
+                                    leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
+                                    onClick = { showMenu = false; showClearDataDialog = true },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.home_menu_delete)) },
+                                    leadingIcon = { Icon(Icons.Default.Delete, null) },
+                                    onClick = { showMenu = false; onDelete() },
+                                )
+                            }
+                        }
                     }
                 }
             }
-            Spacer(Modifier.height(Dimens.spaceSm))
-            Text(
-                if (hideDetails) "•".repeat(app.name.length.coerceIn(4, 12)) else app.name,
-                style = MaterialTheme.typography.labelLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                if (hideDetails) "••••••••••••" else app.url.removePrefix("https://").removePrefix("http://"),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            FeatureTags(app)
             if (engineMissing) {
-                Spacer(Modifier.height(Dimens.spaceXs))
                 Row(
+                    modifier = Modifier.padding(start = Dimens.spaceMd, end = Dimens.spaceMd, bottom = Dimens.spaceSm),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
                 ) {
@@ -750,34 +760,13 @@ private fun FeatureTags(app: WebApp) {
             LockType.NONE     -> Unit
         }
     }
-    if (tags.isEmpty()) return
-    Spacer(Modifier.height(Dimens.spaceXxs))
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
-        tags.forEach { tag ->
-            Row(
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        RoundedCornerShape(Dimens.cornerFull),
-                    )
-                    .padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceXxs),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
-            ) {
-                Icon(
-                    tag.icon,
-                    contentDescription = tag.label,
-                    modifier = Modifier.size(Dimens.sizeXxs),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    tag.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
+    tags.forEach { tag ->
+        Icon(
+            tag.icon,
+            contentDescription = tag.label,
+            modifier = Modifier.size(Dimens.sizeXs),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        )
     }
 }
 
