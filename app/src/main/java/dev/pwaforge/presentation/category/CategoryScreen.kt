@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -238,7 +239,7 @@ fun CategoryScreen(
                 Button(
                     onClick = viewModel::showDialog,
                     shape = RoundedCornerShape(Dimens.corner24),
-                    modifier = Modifier.height(Dimens.sizeApp),
+                    modifier = Modifier.heightIn(min = Dimens.sizeApp),
                     contentPadding = PaddingValues(horizontal = Dimens.sizeLg),
                 ) {
                     Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))

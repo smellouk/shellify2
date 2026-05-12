@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -473,7 +474,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
         Button(
             onClick = onAddApp,
             shape = RoundedCornerShape(Dimens.corner24),
-            modifier = Modifier.height(Dimens.sizeApp),
+            modifier = Modifier.heightIn(min = Dimens.sizeApp),
             contentPadding = PaddingValues(horizontal = Dimens.sizeLg),
         ) {
             Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
@@ -504,7 +505,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(Dimens.sizeApp)
+                            .heightIn(min = Dimens.sizeApp)
                             .background(surface, RoundedCornerShape(Dimens.corner14))
                             .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.corner14))
                             .clickable(

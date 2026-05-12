@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -344,7 +345,7 @@ private fun FooterRow(
         if (secondaryLabel != null && onSecondary != null) {
             OutlinedButton(
                 onClick = onSecondary,
-                modifier = Modifier.height(Dimens.sizeApp),
+                modifier = Modifier.heightIn(min = Dimens.sizeApp),
                 shape = CircleShape,
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.sizeMd),
             ) {
@@ -436,7 +437,7 @@ private fun WelcomePage(
                         Row(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(46.dp)
+                                .heightIn(min = 46.dp)
                                 .clip(RoundedCornerShape(Dimens.corner14))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primaryContainer
@@ -1252,7 +1253,7 @@ private fun BackupPage(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(38.dp)
+                                .heightIn(min = 38.dp)
                                 .clip(CircleShape)
                                 .border(Dimens.borderDefault, outlineVariant, CircleShape)
                                 .background(
