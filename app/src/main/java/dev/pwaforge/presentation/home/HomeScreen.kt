@@ -512,9 +512,9 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = onAddApp,
                             )
-                            .padding(horizontal = Dimens.spaceXs),
+                            .padding(horizontal = Dimens.space10),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.space10),
                     ) {
                         Box(
                             modifier = Modifier

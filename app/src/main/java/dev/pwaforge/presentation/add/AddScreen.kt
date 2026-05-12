@@ -226,7 +226,7 @@ fun AddScreen(
             // ── Basic Info card ───────────────────────────────────────────────
             SectionCard {
                 Text(stringResource(R.string.add_basic_info), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(Dimens.spaceLg))
+                Spacer(Modifier.height(Dimens.spaceSm))
 
                 // 1. URL + inline Analyze
                 OutlinedTextField(
@@ -236,11 +236,10 @@ fun AddScreen(
                     leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(Dimens.sizeMd)) },
                     placeholder = { Text(stringResource(R.string.add_url_hint)) },
                     isError = state.urlError != null,
-                    supportingText = {
-                        when {
-                            state.urlError != null -> Text(state.urlError!!)
-                            state.analyzeError != null -> Text(state.analyzeError!!, color = MaterialTheme.colorScheme.error)
-                        }
+                    supportingText = when {
+                        state.urlError != null -> ({ Text(state.urlError!!) })
+                        state.analyzeError != null -> ({ Text(state.analyzeError!!, color = MaterialTheme.colorScheme.error) })
+                        else -> null
                     },
                     trailingIcon = {
                         IconButton(
@@ -264,7 +263,7 @@ fun AddScreen(
                     shape = RoundedCornerShape(Dimens.cornerLg),
                 )
 
-                Spacer(Modifier.height(Dimens.spaceMd))
+                Spacer(Modifier.height(Dimens.spaceSm))
 
                 // 2. App Name
                 OutlinedTextField(
@@ -558,7 +557,7 @@ private fun PwaAnalysisDialog(
                 Text(stringResource(R.string.add_manifest_source, source), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(Dimens.spaceSm))
-                HorizontalDivider()
+                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                 Spacer(Modifier.height(Dimens.spaceSm))
 
                 manifest.name?.let {
@@ -731,7 +730,7 @@ private fun FeatureCard(
             }
             AnimatedVisibility(visible = enabled, enter = expandVertically(), exit = shrinkVertically()) {
                 Column {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg), color = MaterialTheme.colorScheme.outlineVariant)
                     Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                         content = expandedContent)
                 }
@@ -806,7 +805,7 @@ private fun BrowserEngineCard(
                 Text(stringResource(R.string.add_engine_section), style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg), color = MaterialTheme.colorScheme.outlineVariant)
             Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                 EngineType.entries.forEach { engine ->
