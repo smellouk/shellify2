@@ -302,18 +302,18 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 
         Spacer(Modifier.height(14.dp))
         Text(
-            "Skip straight to the page",
-            fontSize = 22.sp,
+            stringResource(R.string.shortcuts_empty_title),
+            fontSize = Dimens.textSizeEmptyTitle,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = (-0.3).sp,
+            letterSpacing = Dimens.letterSpacingTight,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            "Pin deep links — your inbox, the live channel, today's agenda — and open them in one tap.",
-            fontSize = 13.sp,
-            lineHeight = 19.5.sp,
+            stringResource(R.string.shortcuts_empty_desc),
+            fontSize = Dimens.textSizeBody,
+            lineHeight = Dimens.lineHeightBody,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -326,7 +326,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
         ) {
             Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Add a shortcut", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.shortcuts_add_button), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.weight(1f))
     }

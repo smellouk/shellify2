@@ -33,10 +33,12 @@
     <string name="home_hide_details_cd">إخفاء التفاصيل</string>
     <string name="home_search_cd">بحث</string>
     <string name="home_add_fab_cd">إضافة PWA</string>
+    <string name="home_add_fab_label">تطبيق جديد</string>
+    <string name="home_quick_suggestions">اقتراحات سريعة</string>
     <string name="home_all_categories">الكل</string>
-    <string name="home_empty_title">لا توجد تطبيقات بعد</string>
-    <string name="home_empty_subtitle">اضغط + لإضافة أول PWA</string>
-    <string name="home_empty_subtitle_action">اضغط الزر أدناه لإنشاء أول تطبيق</string>
+    <string name="home_empty_title">أنشئ تطبيقك الأول</string>
+    <string name="home_empty_subtitle">أدخل رابطاً وسيحوّله PWAForge إلى بلاطة خاصة ومعزولة على شاشتك الرئيسية.</string>
+    <string name="home_empty_subtitle_action">إضافة موقع</string>
     <string name="home_empty_filtered_category">لا توجد تطبيقات في \"%s\"</string>
     <string name="home_empty_filtered_subtitle">ستظهر التطبيقات المخصصة لهذه الفئة هنا</string>
     <string name="home_menu_edit">تعديل</string>
@@ -175,6 +177,7 @@
     <string name="global_settings_theme_dark">داكن</string>
     <string name="global_settings_dynamic_colors">ألوان ديناميكية</string>
     <string name="global_settings_dynamic_colors_desc">اتباع ألوان خلفية الشاشة (Material You)</string>
+    <string name="global_settings_accent_color">لون السمة</string>
     <string name="global_settings_section_browser">المتصفح</string>
     <string name="global_settings_default_ua">عميل المستخدم الافتراضي</string>
     <string name="global_settings_default_engine_label">المحرك الافتراضي للتطبيقات الجديدة</string>
@@ -258,13 +261,17 @@
     <string name="categories_save">حفظ</string>
     <string name="categories_delete">حذف</string>
     <string name="categories_delete_cd">حذف</string>
-    <string name="categories_empty">لا توجد فئات بعد</string>
-    <string name="categories_empty_subtitle">اضغط الزر أدناه لإنشاء أول فئة</string>
+    <string name="categories_empty">رتّب تطبيقاتك في فضاءات</string>
+    <string name="categories_empty_subtitle">جمّع بلاطاتك حسب الغرض — عمل، قراءة، وسائط — ثم انتقل بينها من الدرج.</string>
     <string name="categories_new_dialog_title">فئة جديدة</string>
     <string name="categories_name_label">الاسم</string>
     <string name="categories_icon_label">الأيقونة</string>
     <string name="categories_color_label">اللون</string>
     <string name="categories_add_button">إضافة</string>
+    <string name="categories_suggestion_media">وسائط</string>
+    <string name="categories_suggestion_work">عمل</string>
+    <string name="categories_suggestion_reading">قراءة</string>
+    <string name="categories_suggestion_tools">أدوات</string>
 
     <!-- Shortcuts -->
     <string name="shortcuts_title">الاختصارات</string>
@@ -274,13 +281,14 @@
     <string name="shortcuts_remove_dialog_title">إزالة الاختصار؟</string>
     <string name="shortcuts_remove_body">سيتم تعطيل \"%s\" على المشغِّل. لإزالته نهائياً، اضغط مطولاً على الاختصار من شاشتك الرئيسية واختر إزالة.</string>
     <string name="shortcuts_disable_button">تعطيل</string>
+    <string name="shortcuts_add_button">إضافة اختصار</string>
     <string name="shortcuts_options_cd">خيارات</string>
     <string name="shortcuts_menu_rename">إعادة تسمية</string>
     <string name="shortcuts_menu_change_icon">تغيير الأيقونة</string>
     <string name="shortcuts_menu_refresh_icon">تحديث الأيقونة</string>
     <string name="shortcuts_menu_remove">إزالة</string>
-    <string name="shortcuts_empty_title">لا توجد اختصارات بعد</string>
-    <string name="shortcuts_empty_desc">افتح قائمة التطبيق واضغط \"إضافة إلى الشاشة الرئيسية\" لإنشاء اختصار.</string>
+    <string name="shortcuts_empty_title">اقفز مباشرةً إلى الصفحة</string>
+    <string name="shortcuts_empty_desc">ثبّت روابط عميقة — صندوق بريدك، القناة المباشرة، أجندة اليوم — وافتحها بنقرة واحدة.</string>
 
     <!-- Translate -->
     <string name="translate_title">إعدادات الترجمة</string>

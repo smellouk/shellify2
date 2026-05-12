@@ -33,10 +33,12 @@
     <string name="home_hide_details_cd">Masquer les détails</string>
     <string name="home_search_cd">Rechercher</string>
     <string name="home_add_fab_cd">Ajouter une PWA</string>
+    <string name="home_add_fab_label">Nouvelle app</string>
+    <string name="home_quick_suggestions">SUGGESTIONS RAPIDES</string>
     <string name="home_all_categories">Tout</string>
-    <string name="home_empty_title">Aucune application</string>
-    <string name="home_empty_subtitle">Appuyez sur + pour ajouter votre première PWA</string>
-    <string name="home_empty_subtitle_action">Appuyez sur le bouton ci-dessous pour créer votre première application</string>
+    <string name="home_empty_title">Forgez votre première app</string>
+    <string name="home_empty_subtitle">Entrez une URL et PWAForge la transforme en une tuile privée et isolée sur votre écran d\'accueil.</string>
+    <string name="home_empty_subtitle_action">Ajouter un site</string>
     <string name="home_empty_filtered_category">Aucune application dans \"%s\"</string>
     <string name="home_empty_filtered_subtitle">Les applications assignées à cette catégorie apparaîtront ici</string>
     <string name="home_menu_edit">Modifier</string>
@@ -175,6 +177,7 @@
     <string name="global_settings_theme_dark">Sombre</string>
     <string name="global_settings_dynamic_colors">Couleurs dynamiques</string>
     <string name="global_settings_dynamic_colors_desc">Suivre les couleurs d\'accent du fond d\'écran (Material You)</string>
+    <string name="global_settings_accent_color">Couleur du thème</string>
     <string name="global_settings_section_browser">Navigateur</string>
     <string name="global_settings_default_ua">Agent utilisateur par défaut</string>
     <string name="global_settings_default_engine_label">Moteur par défaut pour les nouvelles applications</string>
@@ -258,13 +261,17 @@
     <string name="categories_save">Enregistrer</string>
     <string name="categories_delete">Supprimer</string>
     <string name="categories_delete_cd">Supprimer</string>
-    <string name="categories_empty">Aucune catégorie</string>
-    <string name="categories_empty_subtitle">Appuyez sur le bouton ci-dessous pour créer votre première catégorie</string>
+    <string name="categories_empty">Triez vos apps par espace</string>
+    <string name="categories_empty_subtitle">Regroupez vos tuiles par usage — Travail, Lecture, Médias — puis naviguez entre elles depuis le tiroir.</string>
     <string name="categories_new_dialog_title">Nouvelle catégorie</string>
     <string name="categories_name_label">Nom</string>
     <string name="categories_icon_label">Icône</string>
     <string name="categories_color_label">Couleur</string>
     <string name="categories_add_button">Ajouter</string>
+    <string name="categories_suggestion_media">Médias</string>
+    <string name="categories_suggestion_work">Travail</string>
+    <string name="categories_suggestion_reading">Lecture</string>
+    <string name="categories_suggestion_tools">Outils</string>
 
     <!-- Shortcuts -->
     <string name="shortcuts_title">Raccourcis</string>
@@ -274,13 +281,14 @@
     <string name="shortcuts_remove_dialog_title">Supprimer le raccourci ?</string>
     <string name="shortcuts_remove_body">\"%s\" sera désactivé sur le lanceur. Pour le supprimer complètement, appuyez longuement sur le raccourci sur votre écran d\'accueil et sélectionnez Supprimer.</string>
     <string name="shortcuts_disable_button">Désactiver</string>
+    <string name="shortcuts_add_button">Ajouter un raccourci</string>
     <string name="shortcuts_options_cd">Options</string>
     <string name="shortcuts_menu_rename">Renommer</string>
     <string name="shortcuts_menu_change_icon">Changer l\'icône</string>
     <string name="shortcuts_menu_refresh_icon">Actualiser l\'icône</string>
     <string name="shortcuts_menu_remove">Supprimer</string>
-    <string name="shortcuts_empty_title">Aucun raccourci</string>
-    <string name="shortcuts_empty_desc">Ouvrez le menu d\'une application et appuyez sur \"Ajouter à l\'écran d\'accueil\" pour créer un raccourci.</string>
+    <string name="shortcuts_empty_title">Accédez directement à la page</string>
+    <string name="shortcuts_empty_desc">Épinglez des liens profonds — votre boîte mail, la chaîne en direct, l\'agenda du jour — et ouvrez-les en un tap.</string>
 
     <!-- Translate -->
     <string name="translate_title">Paramètres de traduction</string>

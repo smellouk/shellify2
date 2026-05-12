@@ -33,10 +33,12 @@
     <string name="home_hide_details_cd">Hide details</string>
     <string name="home_search_cd">Search</string>
     <string name="home_add_fab_cd">Add PWA</string>
+    <string name="home_add_fab_label">New app</string>
+    <string name="home_quick_suggestions">QUICK SUGGESTIONS</string>
     <string name="home_all_categories">All</string>
-    <string name="home_empty_title">No apps yet</string>
-    <string name="home_empty_subtitle">Tap + to add your first PWA</string>
-    <string name="home_empty_subtitle_action">Tap the button below to create your first app</string>
+    <string name="home_empty_title">Forge your first app</string>
+    <string name="home_empty_subtitle">Drop a URL and PWAForge wraps it as a private, isolated tile on your home screen.</string>
+    <string name="home_empty_subtitle_action">Add a website</string>
     <string name="home_empty_filtered_category">No apps in \"%s\"</string>
     <string name="home_empty_filtered_subtitle">Apps assigned to this category will appear here</string>
     <string name="home_menu_edit">Edit</string>
@@ -259,13 +261,17 @@
     <string name="categories_save">Save</string>
     <string name="categories_delete">Delete</string>
     <string name="categories_delete_cd">Delete</string>
-    <string name="categories_empty">No categories yet</string>
-    <string name="categories_empty_subtitle">Tap the button below to create your first category</string>
+    <string name="categories_empty">Sort apps into spaces</string>
+    <string name="categories_empty_subtitle">Group your tiles by purpose — Work, Reading, Media — then jump between them from the drawer.</string>
     <string name="categories_new_dialog_title">New Category</string>
     <string name="categories_name_label">Name</string>
     <string name="categories_icon_label">Icon</string>
     <string name="categories_color_label">Color</string>
     <string name="categories_add_button">Add</string>
+    <string name="categories_suggestion_media">Media</string>
+    <string name="categories_suggestion_work">Work</string>
+    <string name="categories_suggestion_reading">Reading</string>
+    <string name="categories_suggestion_tools">Tools</string>
 
     <!-- Shortcuts -->
     <string name="shortcuts_title">Shortcuts</string>
@@ -275,13 +281,14 @@
     <string name="shortcuts_remove_dialog_title">Remove shortcut?</string>
     <string name="shortcuts_remove_body">\"%s\" will be disabled on the launcher. To fully remove it, long-press the shortcut on your home screen and select Remove.</string>
     <string name="shortcuts_disable_button">Disable</string>
+    <string name="shortcuts_add_button">Add a shortcut</string>
     <string name="shortcuts_options_cd">Options</string>
     <string name="shortcuts_menu_rename">Rename</string>
     <string name="shortcuts_menu_change_icon">Change icon</string>
     <string name="shortcuts_menu_refresh_icon">Refresh icon</string>
     <string name="shortcuts_menu_remove">Remove</string>
-    <string name="shortcuts_empty_title">No shortcuts yet</string>
-    <string name="shortcuts_empty_desc">Open an app\'s menu and tap \"Add to home screen\" to create a launcher shortcut.</string>
+    <string name="shortcuts_empty_title">Skip straight to the page</string>
+    <string name="shortcuts_empty_desc">Pin deep links — your inbox, the live channel, today\'s agenda — and open them in one tap.</string>
 
     <!-- Translate -->
     <string name="translate_title">Translation settings</string>

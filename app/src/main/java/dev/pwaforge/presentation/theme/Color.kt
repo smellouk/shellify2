@@ -18,3 +18,11 @@ val TagTranslate    = Color(0xFF1E88E5) // blue    – translate indicator
 val TagLockPassword = Color(0xFF7C4DFF) // purple  – password-lock indicator
 val TagLockSystem   = Color(0xFF3F51B5) // indigo  – system-lock indicator
 val GeckoWarning    = Color(0xFFFF9800) // orange  – GeckoView not installed
+
+// Category suggestion palette
+val CategoryMediaFg   = Color(0xFF7A5300)
+val CategoryMediaBg   = Color(0xFFFFE7BD)
+val CategoryReadingFg = Color(0xFFB5365E)
+val CategoryReadingBg = Color(0xFFFFD9E2)
+val CategoryToolsFg   = Color(0xFF006B5F)
+val CategoryToolsBg   = Color(0xFFDAF8F2)

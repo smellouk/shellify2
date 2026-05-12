@@ -1,7 +1,9 @@
 package dev.pwaforge.presentation.theme
 
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 object Dimens {
 
@@ -51,4 +53,35 @@ object Dimens {
     val borderSelected: Dp = 2.dp
     val strokeSm:       Dp = 1.5.dp
     val strokeMd:       Dp = 2.dp
+
+    // Empty-state illustration sizes
+    val illustrationSize:      Dp = 160.dp
+    val illustrationSizeMid:   Dp = 116.dp
+    val illustrationSizeInner: Dp = 72.dp
+    val illustrationRadius:    Dp = 70.dp
+
+    // Additional sizes
+    val sizeIconLarge:        Dp = 30.dp  // Icon inside illustration tile
+    val sizeIllustrationTile: Dp = 64.dp  // Center tile in illustration
+    val sizeIconContainer:    Dp = 36.dp  // Settings row icon container
+
+    // Additional corners
+    val cornerFull: Dp = 100.dp  // Pill shape
+    val corner12:   Dp = 12.dp   // Icon box corners
+    val corner14:   Dp = 14.dp   // Suggestion row corners
+    val corner24:   Dp = 24.dp   // CTA button corners
+
+    // Typography sizes
+    val textSizeEmptyTitle: TextUnit = 22.sp  // Empty-state headline in all screens
+    val textSizeBody:       TextUnit = 13.sp  // Compact body / supporting text
+    val textSizeCta:        TextUnit = 14.sp  // Call-to-action button labels
+    val textSizeCaption:    TextUnit = 11.sp  // Overline / caption (e.g. QUICK SUGGESTIONS)
+    val textSizeSectionLabel: TextUnit = 12.sp  // Settings section label
+
+    // Letter spacing
+    val letterSpacingTight: TextUnit = (-0.3).sp  // Empty-state titles
+    val letterSpacingCaps:  TextUnit = 1.sp        // ALL-CAPS labels
+
+    // Line height
+    val lineHeightBody: TextUnit = 19.5.sp  // Paired with textSizeBody
 }

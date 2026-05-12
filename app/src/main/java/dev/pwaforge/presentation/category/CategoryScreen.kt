@@ -55,8 +55,6 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Sailing
 import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Sports
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WbSunny
@@ -91,6 +89,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.pwaforge.R
+import dev.pwaforge.presentation.theme.CategoryMediaFg
+import dev.pwaforge.presentation.theme.CategoryMediaBg
+import dev.pwaforge.presentation.theme.CategoryReadingFg
+import dev.pwaforge.presentation.theme.CategoryReadingBg
+import dev.pwaforge.presentation.theme.CategoryToolsFg
+import dev.pwaforge.presentation.theme.CategoryToolsBg
 import dev.pwaforge.presentation.theme.Dimens
 
 val CATEGORY_ICON_KEYS = listOf(
@@ -215,18 +219,18 @@ fun CategoryScreen(
 
                 Spacer(Modifier.height(14.dp))
                 Text(
-                    "Sort apps into spaces",
-                    fontSize = 22.sp,
+                    stringResource(R.string.categories_empty),
+                    fontSize = Dimens.textSizeEmptyTitle,
                     fontWeight = FontWeight.SemiBold,
-                    letterSpacing = (-0.3).sp,
+                    letterSpacing = Dimens.letterSpacingTight,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Group your tiles by purpose — Work, Reading, Media — then jump between them from the drawer.",
-                    fontSize = 13.sp,
-                    lineHeight = 19.5.sp,
+                    stringResource(R.string.categories_empty_subtitle),
+                    fontSize = Dimens.textSizeBody,
+                    lineHeight = Dimens.lineHeightBody,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
@@ -239,16 +243,16 @@ fun CategoryScreen(
                 ) {
                     Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.size(8.dp))
-                    Text("New category", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.categories_add), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(Modifier.height(20.dp))
 
                 // Suggestion chips — 2×2 wrap, dashed border, maxWidth 280dp
                 val chipData = listOf(
-                    Triple("Media",   Icons.Default.Bolt,     Color(0xFF7A5300) to Color(0xFFFFE7BD)),
-                    Triple("Work",    Icons.Default.Apps,     p40               to p90),
-                    Triple("Reading", Icons.Default.Home,     Color(0xFFB5365E) to Color(0xFFFFD9E2)),
-                    Triple("Tools",   Icons.Default.GridView, Color(0xFF006B5F) to Color(0xFFDAF8F2)),
+                    Triple(stringResource(R.string.categories_suggestion_media),   Icons.Default.Bolt,     CategoryMediaFg   to CategoryMediaBg),
+                    Triple(stringResource(R.string.categories_suggestion_work),    Icons.Default.Apps,     p40               to p90),
+                    Triple(stringResource(R.string.categories_suggestion_reading), Icons.Default.Home,     CategoryReadingFg to CategoryReadingBg),
+                    Triple(stringResource(R.string.categories_suggestion_tools),   Icons.Default.GridView, CategoryToolsFg   to CategoryToolsBg),
                 )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,

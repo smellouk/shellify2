@@ -32,7 +32,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
@@ -176,7 +175,7 @@ fun HomeScreen(
                 ExtendedFloatingActionButton(
                     onClick = onAddApp,
                     icon = { Icon(Icons.Default.Add, null) },
-                    text = { Text("New app") },
+                    text = { Text(stringResource(R.string.home_add_fab_label)) },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White,
                     elevation = FloatingActionButtonDefaults.elevation(6.dp),
@@ -397,20 +396,20 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
 
         // 160×160 illustration — 3 filled rings + single dashed orbit
         Box(
-            modifier = Modifier.size(160.dp),
+            modifier = Modifier.size(Dimens.illustrationSize),
             contentAlignment = Alignment.Center,
         ) {
             // Outermost tinted ring
-            Box(modifier = Modifier.size(160.dp).background(p97, CircleShape))
+            Box(modifier = Modifier.size(Dimens.illustrationSize).background(p97, CircleShape))
             // Middle ring
-            Box(modifier = Modifier.size(116.dp).background(p95, CircleShape))
+            Box(modifier = Modifier.size(Dimens.illustrationSizeMid).background(p95, CircleShape))
             // Inner ring
-            Box(modifier = Modifier.size(72.dp).background(p90, CircleShape))
+            Box(modifier = Modifier.size(Dimens.illustrationSizeInner).background(p90, CircleShape))
             // Single dashed orbit at r=70
-            Canvas(modifier = Modifier.size(160.dp)) {
+            Canvas(modifier = Modifier.size(Dimens.illustrationSize)) {
                 drawCircle(
                     color = p40.copy(alpha = 0.35f),
-                    radius = 70.dp.toPx(),
+                    radius = Dimens.illustrationRadius.toPx(),
                     style = Stroke(
                         width = 1.2.dp.toPx(),
                         pathEffect = PathEffect.dashPathEffect(
@@ -422,11 +421,11 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             // Center tile: 64dp / radius 20dp / icon 30dp
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(Dimens.sizeIllustrationTile)
                     .background(p40, RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Default.GridView, null, modifier = Modifier.size(30.dp), tint = Color.White)
+                Icon(Icons.Default.GridView, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
             }
             // Ghost tiles — positions match design handoff absolute coords
             Box(
@@ -453,18 +452,18 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
 
         Spacer(Modifier.height(14.dp))
         Text(
-            "Forge your first app",
-            fontSize = 22.sp,
+            stringResource(R.string.home_empty_title),
+            fontSize = Dimens.textSizeEmptyTitle,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = (-0.3).sp,
+            letterSpacing = Dimens.letterSpacingTight,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            "Drop a URL and PWAForge wraps it as a private, isolated tile on your home screen.",
-            fontSize = 13.sp,
-            lineHeight = 19.5.sp,
+            stringResource(R.string.home_empty_subtitle),
+            fontSize = Dimens.textSizeBody,
+            lineHeight = Dimens.lineHeightBody,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -477,7 +476,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
         ) {
             Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Add a website", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.home_empty_subtitle_action), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.height(22.dp))
 
@@ -487,10 +486,10 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             modifier = Modifier.widthIn(max = 300.dp).fillMaxWidth(),
         ) {
             Text(
-                "QUICK SUGGESTIONS",
-                fontSize = 11.sp,
+                stringResource(R.string.home_quick_suggestions),
+                fontSize = Dimens.textSizeCaption,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
+                letterSpacing = Dimens.letterSpacingCaps,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
             Spacer(Modifier.height(8.dp))
