@@ -110,11 +110,9 @@ fun PWAForgeTheme(
         SideEffect {
             val window = (view.context as? android.app.Activity)?.window
             if (window != null) {
+                WindowCompat.setDecorFitsSystemWindows(window, false)
                 @Suppress("DEPRECATION")
-                window.statusBarColor = if (useDark)
-                    android.graphics.Color.parseColor("#1C1B1F")
-                else
-                    android.graphics.Color.WHITE
+                window.statusBarColor = android.graphics.Color.TRANSPARENT
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDark
             }
         }

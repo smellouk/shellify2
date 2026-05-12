@@ -6,6 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
@@ -25,10 +30,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,6 +43,7 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -75,8 +82,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -123,13 +129,13 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    var showSearch by remember { mutableStateOf(false) }
     var hideDetails by remember { mutableStateOf(false) }
+    var isGridView by remember { mutableStateOf(true) }
+    var searchFocused by remember { mutableStateOf(false) }
     var showLanguagePicker by remember { mutableStateOf(false) }
 
     val showDetailsCd = stringResource(R.string.home_show_details_cd)
     val hideDetailsCd = stringResource(R.string.home_hide_details_cd)
-    val searchCd = stringResource(R.string.home_search_cd)
     val addFabCd = stringResource(R.string.home_add_fab_cd)
     val languageChangeCd = stringResource(R.string.language_change_cd)
 
@@ -138,37 +144,10 @@ fun HomeScreen(
         containerColor = screenBg,
         topBar = {
             TopAppBar(
-                title = {
-                    if (showSearch) {
-                        TextField(
-                            value = state.searchQuery,
-                            onValueChange = viewModel::setSearch,
-                            placeholder = { Text(stringResource(R.string.home_search_hint)) },
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    } else {
-                        Text(stringResource(R.string.home_title))
-                    }
-                },
+                title = { Text(stringResource(R.string.home_title)) },
                 actions = {
-                    if (state.apps.isNotEmpty()) {
-                        IconButton(onClick = { hideDetails = !hideDetails }) {
-                            Icon(if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd)
-                        }
-                    }
                     IconButton(onClick = { showLanguagePicker = true }) {
                         Icon(Icons.Default.Language, contentDescription = languageChangeCd)
-                    }
-                    IconButton(onClick = { showSearch = !showSearch; if (!showSearch) viewModel.setSearch("") }) {
-                        Icon(Icons.Default.Search, contentDescription = searchCd)
                     }
                 },
             )
@@ -180,7 +159,7 @@ fun HomeScreen(
                     icon = { Icon(Icons.Default.Add, null) },
                     text = { Text(stringResource(R.string.home_add_fab_label)) },
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
                 )
             }
@@ -197,14 +176,96 @@ fun HomeScreen(
             )
         }
 
+        val focusManager = LocalFocusManager.current
+
         Column(modifier = Modifier.padding(padding)) {
+
+            // Search bar + view controls
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = Dimens.spaceLg, end = Dimens.spaceSm, top = Dimens.spaceMd, bottom = 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BasicTextField(
+                    value = state.searchQuery,
+                    onValueChange = viewModel::setSearch,
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = Dimens.textSizeBody,
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(Dimens.sizeApp)
+                        .onFocusChanged { searchFocused = it.isFocused },
+                    decorationBox = { innerTextField ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(Dimens.cornerFull)),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Spacer(Modifier.width(Dimens.spaceMd))
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(Dimens.sizeXs),
+                            )
+                            Spacer(Modifier.width(Dimens.spaceSm))
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (state.searchQuery.isEmpty()) {
+                                    Text(
+                                        stringResource(R.string.home_search_hint),
+                                        fontSize = Dimens.textSizeBody,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                innerTextField()
+                            }
+                            if (searchFocused || state.searchQuery.isNotEmpty()) {
+                                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.setSearch("")
+                                            focusManager.clearFocus()
+                                        },
+                                        modifier = Modifier.size(Dimens.sizeApp),
+                                    ) {
+                                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(Dimens.sizeXs))
+                                    }
+                                }
+                            } else {
+                                Spacer(Modifier.width(Dimens.spaceMd))
+                            }
+                        }
+                    },
+                )
+                if (state.apps.isNotEmpty() && !searchFocused) {
+                    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                        IconButton(onClick = { hideDetails = !hideDetails }) {
+                            Icon(
+                                if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd,
+                            )
+                        }
+                        IconButton(onClick = { isGridView = !isGridView }) {
+                            Icon(
+                                if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                }
+            }
 
             // Category filter chips
             if (state.categories.isNotEmpty()) {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = Dimens.spaceLg),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
-                    modifier = Modifier.padding(vertical = Dimens.spaceSm),
+                    modifier = Modifier.padding(top = Dimens.spaceSm, bottom = 0.dp),
                 ) {
                     item {
                         FilterChip(
@@ -248,11 +309,31 @@ fun HomeScreen(
                     reason = emptyReason,
                     onAddApp = onAddApp,
                 )
-            } else {
+            } else if (isGridView) {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(Dimens.sizeGridCell),
-                    contentPadding = PaddingValues(Dimens.spaceLg),
+                    contentPadding = PaddingValues(start = Dimens.spaceLg, end = Dimens.spaceLg, top = Dimens.spaceSm, bottom = Dimens.spaceLg),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                ) {
+                    gridItems(state.apps, key = { it.id }) { app ->
+                        AppCard(
+                            app = app,
+                            geckoInstalled = geckoInstalled,
+                            categories = state.categories,
+                            hideDetails = hideDetails,
+                            onClick = { context.startActivity(WebViewActivity.launchIntent(context, app.id)) },
+                            onEdit = { onEditApp(app.id) },
+                            onSettings = { onOpenSettings(app.id) },
+                            onDelete = { viewModel.delete(app) },
+                            onClearData = { viewModel.clearData(app) },
+                            onAssignCategory = { categoryId -> viewModel.assignCategory(app, categoryId) },
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(start = Dimens.spaceLg, end = Dimens.spaceLg, top = Dimens.spaceSm, bottom = Dimens.spaceLg),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                 ) {
                     items(state.apps, key = { it.id }) { app ->
