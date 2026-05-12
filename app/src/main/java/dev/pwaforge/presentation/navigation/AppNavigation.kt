@@ -76,6 +76,7 @@ import dev.pwaforge.presentation.shortcuts.ShortcutsScreen
 import dev.pwaforge.presentation.shortcuts.ShortcutsViewModel
 import dev.pwaforge.presentation.translate.TranslateConfigScreen
 import dev.pwaforge.presentation.translate.TranslateConfigViewModel
+import dev.pwaforge.presentation.theme.Dimens
 
 private val topLevelRoutes = setOf(
     Screen.Home.route,
@@ -116,7 +117,7 @@ fun AppNavigation(
                     Column(modifier = Modifier.navigationBarsPadding()) {
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceSm),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                         ) {
                             data class NavItem(val route: String, val icon: ImageVector, val label: String)
@@ -133,21 +134,21 @@ fun AppNavigation(
                                         interactionSource = remember { MutableInteractionSource() },
                                     ) { navController.navigateToTab(item.route) },
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(width = 64.dp, height = 32.dp)
+                                            .size(width = Dimens.sizeIllustrationTile, height = Dimens.size4xl)
                                             .background(
                                                 if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                                                RoundedCornerShape(16.dp),
+                                                RoundedCornerShape(Dimens.cornerXl),
                                             ),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(
                                             item.icon,
                                             null,
-                                            modifier = Modifier.size(22.dp),
+                                            modifier = Modifier.size(Dimens.sizeLg),
                                             tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }

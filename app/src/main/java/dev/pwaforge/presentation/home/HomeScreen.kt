@@ -180,7 +180,7 @@ fun HomeScreen(
                     text = { Text(stringResource(R.string.home_add_fab_label)) },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White,
-                    elevation = FloatingActionButtonDefaults.elevation(6.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
                 )
             }
         },
@@ -390,11 +390,11 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
     val surface = MaterialTheme.colorScheme.surface
 
     Column(
-        modifier = modifier.padding(horizontal = 32.dp),
+        modifier = modifier.padding(horizontal = Dimens.size4xl),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(Dimens.spaceXl))
 
         // 160×160 illustration — 3 filled rings + single dashed orbit
         Box(
@@ -424,35 +424,35 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             Box(
                 modifier = Modifier
                     .size(Dimens.sizeIllustrationTile)
-                    .background(p40, RoundedCornerShape(20.dp)),
+                    .background(p40, RoundedCornerShape(Dimens.corner20)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Default.GridView, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
             }
             // Ghost tiles — positions match design handoff absolute coords
             Box(
-                modifier = Modifier.size(26.dp).offset(x = (-49).dp, y = (-57).dp)
-                    .background(surface, RoundedCornerShape(8.dp))
-                    .border(1.dp, surfDim, RoundedCornerShape(8.dp)),
+                modifier = Modifier.size(Dimens.size2xl).offset(x = (-49).dp, y = (-57).dp)
+                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
+                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
             )
             Box(
-                modifier = Modifier.size(22.dp).offset(x = 57.dp, y = (-45).dp)
-                    .background(surface, RoundedCornerShape(7.dp))
-                    .border(1.dp, surfDim, RoundedCornerShape(7.dp)),
+                modifier = Modifier.size(Dimens.sizeLg).offset(x = 57.dp, y = (-45).dp)
+                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
+                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
             )
             Box(
-                modifier = Modifier.size(22.dp).offset(x = (-61).dp, y = 51.dp)
-                    .background(surface, RoundedCornerShape(7.dp))
-                    .border(1.dp, surfDim, RoundedCornerShape(7.dp)),
+                modifier = Modifier.size(Dimens.sizeLg).offset(x = (-61).dp, y = 51.dp)
+                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
+                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
             )
             Box(
-                modifier = Modifier.size(26.dp).offset(x = 41.dp, y = 59.dp)
-                    .background(surface, RoundedCornerShape(8.dp))
-                    .border(1.dp, surfDim, RoundedCornerShape(8.dp)),
+                modifier = Modifier.size(Dimens.size2xl).offset(x = 41.dp, y = 59.dp)
+                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
+                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
             )
         }
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(Dimens.space14))
         Text(
             stringResource(R.string.home_empty_title),
             fontSize = Dimens.textSizeEmptyTitle,
@@ -469,18 +469,18 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(Dimens.space18))
         Button(
             onClick = onAddApp,
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.height(48.dp),
-            contentPadding = PaddingValues(horizontal = 22.dp),
+            shape = RoundedCornerShape(Dimens.corner24),
+            modifier = Modifier.height(Dimens.sizeApp),
+            contentPadding = PaddingValues(horizontal = Dimens.sizeLg),
         ) {
-            Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
+            Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
+            Spacer(Modifier.width(Dimens.spaceSm))
             Text(stringResource(R.string.home_empty_subtitle_action), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
         }
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(Dimens.space22))
 
         // Quick suggestions
         Column(
@@ -494,8 +494,8 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                 letterSpacing = Dimens.letterSpacingCaps,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             )
-            Spacer(Modifier.height(8.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Spacer(Modifier.height(Dimens.spaceSm))
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                 listOf(
                     Triple("Zattoo TV", "zattoo.com", Icons.Default.Bolt),
                     Triple("GitHub", "github.com", Icons.Default.Layers),
@@ -562,7 +562,7 @@ private fun AppCard(
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(modifier = Modifier.padding(Dimens.spaceMd)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -757,16 +757,16 @@ private fun FeatureTags(app: WebApp) {
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        RoundedCornerShape(100.dp),
+                        RoundedCornerShape(Dimens.cornerFull),
                     )
-                    .padding(horizontal = 7.dp, vertical = 3.dp),
+                    .padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceXxs),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
             ) {
                 Icon(
                     tag.icon,
                     contentDescription = tag.label,
-                    modifier = Modifier.size(12.dp),
+                    modifier = Modifier.size(Dimens.sizeXxs),
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(

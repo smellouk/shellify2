@@ -208,12 +208,12 @@ private fun ProgressBars(pageCount: Int, currentPage: Int, modifier: Modifier = 
     val primaryContainer = MaterialTheme.colorScheme.primaryContainer
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
         repeat(pageCount) { i ->
             val barModifier = Modifier
                 .weight(1f)
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp))
+                .height(Dimens.spaceXxs)
+                .clip(RoundedCornerShape(Dimens.cornerXxs))
 
             when {
                 i < currentPage -> {
@@ -252,7 +252,7 @@ private fun OnboardingFooter(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = Dimens.spaceLg, vertical = 12.dp),
+            .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
     ) {
         when (page) {
             0 -> FooterRow(
@@ -344,9 +344,9 @@ private fun FooterRow(
         if (secondaryLabel != null && onSecondary != null) {
             OutlinedButton(
                 onClick = onSecondary,
-                modifier = Modifier.height(48.dp),
+                modifier = Modifier.height(Dimens.sizeApp),
                 shape = CircleShape,
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.sizeMd),
             ) {
                 Text(secondaryLabel)
             }
@@ -356,9 +356,9 @@ private fun FooterRow(
 
         Button(
             onClick = onPrimary,
-            modifier = Modifier.height(48.dp),
+            modifier = Modifier.height(Dimens.sizeApp),
             shape = CircleShape,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.spaceXl),
         ) {
             Text(primaryLabel)
             if (showPrimaryArrow) {
@@ -366,7 +366,7 @@ private fun FooterRow(
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(Dimens.sizeSm),
                 )
             }
         }
@@ -405,7 +405,7 @@ private fun WelcomePage(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(Dimens.space22))
 
         // "LANGUAGE" eyebrow
         Text(
@@ -437,16 +437,16 @@ private fun WelcomePage(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(46.dp)
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(Dimens.corner14))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primaryContainer
                                     else MaterialTheme.colorScheme.surface,
                                 )
                                 .border(
-                                    width = if (isSelected) 2.dp else 1.dp,
+                                    width = if (isSelected) Dimens.borderSelected else Dimens.borderDefault,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.outlineVariant,
-                                    shape = RoundedCornerShape(14.dp),
+                                    shape = RoundedCornerShape(Dimens.corner14),
                                 )
                                 .clickable(enabled = !isSelected) {
                                     selectedLanguage = code
@@ -467,7 +467,7 @@ private fun WelcomePage(
                                 contentDescription = null,
                                 tint = if (isSelected) MaterialTheme.colorScheme.primary
                                        else androidx.compose.ui.graphics.Color.Transparent,
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(Dimens.sizeXs),
                             )
                         }
                     }
@@ -510,7 +510,7 @@ private fun WelcomeHero() {
                     listOf(background, primaryContainer.copy(alpha = 0.3f)),
                 ),
             )
-            .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)),
+            .clip(RoundedCornerShape(bottomStart = Dimens.corner28, bottomEnd = Dimens.corner28)),
         contentAlignment = Alignment.Center,
     ) {
         // Floating tile constellation
@@ -534,7 +534,7 @@ private fun WelcomeHero() {
                 modifier = Modifier
                     .offset(x = tile.offsetX, y = tile.offsetY + yOff.dp)
                     .size(tile.size)
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(Dimens.corner14))
                     .background(primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
@@ -551,8 +551,8 @@ private fun WelcomeHero() {
         Box(
             modifier = Modifier
                 .offset(y = bobY.dp)
-                .size(96.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .size(Dimens.sizeEmptyIconLg)
+                .clip(RoundedCornerShape(Dimens.corner28))
                 .background(Brush.linearGradient(listOf(primary, secondary))),
             contentAlignment = Alignment.Center,
         ) {
@@ -567,7 +567,7 @@ private fun WelcomeHero() {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 6.dp, y = (-6).dp)
+                    .offset(x = Dimens.spaceXs, y = -Dimens.spaceXs)
                     .size(10.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFFFB68A)),
@@ -604,17 +604,17 @@ private fun WhatPage() {
         // "FOUR THINGS" eyebrow pill
         Row(
             modifier = Modifier
-                .clip(RoundedCornerShape(100.dp))
+                .clip(RoundedCornerShape(Dimens.cornerFull))
                 .background(primaryContainer)
-                .padding(horizontal = 8.dp, vertical = 5.dp),
+                .padding(horizontal = Dimens.spaceSm, vertical = Dimens.spaceXxs),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
         ) {
             Icon(
                 Icons.Default.AutoAwesome,
                 contentDescription = null,
                 tint = primary,
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(Dimens.space14),
             )
             Text(
                 text = stringResource(R.string.onboarding_what_eyebrow).uppercase(),
@@ -623,7 +623,7 @@ private fun WhatPage() {
             )
         }
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(Dimens.space14))
 
         Text(
             text = stringResource(R.string.onboarding_what_title),
@@ -631,17 +631,17 @@ private fun WhatPage() {
             fontWeight = FontWeight.SemiBold,
         )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(Dimens.space22))
 
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.space10)) {
             features.forEach { feature ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp))
-                        .clip(RoundedCornerShape(18.dp))
+                        .border(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(Dimens.corner18))
+                        .clip(RoundedCornerShape(Dimens.corner18))
                         .background(MaterialTheme.colorScheme.surface)
-                        .padding(14.dp),
+                        .padding(Dimens.space14),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                 ) {
@@ -649,7 +649,7 @@ private fun WhatPage() {
                     Box(
                         modifier = Modifier
                             .size(44.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
                             .background(bgColor),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -657,7 +657,7 @@ private fun WhatPage() {
                             feature.icon,
                             contentDescription = null,
                             tint = primary,
-                            modifier = Modifier.size(22.dp),
+                            modifier = Modifier.size(Dimens.sizeLg),
                         )
                     }
                     Column(modifier = Modifier.weight(1f)) {
@@ -713,16 +713,16 @@ private fun AppearancePage(
             color = onSurfaceVariant,
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(Dimens.sizeMd))
 
         // Live preview card
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, outlineVariant, RoundedCornerShape(20.dp))
-                .clip(RoundedCornerShape(20.dp))
+                .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner20))
+                .clip(RoundedCornerShape(Dimens.corner20))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(18.dp),
+                .padding(Dimens.space18),
         ) {
             Text(
                 text = stringResource(R.string.onboarding_appearance_preview_label).uppercase(),
@@ -732,7 +732,7 @@ private fun AppearancePage(
                 color = onSurfaceVariant,
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Dimens.spaceMd))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -743,7 +743,7 @@ private fun AppearancePage(
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(Dimens.corner14))
                         .background(Brush.linearGradient(listOf(primary, secondary))),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -754,7 +754,7 @@ private fun AppearancePage(
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(Dimens.corner14))
                         .background(secondaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -765,7 +765,7 @@ private fun AppearancePage(
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(Dimens.corner14))
                         .background(primaryContainer.copy(alpha = 0.6f)),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -776,15 +776,15 @@ private fun AppearancePage(
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(14.dp))
-                        .border(1.5.dp, outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(14.dp)),
+                        .clip(RoundedCornerShape(Dimens.corner14))
+                        .border(Dimens.strokeSm, outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(Dimens.corner14)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("+", color = onSurfaceVariant, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
                 }
             }
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(Dimens.space14))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -794,15 +794,15 @@ private fun AppearancePage(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .height(Dimens.spaceSm)
+                        .clip(RoundedCornerShape(Dimens.spaceXxs))
                         .background(surfaceVariant),
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
+                            .height(Dimens.spaceSm)
+                            .clip(RoundedCornerShape(Dimens.spaceXxs))
                             .background(primary),
                     )
                 }
@@ -815,7 +815,7 @@ private fun AppearancePage(
             }
         }
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(Dimens.space22))
 
         // "APPEARANCE" eyebrow
         Text(
@@ -848,7 +848,7 @@ private fun AppearancePage(
             }
         }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(Dimens.space18))
 
         // "ACCENT COLOR" eyebrow
         Text(
@@ -858,12 +858,12 @@ private fun AppearancePage(
             color = onSurfaceVariant,
         )
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(Dimens.space10))
 
         // 5 accent swatches
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.space10),
         ) {
             ACCENT_COLORS.forEach { colorInt ->
                 val isSelected = accentColor == colorInt
@@ -871,7 +871,7 @@ private fun AppearancePage(
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(Dimens.cornerXl))
                         .background(Color(colorInt))
                         .clickable { onAccentColor(colorInt) },
                     contentAlignment = Alignment.Center,
@@ -881,7 +881,7 @@ private fun AppearancePage(
                             Icons.Default.Check,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(Dimens.sizeMd),
                         )
                     }
                 }
@@ -915,15 +915,15 @@ private fun SecurityPage(
         // Lock icon tile
         Box(
             modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(18.dp))
+                .size(Dimens.sizeIconHero)
+                .clip(RoundedCornerShape(Dimens.corner18))
                 .background(Brush.linearGradient(listOf(primary, secondary))),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+            Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(Dimens.size3xl))
         }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(Dimens.space18))
 
         Text(
             text = stringResource(R.string.onboarding_security_title),
@@ -939,7 +939,7 @@ private fun SecurityPage(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(Dimens.spaceXl))
 
         if (passwordSet) {
             ListItem(
@@ -986,7 +986,7 @@ private fun SecurityPage(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Dimens.spaceMd))
 
             StrengthMeter(password)
         }
@@ -1012,14 +1012,14 @@ private fun StrengthMeter(password: String) {
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
     ) {
         repeat(4) { i ->
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
+                    .height(Dimens.spaceXxs)
+                    .clip(RoundedCornerShape(Dimens.cornerXxs))
                     .background(
                         if (i < strength) barColor
                         else MaterialTheme.colorScheme.surfaceVariant,
@@ -1029,7 +1029,7 @@ private fun StrengthMeter(password: String) {
     }
 
     if (password.isNotEmpty()) {
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(Dimens.spaceXs))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1088,15 +1088,15 @@ private fun BackupPage(
         // Cloud icon tile
         Box(
             modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(18.dp))
+                .size(Dimens.sizeIconHero)
+                .clip(RoundedCornerShape(Dimens.corner18))
                 .background(Brush.linearGradient(listOf(primary, secondary))),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = Color.White, modifier = Modifier.size(Dimens.size3xl))
         }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(Dimens.space18))
 
         Text(
             text = stringResource(R.string.onboarding_backup_title),
@@ -1112,31 +1112,31 @@ private fun BackupPage(
             color = onSurfaceVariant,
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(Dimens.spaceXl))
 
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.space10)) {
             // 1. Enable card
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, outlineVariant, RoundedCornerShape(18.dp))
-                    .clip(RoundedCornerShape(18.dp))
+                    .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner18))
+                    .clip(RoundedCornerShape(Dimens.corner18))
                     .background(
                         if (backupEnabled) primaryContainer.copy(alpha = 0.4f)
                         else MaterialTheme.colorScheme.surface,
                     )
-                    .padding(16.dp),
+                    .padding(Dimens.spaceLg),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(Dimens.sizeCard)
+                        .clip(RoundedCornerShape(Dimens.cornerLg))
                         .background(primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Default.Bolt, contentDescription = null, tint = primary, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Bolt, contentDescription = null, tint = primary, modifier = Modifier.size(Dimens.sizeMd))
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -1157,22 +1157,22 @@ private fun BackupPage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, outlineVariant, RoundedCornerShape(18.dp))
-                    .clip(RoundedCornerShape(18.dp))
+                    .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner18))
+                    .clip(RoundedCornerShape(Dimens.corner18))
                     .background(MaterialTheme.colorScheme.surface)
                     .then(
                         if (backupEnabled) Modifier.clickable { folderLauncher.launch(null) }
                         else Modifier,
                     )
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14)
                     .then(if (!backupEnabled) Modifier.scale(1f) else Modifier),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(Dimens.sizeCard)
+                        .clip(RoundedCornerShape(Dimens.cornerLg))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .then(if (!backupEnabled) Modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)) else Modifier),
                     contentAlignment = Alignment.Center,
@@ -1181,7 +1181,7 @@ private fun BackupPage(
                         Icons.Default.FolderOpen,
                         contentDescription = null,
                         tint = if (backupEnabled) primary else onSurfaceVariant,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(Dimens.sizeLg),
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
@@ -1203,7 +1203,7 @@ private fun BackupPage(
                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     tint = onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(Dimens.sizeMd),
                 )
             }
 
@@ -1212,10 +1212,10 @@ private fun BackupPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, outlineVariant, RoundedCornerShape(18.dp))
-                    .clip(RoundedCornerShape(18.dp))
+                    .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner18))
+                    .clip(RoundedCornerShape(Dimens.corner18))
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1225,7 +1225,7 @@ private fun BackupPage(
                         Icons.Default.Schedule,
                         contentDescription = null,
                         tint = onSurfaceVariant.copy(alpha = scheduleAlpha),
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(Dimens.sizeSm),
                     )
                     Text(
                         text = "Schedule",
@@ -1235,7 +1235,7 @@ private fun BackupPage(
                     )
                 }
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Dimens.spaceMd))
 
                 val scheduleOptions = listOf(
                     BackupSchedule.NONE   to stringResource(R.string.onboarding_schedule_manual),
@@ -1245,7 +1245,7 @@ private fun BackupPage(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                 ) {
                     scheduleOptions.forEach { (sched, label) ->
                         val isSelected = schedule == sched
@@ -1254,7 +1254,7 @@ private fun BackupPage(
                                 .weight(1f)
                                 .height(38.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, outlineVariant, CircleShape)
+                                .border(Dimens.borderDefault, outlineVariant, CircleShape)
                                 .background(
                                     if (isSelected) primary
                                     else MaterialTheme.colorScheme.surface,
@@ -1368,7 +1368,7 @@ private fun DoneHero(appeared: Boolean, checkScale: Float) {
             .fillMaxWidth()
             .height(320.dp)
             .background(primaryContainer.copy(alpha = 0.3f))
-            .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)),
+            .clip(RoundedCornerShape(bottomStart = Dimens.corner28, bottomEnd = Dimens.corner28)),
         contentAlignment = Alignment.Center,
     ) {
         // Confetti via Canvas
@@ -1422,7 +1422,7 @@ private fun DoneHero(appeared: Boolean, checkScale: Float) {
                 Icons.Default.Check,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(56.dp),
+                modifier = Modifier.size(Dimens.sizeIconHero),
             )
         }
     }

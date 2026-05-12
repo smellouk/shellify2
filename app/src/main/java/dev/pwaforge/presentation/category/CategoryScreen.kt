@@ -173,23 +173,23 @@ fun CategoryScreen(
             val surf = MaterialTheme.colorScheme.surface
 
             Column(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 32.dp),
+                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Dimens.size4xl),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(Dimens.spaceXl))
 
                 // 160×160 illustration — 3 filled rings + single dashed orbit
                 Box(
-                    modifier = Modifier.size(160.dp),
+                    modifier = Modifier.size(Dimens.illustrationSize),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Box(modifier = Modifier.size(160.dp).background(p97, CircleShape))
-                    Box(modifier = Modifier.size(116.dp).background(p95, CircleShape))
-                    Box(modifier = Modifier.size(72.dp).background(p90, CircleShape))
-                    Canvas(modifier = Modifier.size(160.dp)) {
+                    Box(modifier = Modifier.size(Dimens.illustrationSize).background(p97, CircleShape))
+                    Box(modifier = Modifier.size(Dimens.illustrationSizeMid).background(p95, CircleShape))
+                    Box(modifier = Modifier.size(Dimens.illustrationSizeInner).background(p90, CircleShape))
+                    Canvas(modifier = Modifier.size(Dimens.illustrationSize)) {
                         drawCircle(
                             color = p40.copy(alpha = 0.35f),
-                            radius = 70.dp.toPx(),
+                            radius = Dimens.illustrationRadius.toPx(),
                             style = Stroke(
                                 width = 1.2.dp.toPx(),
                                 pathEffect = PathEffect.dashPathEffect(
@@ -200,24 +200,24 @@ fun CategoryScreen(
                     }
                     Box(
                         modifier = Modifier
-                            .size(64.dp)
-                            .background(p40, RoundedCornerShape(20.dp)),
+                            .size(Dimens.sizeIllustrationTile)
+                            .background(p40, RoundedCornerShape(Dimens.corner20)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Default.Layers, null, modifier = Modifier.size(30.dp), tint = Color.White)
+                        Icon(Icons.Default.Layers, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
                     }
                     // Ghost tiles — same positions as apps screen
-                    Box(modifier = Modifier.size(26.dp).offset(x = (-49).dp, y = (-57).dp)
-                        .background(surf, RoundedCornerShape(8.dp)).border(1.dp, surfDim, RoundedCornerShape(8.dp)))
-                    Box(modifier = Modifier.size(22.dp).offset(x = 57.dp, y = (-45).dp)
-                        .background(surf, RoundedCornerShape(7.dp)).border(1.dp, surfDim, RoundedCornerShape(7.dp)))
-                    Box(modifier = Modifier.size(22.dp).offset(x = (-61).dp, y = 51.dp)
-                        .background(surf, RoundedCornerShape(7.dp)).border(1.dp, surfDim, RoundedCornerShape(7.dp)))
-                    Box(modifier = Modifier.size(26.dp).offset(x = 41.dp, y = 59.dp)
-                        .background(surf, RoundedCornerShape(8.dp)).border(1.dp, surfDim, RoundedCornerShape(8.dp)))
+                    Box(modifier = Modifier.size(Dimens.size2xl).offset(x = (-49).dp, y = (-57).dp)
+                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
+                    Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = 57.dp, y = (-45).dp)
+                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
+                    Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = (-61).dp, y = 51.dp)
+                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
+                    Box(modifier = Modifier.size(Dimens.size2xl).offset(x = 41.dp, y = 59.dp)
+                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
                 }
 
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(Dimens.space14))
                 Text(
                     stringResource(R.string.categories_empty),
                     fontSize = Dimens.textSizeEmptyTitle,
@@ -234,18 +234,18 @@ fun CategoryScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(Dimens.space18))
                 Button(
                     onClick = viewModel::showDialog,
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier.height(48.dp),
-                    contentPadding = PaddingValues(horizontal = 22.dp),
+                    shape = RoundedCornerShape(Dimens.corner24),
+                    modifier = Modifier.height(Dimens.sizeApp),
+                    contentPadding = PaddingValues(horizontal = Dimens.sizeLg),
                 ) {
-                    Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.size(8.dp))
+                    Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
+                    Spacer(Modifier.size(Dimens.spaceSm))
                     Text(stringResource(R.string.categories_add), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
                 }
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(Dimens.sizeMd))
 
                 // Suggestion chips — 2×2 wrap, dashed border, maxWidth 280dp
                 val chipData = listOf(
@@ -256,36 +256,36 @@ fun CategoryScreen(
                 )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                     modifier = Modifier.widthIn(max = 280.dp),
                 ) {
                     chipData.chunked(2).forEach { rowChips ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                             rowChips.forEach { (label, icon, colors) ->
                                 val (fg, bg) = colors
                                 Row(
                                     modifier = Modifier
-                                        .background(bg, RoundedCornerShape(100.dp))
+                                        .background(bg, RoundedCornerShape(Dimens.cornerFull))
                                         .drawBehind {
                                             drawRoundRect(
                                                 color = surfDim,
-                                                cornerRadius = CornerRadius(100.dp.toPx()),
+                                                cornerRadius = CornerRadius(Dimens.cornerFull.toPx()),
                                                 style = Stroke(
-                                                    width = 1.dp.toPx(),
+                                                    width = Dimens.borderDefault.toPx(),
                                                     pathEffect = PathEffect.dashPathEffect(
-                                                        floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f,
+                                                        floatArrayOf(Dimens.spaceXxs.toPx(), Dimens.spaceXxs.toPx()), 0f,
                                                     ),
                                                 ),
                                             )
                                         }
                                         .clickable { viewModel.showDialog() }
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                                 ) {
-                                    Icon(icon, null, modifier = Modifier.size(13.dp), tint = fg)
-                                    Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = fg)
-                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(12.dp), tint = fg)
+                                    Icon(icon, null, modifier = Modifier.size(Dimens.sizeTagIcon), tint = fg)
+                                    Text(label, fontSize = Dimens.textSizeSectionLabel, fontWeight = FontWeight.SemiBold, color = fg)
+                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXxs), tint = fg)
                                 }
                             }
                         }
@@ -307,22 +307,22 @@ fun CategoryScreen(
                         .getOrDefault(MaterialTheme.colorScheme.primary)
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(Dimens.corner20),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
                     ) {
                         Column(
-                            modifier = Modifier.padding(14.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.padding(Dimens.space14),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.space10),
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .size(Dimens.sizeCard)
+                                        .clip(RoundedCornerShape(Dimens.cornerLg))
                                         .background(catColor),
                                     contentAlignment = Alignment.Center,
                                 ) {
@@ -330,18 +330,18 @@ fun CategoryScreen(
                                         imageVector = categoryIconVector(cat.icon),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(Dimens.sizeMd),
                                     )
                                 }
                                 Spacer(Modifier.weight(1f))
                                 IconButton(
                                     onClick = { viewModel.delete(cat) },
-                                    modifier = Modifier.size(32.dp),
+                                    modifier = Modifier.size(Dimens.size4xl),
                                 ) {
                                     Icon(
                                         Icons.Default.Delete,
                                         contentDescription = stringResource(R.string.categories_delete_cd),
-                                        modifier = Modifier.size(16.dp),
+                                        modifier = Modifier.size(Dimens.sizeXs),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
@@ -360,31 +360,31 @@ fun CategoryScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .border(BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(20.dp))
+                            .border(BorderStroke(Dimens.strokeSm, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(Dimens.corner20))
                             .clickable { viewModel.showDialog() },
                         contentAlignment = Alignment.Center,
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .size(Dimens.sizeCard)
+                                    .clip(RoundedCornerShape(Dimens.cornerLg))
                                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
                                     Icons.Default.Add,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary,
                                 )
                             }
                             Text(
                                 "New category",
-                                fontSize = 13.sp,
+                                fontSize = Dimens.textSizeBody,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary,
                             )

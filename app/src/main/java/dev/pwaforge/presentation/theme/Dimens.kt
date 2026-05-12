@@ -16,6 +16,8 @@ object Dimens {
     val space14:  Dp = 14.dp
     val spaceLg:  Dp = 16.dp
     val spaceXl:  Dp = 24.dp
+    val space18:  Dp = 18.dp
+    val space22:  Dp = 22.dp
     val spaceXxl: Dp = 48.dp
 
     // Sizes (icons and component containers, unified scale)
@@ -64,12 +66,16 @@ object Dimens {
     val sizeIconLarge:        Dp = 30.dp  // Icon inside illustration tile
     val sizeIllustrationTile: Dp = 64.dp  // Center tile in illustration
     val sizeIconContainer:    Dp = 36.dp  // Settings row icon container
+    val sizeIconHero:         Dp = 56.dp  // Onboarding hero icon tile (security, backup)
 
     // Additional corners
     val cornerFull: Dp = 100.dp  // Pill shape
     val corner12:   Dp = 12.dp   // Icon box corners
-    val corner14:   Dp = 14.dp   // Suggestion row corners
+    val corner14:   Dp = 14.dp   // Suggestion row corners / floating tile
+    val corner18:   Dp = 18.dp   // Feature/permission/backup card corners
+    val corner20:   Dp = 20.dp   // Category card / appearance preview card
     val corner24:   Dp = 24.dp   // CTA button corners
+    val corner28:   Dp = 28.dp   // Onboarding brand tile / banner clip
 
     // Typography sizes
     val textSizeEmptyTitle: TextUnit = 22.sp  // Empty-state headline in all screens

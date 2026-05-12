@@ -1192,5 +1192,5 @@ private fun SettingsCard(content: @Composable () -> Unit) =
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
     ) { content() }
