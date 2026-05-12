@@ -200,7 +200,7 @@ class WebViewActivity : FragmentActivity() {
                     else -> null
                 }
 
-                PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
+                PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
                     AlertDialog(
                         onDismissRequest = { finish() },
                         icon = { Icon(Icons.Default.Lock, null) },
@@ -309,11 +309,11 @@ class WebViewActivity : FragmentActivity() {
                 val passwordHash by app.passwordManager.passwordHash.collectAsState(initial = null)
                 val hasGlobalPassword = passwordHash != null
 
-                PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
+                PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
                     var showSheet by remember { mutableStateOf(false) }
 
                     Box(
-                        modifier = Modifier.fillMaxSize().padding(Dimens.spaceLg),
+                        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(Dimens.spaceLg),
                         contentAlignment = Alignment.BottomEnd,
                     ) {
                         SmallFloatingActionButton(
@@ -520,24 +520,25 @@ class WebViewActivity : FragmentActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun applyStatusBarColor(themeColor: String?) {
         val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: return
         val isLight = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
 
-        // Use a scrim view on all API levels — window.statusBarColor is unreliable when
-        // a ComposeView overlay (PWAForgeTheme in light mode) resets the appearance afterward.
-        val scrim = statusBarScrim ?: View(this).also { v ->
-            statusBarScrim = v
-            container.addView(v, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.TOP))
-        }
+        // Make the system status bar transparent so the scrim view shows through on all API levels.
+        window.statusBarColor = Color.TRANSPARENT
+
+        // Read height from system resource — reliable on all API levels without async callbacks.
+        val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        val statusBarHeight = if (resId > 0) resources.getDimensionPixelSize(resId) else 0
+
+        // Remove + re-add so the scrim is always the topmost view in the container,
+        // above any ComposeView overlays that would otherwise cover it.
+        val scrim = statusBarScrim ?: View(this).also { statusBarScrim = it }
         scrim.setBackgroundColor(color)
-        ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
-            val h = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            scrim.layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, h, Gravity.TOP)
-            insets
-        }
-        ViewCompat.requestApplyInsets(container)
+        container.removeView(scrim)
+        container.addView(scrim, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, statusBarHeight, Gravity.TOP))
     }
 
     @Suppress("DEPRECATION")

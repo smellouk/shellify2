@@ -66,6 +66,7 @@ fun PWAForgeTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = true,
     accentColor: Int? = null,
+    controlStatusBar: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
@@ -105,7 +106,7 @@ fun PWAForgeTheme(
     val typography = if (Locale.getDefault().language == "ar") arabicTypography() else Typography()
 
     val view = LocalView.current
-    if (!view.isInEditMode) {
+    if (!view.isInEditMode && controlStatusBar) {
         SideEffect {
             val window = (view.context as? android.app.Activity)?.window
             if (window != null) {
