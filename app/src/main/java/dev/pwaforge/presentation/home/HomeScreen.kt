@@ -55,7 +55,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+
 import dev.pwaforge.R
 import dev.pwaforge.domain.model.EngineType
 import androidx.compose.material3.Button
@@ -502,30 +502,31 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(surface, RoundedCornerShape(14.dp))
-                            .border(1.dp, surfDim, RoundedCornerShape(14.dp))
+                            .height(54.dp)
+                            .background(surface, RoundedCornerShape(Dimens.corner14))
+                            .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.corner14))
                             .clickable(
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = onAddApp,
                             )
-                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                            .padding(horizontal = Dimens.space14),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.space10),
                     ) {
                         Box(
                             modifier = Modifier
                                 .size(30.dp)
-                                .background(p95, RoundedCornerShape(9.dp)),
+                                .background(p95, RoundedCornerShape(Dimens.cornerSm)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(icon, null, modifier = Modifier.size(16.dp), tint = p40)
+                            Icon(icon, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(name, fontSize = 13.sp, lineHeight = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                            Text(host, fontSize = 11.sp, lineHeight = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(name, fontSize = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(host, fontSize = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp), tint = p40)
+                        Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                     }
                 }
             }
@@ -767,7 +768,7 @@ private fun FeatureTags(app: WebApp) {
                 )
                 Text(
                     tag.label,
-                    fontSize = 11.sp,
+                    fontSize = Dimens.textSizeCaption,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
                 )
