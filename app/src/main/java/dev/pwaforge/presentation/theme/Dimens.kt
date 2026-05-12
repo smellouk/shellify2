@@ -79,8 +79,9 @@ object Dimens {
     val textSizeSectionLabel: TextUnit = 12.sp  // Settings section label
 
     // Letter spacing
-    val letterSpacingTight: TextUnit = (-0.3).sp  // Empty-state titles
-    val letterSpacingCaps:  TextUnit = 1.sp        // ALL-CAPS labels
+    val letterSpacingTight:    TextUnit = (-0.3).sp  // Empty-state titles
+    val letterSpacingOverline: TextUnit = 0.8.sp     // Overline / eyebrow labels
+    val letterSpacingCaps:     TextUnit = 1.sp        // ALL-CAPS labels
 
     // Line height
     val lineHeightBody: TextUnit = 19.5.sp  // Paired with textSizeBody

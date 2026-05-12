@@ -105,7 +105,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.pwaforge.R
 import dev.pwaforge.core.backup.BackupSchedule
 import dev.pwaforge.core.locale.LocaleHelper
@@ -412,7 +411,7 @@ private fun WelcomePage(
         Text(
             text = stringResource(R.string.onboarding_language_label).uppercase(),
             style = MaterialTheme.typography.labelSmall,
-            letterSpacing = 0.8.sp,
+            letterSpacing = Dimens.letterSpacingOverline,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
@@ -449,7 +448,7 @@ private fun WelcomePage(
                                     else MaterialTheme.colorScheme.outlineVariant,
                                     shape = RoundedCornerShape(14.dp),
                                 )
-                                .clickable {
+                                .clickable(enabled = !isSelected) {
                                     selectedLanguage = code
                                     onLanguageChange(code)
                                 }
@@ -727,9 +726,9 @@ private fun AppearancePage(
         ) {
             Text(
                 text = stringResource(R.string.onboarding_appearance_preview_label).uppercase(),
-                fontSize = 10.5.sp,
+                fontSize = Dimens.textSizeCaption,
                 fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.8.sp,
+                letterSpacing = Dimens.letterSpacingOverline,
                 color = onSurfaceVariant,
             )
 
@@ -809,7 +808,7 @@ private fun AppearancePage(
                 }
                 Text(
                     text = "3/5 set up",
-                    fontSize = 11.sp,
+                    fontSize = Dimens.textSizeCaption,
                     fontWeight = FontWeight.SemiBold,
                     color = onSurfaceVariant,
                 )
@@ -820,9 +819,9 @@ private fun AppearancePage(
 
         // "APPEARANCE" eyebrow
         Text(
-            text = "APPEARANCE",
+            text = stringResource(R.string.global_settings_section_appearance).uppercase(),
             style = MaterialTheme.typography.labelSmall,
-            letterSpacing = 0.8.sp,
+            letterSpacing = Dimens.letterSpacingOverline,
             color = onSurfaceVariant,
         )
 
@@ -855,7 +854,7 @@ private fun AppearancePage(
         Text(
             text = stringResource(R.string.global_settings_accent_color).uppercase(),
             style = MaterialTheme.typography.labelSmall,
-            letterSpacing = 0.8.sp,
+            letterSpacing = Dimens.letterSpacingOverline,
             color = onSurfaceVariant,
         )
 
