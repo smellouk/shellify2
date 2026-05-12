@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +28,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Shortcut
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
@@ -330,52 +328,6 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             Spacer(Modifier.width(8.dp))
             Text("Add a shortcut", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         }
-        Spacer(Modifier.height(18.dp))
-
-        // Tip card — dashed border, maxWidth 300dp
-        Row(
-            modifier = Modifier
-                .widthIn(max = 300.dp)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
-                .drawBehind {
-                    drawRoundRect(
-                        color = surfDim,
-                        cornerRadius = CornerRadius(18.dp.toPx()),
-                        style = Stroke(
-                            width = 1.dp.toPx(),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f),
-                        ),
-                    )
-                }
-                .padding(14.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Box(
-                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(p90),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(18.dp), tint = p40)
-            }
-            Column {
-                Text(
-                    "TIP",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.6.sp,
-                    color = p40,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "Long-press any app in the drawer to pull a deep link out into a shortcut.",
-                    fontSize = 12.sp,
-                    lineHeight = 17.4.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
         Spacer(Modifier.weight(1f))
     }
 }
