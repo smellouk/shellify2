@@ -99,6 +99,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.core.backup.BackupSchedule
+import dev.pwaforge.presentation.theme.ACCENT_COLORS
 import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
@@ -1113,13 +1114,6 @@ private fun EngineOptionRow(
     }
 }
 
-internal val ACCENT_COLORS = listOf(
-    0xFF33691E.toInt(), // Green
-    0xFF3F4FBF.toInt(), // Indigo
-    0xFF006B5F.toInt(), // Teal
-    0xFFB5365E.toInt(), // Rose
-    0xFF7A5300.toInt(), // Amber
-)
 
 @Composable
 internal fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {

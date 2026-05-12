@@ -19,6 +19,15 @@ val TagLockPassword = Color(0xFF7C4DFF) // purple  – password-lock indicator
 val TagLockSystem   = Color(0xFF3F51B5) // indigo  – system-lock indicator
 val GeckoWarning    = Color(0xFFFF9800) // orange  – GeckoView not installed
 
+// User-selectable accent palette (shared between onboarding and global settings)
+val ACCENT_COLORS = listOf(
+    0xFF33691E.toInt(), // Green
+    0xFF3F4FBF.toInt(), // Indigo
+    0xFF006B5F.toInt(), // Teal
+    0xFFB5365E.toInt(), // Rose
+    0xFF7A5300.toInt(), // Amber
+)
+
 // Category suggestion palette
 val CategoryMediaFg   = Color(0xFF7A5300)
 val CategoryMediaBg   = Color(0xFFFFE7BD)

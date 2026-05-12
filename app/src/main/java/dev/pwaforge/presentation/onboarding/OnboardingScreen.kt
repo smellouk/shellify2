@@ -110,21 +110,13 @@ import dev.pwaforge.R
 import dev.pwaforge.core.backup.BackupSchedule
 import dev.pwaforge.core.locale.LocaleHelper
 import dev.pwaforge.core.theme.ThemeMode
+import dev.pwaforge.presentation.theme.ACCENT_COLORS
 import dev.pwaforge.presentation.theme.Dimens
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
 private const val PAGE_COUNT = 6
-
-// Design accent colors — local to onboarding, not imported from settings
-private val ONBOARDING_ACCENTS = listOf(
-    0xFF5B3FBF.toInt(),
-    0xFF3F4FBF.toInt(),
-    0xFF006B5F.toInt(),
-    0xFFB5365E.toInt(),
-    0xFF7A5300.toInt(),
-)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -149,7 +141,7 @@ fun OnboardingScreen(
     var secConfirm  by remember { mutableStateOf("") }
     val secValid = secPassword.length >= 6 && secPassword == secConfirm
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary.copy(alpha = 0.04f))) {
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 
         // Progress bars — 6 bars, height 4dp, gap 6dp, horizontal padding 24dp
@@ -861,7 +853,7 @@ private fun AppearancePage(
 
         // "ACCENT COLOR" eyebrow
         Text(
-            text = "ACCENT COLOR",
+            text = stringResource(R.string.global_settings_accent_color).uppercase(),
             style = MaterialTheme.typography.labelSmall,
             letterSpacing = 0.8.sp,
             color = onSurfaceVariant,
@@ -874,7 +866,7 @@ private fun AppearancePage(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            ONBOARDING_ACCENTS.forEach { colorInt ->
+            ACCENT_COLORS.forEach { colorInt ->
                 val isSelected = accentColor == colorInt
                 Box(
                     modifier = Modifier
