@@ -78,6 +78,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -1064,48 +1067,58 @@ private fun SecurityPage(
                 headlineContent = { Text(stringResource(R.string.onboarding_security_set_done) + " ✓") },
             )
         } else {
-            OutlinedTextField(
-                value = password,
-                onValueChange = onPasswordChange,
-                label = { Text(stringResource(R.string.common_password)) },
-                singleLine = true,
-                visualTransformation = if (pwVis) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    androidx.compose.material3.IconButton(onClick = { pwVis = !pwVis }) {
-                        Icon(if (pwVis) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-            )
+                shape = RoundedCornerShape(Dimens.cornerXl),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                Column(modifier = Modifier.padding(Dimens.spaceMd)) {
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = onPasswordChange,
+                        label = { Text(stringResource(R.string.common_password)) },
+                        singleLine = true,
+                        visualTransformation = if (pwVis) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            androidx.compose.material3.IconButton(onClick = { pwVis = !pwVis }) {
+                                Icon(if (pwVis) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
-            Spacer(Modifier.height(Dimens.spaceSm))
+                    Spacer(Modifier.height(Dimens.spaceSm))
 
-            OutlinedTextField(
-                value = confirm,
-                onValueChange = {
-                    onConfirmChange(it)
-                    if (it.isNotEmpty()) confirmTouched = true
-                },
-                label = { Text(stringResource(R.string.common_confirm_password)) },
-                singleLine = true,
-                isError = mismatch,
-                supportingText = if (mismatch) {
-                    { Text("Passwords don't match") }
-                } else null,
-                visualTransformation = if (cfVis) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    androidx.compose.material3.IconButton(onClick = { cfVis = !cfVis }) {
-                        Icon(if (cfVis) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth(),
-            )
+                    OutlinedTextField(
+                        value = confirm,
+                        onValueChange = {
+                            onConfirmChange(it)
+                            if (it.isNotEmpty()) confirmTouched = true
+                        },
+                        label = { Text(stringResource(R.string.common_confirm_password)) },
+                        singleLine = true,
+                        isError = mismatch,
+                        supportingText = if (mismatch) {
+                            { Text("Passwords don't match") }
+                        } else null,
+                        visualTransformation = if (cfVis) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            androidx.compose.material3.IconButton(onClick = { cfVis = !cfVis }) {
+                                Icon(if (cfVis) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
-            Spacer(Modifier.height(Dimens.spaceMd))
+                    Spacer(Modifier.height(Dimens.spaceMd))
 
-            StrengthMeter(password)
+                    StrengthMeter(password)
+                }
+            }
         }
     }
 }
