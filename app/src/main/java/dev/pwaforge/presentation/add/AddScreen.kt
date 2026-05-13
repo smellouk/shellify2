@@ -329,7 +329,7 @@ fun AddScreen(
                         } else if (state.name.isNotBlank()) {
                             AppIcon(
                                 app = WebApp(name = state.name, url = state.url,
-                                    iconPath = null, themeColor = state.themeColor),
+                                    iconSource = null, themeColor = state.themeColor),
                                 modifier = Modifier.fillMaxSize(),
                             )
                         } else {

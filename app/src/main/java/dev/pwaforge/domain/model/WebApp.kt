@@ -6,7 +6,7 @@ data class WebApp(
     val id: Long = 0,
     val name: String,
     val url: String,
-    val iconPath: String? = null,
+    val iconSource: IconSource? = null,
     val themeColor: String? = null,
     val backgroundColor: String? = null,
     val description: String? = null,
@@ -36,7 +36,10 @@ data class WebApp(
     // Security
     val lockType: LockType = LockType.NONE,
     val wipeOnFailedAttempts: Boolean = false,
-)
+) {
+    /** Convenience accessor: the on-disk path when iconSource is a Path, null otherwise. */
+    val iconPath: String? get() = (iconSource as? IconSource.Path)?.path
+}
 
 enum class LockType { NONE, PASSWORD, SYSTEM }
 

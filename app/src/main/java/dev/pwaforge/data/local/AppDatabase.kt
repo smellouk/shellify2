@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.pwaforge.core.crypto.CryptoManager
+import dev.pwaforge.data.local.converter.IconSourceConverter
 import dev.pwaforge.data.local.dao.CategoryDao
 import dev.pwaforge.data.local.dao.WebAppDao
 import dev.pwaforge.data.local.entity.CategoryEntity
@@ -15,9 +17,10 @@ import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
+@TypeConverters(IconSourceConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun webAppDao(): WebAppDao
     abstract fun categoryDao(): CategoryDao
@@ -67,6 +70,15 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE web_apps ADD COLUMN icon_source TEXT DEFAULT NULL")
+                db.execSQL(
+                    "UPDATE web_apps SET icon_source = json_object('type','path','path',icon_path) WHERE icon_path IS NOT NULL"
+                )
+            }
+        }
+
         fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: buildDatabase(context, crypto).also { instance = it }
@@ -83,7 +95,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "pwaforge.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .build()
                 .also { passphrase.fill(0) }
         }

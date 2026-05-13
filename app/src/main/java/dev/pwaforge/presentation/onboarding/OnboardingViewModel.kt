@@ -128,7 +128,7 @@ class OnboardingViewModel(
                         try {
                             val manifest = pwaAnalyzer.analyze(fullUrl)
                             val isolationId = UUID.randomUUID().toString()
-                            val iconPath = faviconFetcher.fetch(
+                            val fetchedIconPath = faviconFetcher.fetch(
                                 manifest.bestIconUrl(fullUrl), fullUrl, isolationId,
                             )
                             saveWebApp(
@@ -137,7 +137,7 @@ class OnboardingViewModel(
                                         ?: manifest.shortName?.takeIf { it.isNotBlank() }
                                         ?: name,
                                     url = fullUrl,
-                                    iconPath = iconPath,
+                                    iconSource = dev.pwaforge.domain.model.IconSource.fromLegacyPath(fetchedIconPath),
                                     themeColor = manifest.themeColor,
                                     backgroundColor = manifest.backgroundColor,
                                     description = manifest.description,

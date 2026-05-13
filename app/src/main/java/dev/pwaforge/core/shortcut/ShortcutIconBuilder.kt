@@ -6,23 +6,68 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.RectF
 import androidx.core.graphics.drawable.toBitmap
+import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.WebApp
 import java.io.File
 
 object ShortcutIconBuilder {
 
     private const val SIZE = 192
+    private const val SVG_ICON_SIZE = 108  // ~56% of canvas, centered
 
     fun build(context: Context, app: WebApp): Bitmap {
-        val iconBitmap = app.iconPath?.let { loadFile(it) }
-        if (iconBitmap != null) return scaleCentered(iconBitmap)
-        // Fallback 1: PWAForge launcher icon (already polished)
+        return when (val src = app.iconSource) {
+            is IconSource.SvgIcon -> buildSvgIcon(context, src)
+            is IconSource.Path -> {
+                val bmp = loadFile(src.path)
+                if (bmp != null) scaleCentered(bmp) else fallback(context, app)
+            }
+            null -> {
+                // Legacy: iconPath computed from iconSource (null means no source at all)
+                fallback(context, app)
+            }
+        }
+    }
+
+    private fun fallback(context: Context, app: WebApp): Bitmap {
         val launcherBitmap = launcherIconBitmap(context)
         if (launcherBitmap != null) return launcherBitmap
-        // Fallback 2: generated letter avatar
         return generateLetterAvatar(app.name, app.themeColor)
+    }
+
+    private fun buildSvgIcon(context: Context, src: IconSource.SvgIcon): Bitmap {
+        // Download SVG synchronously (called from coroutine context via PwaShortcutManager)
+        val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${src.slug}.svg"
+        val svgBitmap = runCatching {
+            val loader = coil.ImageLoader.Builder(context)
+                .components { add(coil.decode.SvgDecoder.Factory()) }
+                .build()
+            val req = coil.request.ImageRequest.Builder(context)
+                .data(svgUrl)
+                .size(SVG_ICON_SIZE, SVG_ICON_SIZE)
+                .build()
+            val result = kotlinx.coroutines.runBlocking { loader.execute(req) }
+            (result as? coil.request.SuccessResult)
+                ?.let { (it.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap }
+        }.getOrNull()
+
+        val bgColor = runCatching { Color.parseColor(src.background) }.getOrDefault(0xFF1976D2.toInt())
+        val out = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        canvas.drawColor(bgColor)
+
+        if (svgBitmap != null) {
+            val offset = (SIZE - SVG_ICON_SIZE) / 2f
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                colorFilter = PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN)
+            }
+            canvas.drawBitmap(svgBitmap, offset, offset, paint)
+        }
+        return out
     }
 
     private fun loadFile(path: String): Bitmap? = runCatching {

@@ -1,9 +1,11 @@
 package dev.pwaforge.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import dev.pwaforge.domain.model.IconSource
 
 @Entity(
     tableName = "web_apps",
@@ -22,6 +24,7 @@ data class WebAppEntity(
     val name: String,
     val url: String,
     val iconPath: String? = null,
+    @ColumnInfo(name = "icon_source") val iconSource: IconSource? = null,
     val themeColor: String? = null,
     val backgroundColor: String? = null,
     val description: String? = null,

@@ -2,6 +2,7 @@ package dev.pwaforge.data.mapper
 
 import dev.pwaforge.data.local.entity.WebAppEntity
 import dev.pwaforge.domain.model.EngineType
+import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
@@ -12,7 +13,7 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     id = id,
     name = name,
     url = url,
-    iconPath = iconPath,
+    iconSource = iconSource ?: IconSource.fromLegacyPath(iconPath),
     themeColor = themeColor,
     backgroundColor = backgroundColor,
     description = description,
@@ -42,7 +43,8 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     id = id,
     name = name,
     url = url,
-    iconPath = iconPath,
+    iconPath = iconPath,  // kept for legacy column; iconSource is the source of truth
+    iconSource = iconSource,
     themeColor = themeColor,
     backgroundColor = backgroundColor,
     description = description,

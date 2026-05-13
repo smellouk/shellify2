@@ -21,6 +21,7 @@ import dev.pwaforge.core.theme.ThemeManager
 import dev.pwaforge.domain.model.PwaManifest
 import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
+import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.UserAgentMode
 import dev.pwaforge.domain.model.WebApp
@@ -45,6 +46,7 @@ data class AddUiState(
     val name: String = "",
     val url: String = "",
     val iconPath: String? = null,
+    val iconSource: IconSource? = null,
     val themeColor: String? = null,
     val categoryId: Long? = null,
     // Isolation ID — stable for the lifetime of this edit session
@@ -121,6 +123,7 @@ class AddViewModel(
                         name = app.name,
                         url = app.url,
                         iconPath = app.iconPath,
+                        iconSource = app.iconSource,
                         themeColor = app.themeColor,
                         categoryId = app.categoryId,
                         isolationId = app.isolationId,
@@ -155,7 +158,7 @@ class AddViewModel(
     fun setName(v: String) = _state.update { it.copy(name = v, nameError = null, duplicateError = null) }
     fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null) }
     fun setThemeColor(v: String?) = _state.update { it.copy(themeColor = v) }
-    fun setIconPath(v: String) = _state.update { it.copy(iconPath = v) }
+    fun setIconPath(v: String) = _state.update { it.copy(iconPath = v, iconSource = IconSource.Path(v)) }
 
     // Fullscreen
     fun setFullscreen(v: Boolean) = _state.update { it.copy(isFullscreen = v) }
@@ -202,7 +205,14 @@ class AddViewModel(
                 val iconUrl = manifest.bestIconUrl(url)
                 faviconFetcher.fetch(iconUrl, url, _state.value.isolationId)
             }.getOrNull()
-            _state.update { it.copy(isFetchingIcon = false, iconPath = path ?: it.iconPath) }
+            val resolvedPath = path ?: _state.value.iconPath
+            _state.update {
+                it.copy(
+                    isFetchingIcon = false,
+                    iconPath = resolvedPath,
+                    iconSource = resolvedPath?.let { p -> IconSource.Path(p) } ?: it.iconSource,
+                )
+            }
         }
     }
 
@@ -228,11 +238,13 @@ class AddViewModel(
     fun applyManifest() {
         val s = _state.value
         val m = s.pendingManifest ?: return
+        val resolvedPath = s.pendingIconPath ?: _state.value.iconPath
         _state.update {
             it.copy(
                 name = it.name.ifBlank { m.shortName ?: m.name ?: it.name },
                 themeColor = m.themeColor ?: it.themeColor,
-                iconPath = s.pendingIconPath ?: it.iconPath,
+                iconPath = resolvedPath,
+                iconSource = resolvedPath?.let { p -> IconSource.Path(p) } ?: it.iconSource,
                 pendingManifest = null,
                 pendingIconPath = null,
             )
@@ -348,7 +360,15 @@ class AddViewModel(
                 }.getOrNull()
             }
             _state.update { it.copy(isSelectingPackIcon = false, showIconPackPicker = false) }
-            if (path != null) setIconPath(path)
+            if (path != null) {
+                val bgHex = String.format("#%06X", 0xFFFFFF and bgColorArgb)
+                _state.update {
+                    it.copy(
+                        iconPath = path,
+                        iconSource = IconSource.SvgIcon(entry.slug, bgHex),
+                    )
+                }
+            }
         }
     }
 
@@ -363,7 +383,7 @@ class AddViewModel(
             id = appId,
             name = s.name.trim(),
             url = url,
-            iconPath = s.iconPath,
+            iconSource = s.iconSource,
             themeColor = s.themeColor,
             categoryId = s.categoryId,
             isolationId = s.isolationId,
