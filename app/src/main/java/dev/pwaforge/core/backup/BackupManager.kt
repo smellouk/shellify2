@@ -5,8 +5,13 @@ import android.net.Uri
 import android.os.Build
 import androidx.documentfile.provider.DocumentFile
 import dev.pwaforge.core.isolation.CookieJarManager
+import dev.pwaforge.core.security.PasswordManager
+import dev.pwaforge.core.theme.ThemeManager
 import dev.pwaforge.data.local.AppDatabase
+import dev.pwaforge.domain.model.EngineType
+import dev.pwaforge.domain.model.UserAgentMode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -22,6 +27,9 @@ class BackupManager(
     private val context: Context,
     private val database: AppDatabase,
     private val cookieJarManager: CookieJarManager,
+    private val themeManager: ThemeManager,
+    private val passwordManager: PasswordManager,
+    private val backupSettings: BackupSettings,
 ) {
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -41,7 +49,7 @@ class BackupManager(
         }
     }
 
-    /** Decrypts and restores a .pwab file from [sourceUri]. Requires app restart to fully apply. */
+    /** Decrypts and restores a .pwab file from [sourceUri]. */
     suspend fun restore(password: String, sourceUri: Uri): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
             val encrypted = context.contentResolver.openInputStream(sourceUri)!!.readBytes()
@@ -78,12 +86,12 @@ class BackupManager(
                 zip.entry("icons/$relative") { file.readBytes() }
             }
 
-            // Icon pack data (simple_icons.json — needed so icons are available after restore)
+            // Icon pack data
             File(context.filesDir, "icon_packs").walkSafe { file, relative ->
                 zip.entry("icon_packs/$relative") { file.readBytes() }
             }
 
-            // All DataStore preference files (plain protobuf, no device-specific encryption)
+            // DataStore binary files — kept for the encrypted backup password (device-specific)
             val datastoreDir = File(context.filesDir.parent!!, "datastore")
             listOf(
                 "pwa_theme.preferences_pb",
@@ -94,7 +102,11 @@ class BackupManager(
                 if (f.exists()) zip.entry("datastore/$name") { f.readBytes() }
             }
 
-            // SharedPreferences — user locale + icon pack import state (device-agnostic)
+            // Settings snapshot — applied via manager APIs on restore so DataStore flows update
+            // immediately without a process restart.
+            zip.entry("settings.json") { buildSettingsJson().toByteArray(Charsets.UTF_8) }
+
+            // SharedPreferences — user locale + icon pack import state
             val prefsDir = File(context.filesDir.parent!!, "shared_prefs")
             listOf("locale_prefs.xml", "simple_icons.xml").forEach { name ->
                 val f = File(prefsDir, name)
@@ -120,9 +132,73 @@ class BackupManager(
         return out.toByteArray()
     }
 
+    private suspend fun buildSettingsJson(): String {
+        val themeMode      = themeManager.themeMode.first()
+        val dynamicColor   = themeManager.dynamicColor.first()
+        val accentColor    = themeManager.accentColor.first()
+        val defaultUaMode  = themeManager.defaultUaMode.first()
+        val defaultEngine  = themeManager.defaultEngineType.first()
+        val languageCode   = themeManager.languageCode.first()
+        val wipe           = passwordManager.wipeOnFailedAttempts.first()
+        val screenshot     = passwordManager.screenshotProtection.first()
+        val passwordHash   = passwordManager.passwordHash.first()
+        val bkEnabled      = backupSettings.enabled.first()
+        val bkSchedule     = backupSettings.schedule.first()
+        val bkDirectory    = backupSettings.directoryUri.first()
+        val bkLastTime     = backupSettings.lastBackupTime.first()
+
+        return JSONObject().apply {
+            put("theme_mode",              themeMode.name)
+            put("dynamic_color",           dynamicColor)
+            if (accentColor != null)  put("accent_color", accentColor)
+            put("default_ua_mode",         defaultUaMode.name)
+            put("default_engine",          defaultEngine.name)
+            put("language_code",           languageCode)
+            put("wipe_on_failed_attempts", wipe)
+            put("screenshot_protection",   screenshot)
+            if (passwordHash != null) put("password_hash", passwordHash)
+            put("backup_enabled",          bkEnabled)
+            put("backup_schedule",         bkSchedule.name)
+            if (bkDirectory != null)  put("backup_directory_uri", bkDirectory)
+            put("backup_last_time",        bkLastTime)
+        }.toString()
+    }
+
     // ── Apply archive ─────────────────────────────────────────────────────────
 
+    private suspend fun clearExistingData() {
+        // Database
+        val db = database.openHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL("DELETE FROM `web_apps`")
+            db.execSQL("DELETE FROM `categories`")
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+
+        // Files
+        File(context.filesDir, "icons").deleteRecursively()
+        File(context.filesDir, "icon_packs").deleteRecursively()
+
+        // SharedPreferences
+        val prefsDir = File(context.filesDir.parent!!, "shared_prefs")
+        listOf("locale_prefs.xml", "simple_icons.xml").forEach {
+            File(prefsDir, it).delete()
+        }
+
+        // Cookies
+        cookieJarManager.importAll(emptyMap())
+
+        // WebView profiles
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            File(context.filesDir.parent!!, "app_webview/profiles").deleteRecursively()
+        }
+    }
+
     private suspend fun applyZipArchive(zipBytes: ByteArray) {
+        clearExistingData()
         val cookieMap = mutableMapOf<String, String>()
 
         ZipInputStream(zipBytes.inputStream()).use { zip ->
@@ -154,9 +230,17 @@ class BackupManager(
                             val name = entry.name.removePrefix("datastore/")
                             if (name.isNotBlank()) {
                                 val dir = File(context.filesDir.parent!!, "datastore").also { it.mkdirs() }
-                                File(dir, name).writeBytes(bytes)
+                                val file = File(dir, name).also { it.writeBytes(bytes) }
+                                // Reload in-memory state for the backup password (device-specific
+                                // Keystore-encrypted value that can't go into settings.json).
+                                when (name) {
+                                    "pwa_backup.preferences_pb" -> backupSettings.reloadFromFile(file)
+                                }
                             }
                         }
+
+                        entry.name == "settings.json" ->
+                            applySettingsJson(bytes.toString(Charsets.UTF_8))
 
                         entry.name.startsWith("shared_prefs/") -> {
                             val name = entry.name.removePrefix("shared_prefs/")
@@ -187,6 +271,35 @@ class BackupManager(
         }
 
         if (cookieMap.isNotEmpty()) cookieJarManager.importAll(cookieMap)
+    }
+
+    private suspend fun applySettingsJson(json: String) {
+        val obj = JSONObject(json)
+
+        // Theme
+        runCatching { themeManager.setThemeMode(dev.pwaforge.core.theme.ThemeMode.valueOf(obj.getString("theme_mode"))) }
+        runCatching { themeManager.setDynamicColor(obj.getBoolean("dynamic_color")) }
+        runCatching { themeManager.setAccentColor(if (obj.has("accent_color")) obj.getInt("accent_color") else null) }
+        runCatching { themeManager.setDefaultUaMode(UserAgentMode.valueOf(obj.getString("default_ua_mode"))) }
+        runCatching { themeManager.setDefaultEngineType(EngineType.valueOf(obj.getString("default_engine"))) }
+        runCatching { themeManager.setLanguageCode(obj.optString("language_code", "en")) }
+
+        // Security
+        runCatching { passwordManager.setWipeOnFailedAttempts(obj.getBoolean("wipe_on_failed_attempts")) }
+        runCatching { passwordManager.setScreenshotProtection(obj.getBoolean("screenshot_protection")) }
+        if (obj.has("password_hash")) {
+            runCatching { passwordManager.restorePasswordHash(obj.getString("password_hash")) }
+        } else {
+            passwordManager.clearPassword()
+        }
+
+        // Backup settings (non-password — password comes from pwa_backup.preferences_pb)
+        runCatching { backupSettings.setEnabled(obj.getBoolean("backup_enabled")) }
+        runCatching { backupSettings.setSchedule(BackupSchedule.valueOf(obj.getString("backup_schedule"))) }
+        val bkDir = obj.optString("backup_directory_uri", "")
+        if (bkDir.isNotEmpty()) runCatching { backupSettings.setDirectoryUri(bkDir) }
+        val bkLastTime = obj.optLong("backup_last_time", 0L)
+        if (bkLastTime > 0L) runCatching { backupSettings.setLastBackupTime(bkLastTime) }
     }
 
     // ── Database helpers ──────────────────────────────────────────────────────

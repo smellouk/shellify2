@@ -83,7 +83,7 @@ class CookieJarManager(
 
     // ---------- internal ----------
 
-    private fun clearAll() {
+    fun clearAll() {
         cookieManager.removeAllCookies(null)
         cookieManager.flush()
     }

@@ -1,15 +1,25 @@
 package dev.pwaforge.core.theme
 
 import android.content.Context
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.preferencesOf
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.UserAgentMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.File
 
 private val Context.themeStore by preferencesDataStore(name = "pwa_theme")
 
@@ -81,4 +91,25 @@ class ThemeManager(private val context: Context) {
 
     suspend fun setOnboardingDone() { context.themeStore.edit { it[keyOnboardingDone] = true } }
     suspend fun saveOnboardingPage(p: Int) { context.themeStore.edit { it[keyOnboardingPage] = p } }
+
+    /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */
+    suspend fun reloadFromFile(restoredFile: File) {
+        val tempFile = File(context.cacheDir, "tmp_theme_restore.preferences_pb")
+        restoredFile.copyTo(tempFile, overwrite = true)
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        val tempStore = PreferenceDataStoreFactory.create(scope = scope) { tempFile }
+        try {
+            val restored = tempStore.data.first()
+            context.themeStore.edit { current ->
+                current.clear()
+                @Suppress("UNCHECKED_CAST")
+                restored.asMap().forEach { (key, value) ->
+                    (current as MutablePreferences)[key as Preferences.Key<Any>] = value
+                }
+            }
+        } finally {
+            tempFile.delete()
+            scope.cancel()
+        }
+    }
 }

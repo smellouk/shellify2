@@ -1369,8 +1369,8 @@ private fun BackupPage(
 
                 val scheduleOptions = listOf(
                     BackupSchedule.NONE   to stringResource(R.string.onboarding_schedule_manual),
-                    BackupSchedule.DAILY  to stringResource(R.string.global_settings_schedule_daily),
-                    BackupSchedule.WEEKLY to stringResource(R.string.global_settings_schedule_weekly),
+                    BackupSchedule.WEEKLY  to stringResource(R.string.global_settings_schedule_weekly),
+                    BackupSchedule.MONTHLY to stringResource(R.string.global_settings_schedule_monthly),
                 )
 
                 Row(

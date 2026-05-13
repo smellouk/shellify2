@@ -53,4 +53,5 @@ data class WebAppEntity(
     val lockType: String = "NONE",
     val engineType: String = "SYSTEM_WEBVIEW",
     val wipeOnFailedAttempts: Boolean = false,
+    @ColumnInfo(name = "has_launcher_shortcut") val hasLauncherShortcut: Boolean = false,
 )

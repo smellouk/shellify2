@@ -192,6 +192,7 @@ class ShortcutsViewModel(
     fun confirmRemove() {
         val item = _state.value.removeTarget ?: return
         PwaShortcutManager.removeShortcut(context, item.app)
+        viewModelScope.launch { repo.save(item.app.copy(hasLauncherShortcut = false)) }
         _state.update { s ->
             s.copy(
                 removeTarget = null,
@@ -208,6 +209,7 @@ class ShortcutsViewModel(
 
     fun createShortcut(app: WebApp) {
         PwaShortcutManager.createShortcut(context, app)
+        viewModelScope.launch { repo.save(app.copy(hasLauncherShortcut = true)) }
         _state.update { it.copy(showAddSheet = false) }
         load()
     }

@@ -125,7 +125,10 @@ fun AppSettingsScreen(
                     headlineContent = { Text(stringResource(R.string.settings_create_shortcut)) },
                     supportingContent = { Text(stringResource(R.string.settings_create_shortcut_desc)) },
                     trailingContent = {
-                        IconButton(onClick = { PwaShortcutManager.createShortcut(context, app) }) {
+                        IconButton(onClick = {
+                            PwaShortcutManager.createShortcut(context, app)
+                            viewModel.markShortcutCreated(app)
+                        }) {
                             Icon(Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.settings_create_shortcut_cd))
                         }
                     },

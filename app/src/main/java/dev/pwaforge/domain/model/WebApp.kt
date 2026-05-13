@@ -36,6 +36,8 @@ data class WebApp(
     // Security
     val lockType: LockType = LockType.NONE,
     val wipeOnFailedAttempts: Boolean = false,
+    // Launcher shortcut
+    val hasLauncherShortcut: Boolean = false,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
     val iconPath: String? get() = when (val s = iconSource) {

@@ -60,7 +60,9 @@ data class GlobalSettingsUiState(
     val backupLastTime: Long = 0L,
     val backupRunning: Boolean = false,
     val backupResultMessage: String? = null,
+    val restoreComplete: Boolean = false,
     val showBackupPasswordDialog: Boolean = false,
+    val showRestoreConfirmDialog: Boolean = false,
     val showImportPasswordDialog: Boolean = false,
     val importSourceUri: Uri? = null,
 )
@@ -228,8 +230,17 @@ class GlobalSettingsViewModel(
     fun showDeleteAllShortcutsDialog() = _state.update { it.copy(showDeleteAllShortcutsDialog = true) }
     fun dismissDeleteAllShortcutsDialog() = _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
     fun deleteAllShortcuts() = viewModelScope.launch {
-        repo.getAll().first().forEach { app -> PwaShortcutManager.removeShortcut(context, app) }
+        repo.getAll().first().forEach { app ->
+            PwaShortcutManager.removeShortcut(context, app)
+            repo.save(app.copy(hasLauncherShortcut = false))
+        }
         _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
+    }
+
+    fun repinShortcutsAfterRestore() = viewModelScope.launch {
+        repo.getAll().first()
+            .filter { it.hasLauncherShortcut }
+            .forEach { app -> PwaShortcutManager.createShortcut(context, app) }
     }
 
     // ── Backup ────────────────────────────────────────────────────────────────
@@ -277,7 +288,13 @@ class GlobalSettingsViewModel(
     }
 
     fun showImportDialog(uri: Uri) =
-        _state.update { it.copy(showImportPasswordDialog = true, importSourceUri = uri) }
+        _state.update { it.copy(showRestoreConfirmDialog = true, importSourceUri = uri) }
+
+    fun confirmRestore() =
+        _state.update { it.copy(showRestoreConfirmDialog = false, showImportPasswordDialog = true) }
+
+    fun dismissRestoreConfirm() =
+        _state.update { it.copy(showRestoreConfirmDialog = false, importSourceUri = null) }
 
     fun dismissImportDialog() =
         _state.update { it.copy(showImportPasswordDialog = false, importSourceUri = null) }
@@ -287,7 +304,7 @@ class GlobalSettingsViewModel(
         _state.update { it.copy(backupRunning = true, showImportPasswordDialog = false) }
         backupManager.restore(password, uri).fold(
             onSuccess = {
-                _state.update { it.copy(backupRunning = false, backupResultMessage = "Restore complete — restart the app to apply all changes") }
+                _state.update { it.copy(backupRunning = false, restoreComplete = true) }
             },
             onFailure = { e ->
                 _state.update { it.copy(backupRunning = false, backupResultMessage = "Restore failed: ${e.message}") }
@@ -296,6 +313,7 @@ class GlobalSettingsViewModel(
     }
 
     fun clearBackupMessage() = _state.update { it.copy(backupResultMessage = null) }
+    fun clearRestoreComplete() = _state.update { it.copy(restoreComplete = false) }
 
     fun showBackupPasswordDialog() = _state.update { it.copy(showBackupPasswordDialog = true) }
     fun dismissBackupPasswordDialog() = _state.update { it.copy(showBackupPasswordDialog = false) }

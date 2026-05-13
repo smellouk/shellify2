@@ -1,17 +1,25 @@
 package dev.pwaforge.core.backup
 
 import android.content.Context
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dev.pwaforge.core.crypto.CryptoManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.File
 
-enum class BackupSchedule { NONE, DAILY, WEEKLY }
+enum class BackupSchedule { NONE, WEEKLY, MONTHLY }
 
 private val Context.backupStore by preferencesDataStore(name = "pwa_backup")
 
@@ -48,5 +56,26 @@ class BackupSettings(private val context: Context, private val crypto: CryptoMan
     suspend fun getPassword(): String? {
         val enc = context.backupStore.data.first()[keyPasswordEnc] ?: return null
         return runCatching { crypto.decryptString(enc) }.getOrNull()
+    }
+
+    /** Reads a restored DataStore file and applies its contents (incl. encrypted password) to the live instance. */
+    suspend fun reloadFromFile(restoredFile: File) {
+        val tempFile = File(context.cacheDir, "tmp_backup_restore.preferences_pb")
+        restoredFile.copyTo(tempFile, overwrite = true)
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        val tempStore = PreferenceDataStoreFactory.create(scope = scope) { tempFile }
+        try {
+            val restored = tempStore.data.first()
+            context.backupStore.edit { current ->
+                current.clear()
+                @Suppress("UNCHECKED_CAST")
+                restored.asMap().forEach { (key, value) ->
+                    (current as MutablePreferences)[key as Preferences.Key<Any>] = value
+                }
+            }
+        } finally {
+            tempFile.delete()
+            scope.cancel()
+        }
     }
 }

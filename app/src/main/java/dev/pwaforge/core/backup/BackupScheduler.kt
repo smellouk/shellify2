@@ -15,8 +15,8 @@ object BackupScheduler {
         val wm = WorkManager.getInstance(context)
         when (schedule) {
             BackupSchedule.NONE -> wm.cancelUniqueWork(WORK_NAME)
-            BackupSchedule.DAILY -> enqueue(wm, 1, TimeUnit.DAYS)
             BackupSchedule.WEEKLY -> enqueue(wm, 7, TimeUnit.DAYS)
+            BackupSchedule.MONTHLY -> enqueue(wm, 30, TimeUnit.DAYS)
         }
     }
 

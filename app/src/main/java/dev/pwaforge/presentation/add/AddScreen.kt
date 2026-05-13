@@ -214,6 +214,7 @@ fun AddScreen(
                         onClick = {
                             viewModel.save { savedApp ->
                                 PwaShortcutManager.createShortcut(context, savedApp)
+                                viewModel.markShortcutCreated(savedApp)
                             }
                         },
                         enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving && state.duplicateError == null,

@@ -145,6 +145,15 @@ fun GlobalSettingsScreen(
     val strSave = stringResource(R.string.common_save)
     val strRestore = stringResource(R.string.common_restore)
     val context = LocalContext.current
+
+    // DataStore flows are reloaded in-place by BackupManager.reloadFromFile() after restore,
+    // so no activity restart is needed — just clear the flag.
+    androidx.compose.runtime.LaunchedEffect(state.restoreComplete) {
+        if (state.restoreComplete) {
+            viewModel.clearRestoreComplete()
+            viewModel.repinShortcutsAfterRestore()
+        }
+    }
     val version = remember {
         @Suppress("DEPRECATION")
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "—" }
@@ -561,8 +570,8 @@ fun GlobalSettingsScreen(
                         // Schedule
                         val scheduleLabel = when (state.backupSchedule) {
                             BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
-                            BackupSchedule.DAILY -> stringResource(R.string.global_settings_schedule_daily)
                             BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
+                            BackupSchedule.MONTHLY -> stringResource(R.string.global_settings_schedule_monthly)
                         }
                         ListItem(
                             leadingContent = {
@@ -773,8 +782,8 @@ fun GlobalSettingsScreen(
                 BackupSchedule.entries.forEach { schedule ->
                     val label = when (schedule) {
                         BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
-                        BackupSchedule.DAILY -> stringResource(R.string.global_settings_schedule_daily)
                         BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
+                        BackupSchedule.MONTHLY -> stringResource(R.string.global_settings_schedule_monthly)
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth()
@@ -831,6 +840,24 @@ fun GlobalSettingsScreen(
             confirmLabel = strSave,
             onDismiss = viewModel::dismissBackupPasswordDialog,
             onConfirm = viewModel::setBackupPassword,
+        )
+    }
+
+    if (state.showRestoreConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissRestoreConfirm,
+            icon = { Icon(Icons.Default.Restore, null) },
+            title = { Text(stringResource(R.string.global_settings_restore_confirm_title)) },
+            text = { Text(stringResource(R.string.global_settings_restore_confirm_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = viewModel::confirmRestore,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) { Text(stringResource(R.string.common_restore)) }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissRestoreConfirm) { Text(stringResource(R.string.common_cancel)) }
+            },
         )
     }
 
@@ -939,31 +966,43 @@ private fun SinglePasswordDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                 Text(description, style = MaterialTheme.typography.bodyMedium)
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it; error = null },
-                    label = { Text(stringResource(R.string.common_password)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        IconButton(onClick = { show = !show }) {
-                            Icon(if (show) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
-                        }
-                    },
-                )
-                OutlinedTextField(
-                    value = confirm,
-                    onValueChange = { confirm = it; error = null },
-                    label = { Text(stringResource(R.string.common_confirm_password)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    isError = error != null,
-                    supportingText = { if (error != null) Text(error!!) },
-                )
+                Card(
+                    shape = RoundedCornerShape(Dimens.cornerXl),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(Dimens.spaceMd),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                    ) {
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it; error = null },
+                            label = { Text(stringResource(R.string.common_password)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            trailingIcon = {
+                                IconButton(onClick = { show = !show }) {
+                                    Icon(if (show) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                                }
+                            },
+                        )
+                        OutlinedTextField(
+                            value = confirm,
+                            onValueChange = { confirm = it; error = null },
+                            label = { Text(stringResource(R.string.common_confirm_password)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            isError = error != null,
+                            supportingText = { if (error != null) Text(error!!) },
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
@@ -1041,26 +1080,38 @@ private fun PasswordDialog(
                     )
                 }
                 if (mode == PasswordDialogMode.SET || mode == PasswordDialogMode.CHANGE) {
-                    OutlinedTextField(
-                        value = newPassword, onValueChange = { newPassword = it; newError = null },
-                        label = { Text(stringResource(R.string.common_new_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = if (showNew) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        trailingIcon = {
-                            IconButton(onClick = { showNew = !showNew }) {
-                                Icon(if (showNew) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
-                            }
-                        },
-                        isError = newError != null,
-                    )
-                    OutlinedTextField(
-                        value = confirmPassword, onValueChange = { confirmPassword = it; newError = null },
-                        label = { Text(stringResource(R.string.common_confirm_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        isError = newError != null,
-                        supportingText = { if (newError != null) Text(newError!!) },
-                    )
+                    Card(
+                        shape = RoundedCornerShape(Dimens.cornerXl),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(Dimens.spaceMd),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                        ) {
+                            OutlinedTextField(
+                                value = newPassword, onValueChange = { newPassword = it; newError = null },
+                                label = { Text(stringResource(R.string.common_new_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                                visualTransformation = if (showNew) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                trailingIcon = {
+                                    IconButton(onClick = { showNew = !showNew }) {
+                                        Icon(if (showNew) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                                    }
+                                },
+                                isError = newError != null,
+                            )
+                            OutlinedTextField(
+                                value = confirmPassword, onValueChange = { confirmPassword = it; newError = null },
+                                label = { Text(stringResource(R.string.common_confirm_password)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                                visualTransformation = PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                isError = newError != null,
+                                supportingText = { if (newError != null) Text(newError!!) },
+                            )
+                        }
+                    }
                 }
             }
         },

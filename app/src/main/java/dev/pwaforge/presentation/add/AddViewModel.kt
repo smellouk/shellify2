@@ -311,6 +311,10 @@ class AddViewModel(
 
     fun onLaunched() = _state.update { it.copy(launchAppId = null) }
 
+    fun markShortcutCreated(app: WebApp) = viewModelScope.launch {
+        repo.save(app.copy(hasLauncherShortcut = true))
+    }
+
     // ── Icon pack picker ──────────────────────────────────────────────────────
 
     fun openIconPackPicker() {

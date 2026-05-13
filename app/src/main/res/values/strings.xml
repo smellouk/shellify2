@@ -226,8 +226,8 @@
     <string name="global_settings_select_folder_cd">Select folder</string>
     <string name="global_settings_backup_schedule_headline">Auto-backup schedule</string>
     <string name="global_settings_schedule_disabled">Disabled</string>
-    <string name="global_settings_schedule_daily">Daily</string>
     <string name="global_settings_schedule_weekly">Weekly</string>
+    <string name="global_settings_schedule_monthly">Monthly</string>
     <string name="global_settings_last_backup_headline">Last backup</string>
     <string name="global_settings_backup_now">Backup Now</string>
     <string name="global_settings_import_backup">Import Backup</string>
@@ -249,6 +249,8 @@
     <string name="global_settings_remove_password_warning">Removing the app password will immediately and permanently delete all stored data (cookies, logins, local storage) for every app protected by the app password. This cannot be undone.</string>
     <string name="global_settings_backup_password_dialog_title">Backup password</string>
     <string name="global_settings_backup_password_dialog_desc">This password encrypts your backup file. Keep it safe — you\'ll need it to restore.</string>
+    <string name="global_settings_restore_confirm_title">Restore backup?</string>
+    <string name="global_settings_restore_confirm_body">This will replace all current app data — apps, categories, settings, and icons — with the contents of the backup file. This cannot be undone.</string>
     <string name="global_settings_import_password_dialog_title">Enter backup password</string>
     <string name="global_settings_import_password_dialog_desc">Enter the password used when this backup was created.</string>
     <string name="global_settings_delete_all_apps_confirm_title">Delete all apps?</string>
