@@ -310,10 +310,7 @@ fun AddScreen(
                             .size(Dimens.sizeIconPreview)
                             .clip(RoundedCornerShape(Dimens.cornerIcon))
                             .background(MaterialTheme.colorScheme.primaryContainer)
-                            .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(Dimens.cornerIcon))
-                            .clickable {
-                                imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                            },
+                            .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(Dimens.cornerIcon)),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (previewIconPath != null) {

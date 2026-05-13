@@ -37,8 +37,12 @@ data class WebApp(
     val lockType: LockType = LockType.NONE,
     val wipeOnFailedAttempts: Boolean = false,
 ) {
-    /** Convenience accessor: the on-disk path when iconSource is a Path, null otherwise. */
-    val iconPath: String? get() = (iconSource as? IconSource.Path)?.path
+    /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
+    val iconPath: String? get() = when (val s = iconSource) {
+        is IconSource.Path -> s.path
+        is IconSource.SvgIcon -> s.renderedPath
+        null -> null
+    }
 }
 
 enum class LockType { NONE, PASSWORD, SYSTEM }

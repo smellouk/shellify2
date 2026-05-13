@@ -17,20 +17,35 @@ import java.io.File
 object ShortcutIconBuilder {
 
     private const val SIZE = 192
+    private const val ADAPTIVE_SIZE = 432   // 108dp at 4× — safe for all densities
     private const val SVG_ICON_SIZE = 108  // ~56% of canvas, centered
 
     fun build(context: Context, app: WebApp): Bitmap {
         return when (val src = app.iconSource) {
-            is IconSource.SvgIcon -> buildSvgIcon(context, src)
+            is IconSource.SvgIcon -> {
+                val rendered = src.renderedPath?.let { loadFile(it) }
+                if (rendered != null) buildAdaptiveSvg(src.background, rendered)
+                else fallback(context, app)
+            }
             is IconSource.Path -> {
                 val bmp = loadFile(src.path)
                 if (bmp != null) scaleCentered(bmp) else fallback(context, app)
             }
-            null -> {
-                // Legacy: iconPath computed from iconSource (null means no source at all)
-                fallback(context, app)
-            }
+            null -> fallback(context, app)
         }
+    }
+
+    private fun buildAdaptiveSvg(background: String, renderedIcon: Bitmap): Bitmap {
+        val bgColor = runCatching { Color.parseColor(background) }.getOrDefault(0xFF1976D2.toInt())
+        val out = Bitmap.createBitmap(ADAPTIVE_SIZE, ADAPTIVE_SIZE, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        canvas.drawColor(bgColor)
+        // Scale to 50% of canvas; the inner icon lands at ~36% of canvas, giving ~65px padding per side inside the safe zone
+        val drawSize = (ADAPTIVE_SIZE * 0.50f).toInt()
+        val offset = (ADAPTIVE_SIZE - drawSize) / 2f
+        val scaled = Bitmap.createScaledBitmap(renderedIcon, drawSize, drawSize, true)
+        canvas.drawBitmap(scaled, offset, offset, null)
+        return out
     }
 
     private fun fallback(context: Context, app: WebApp): Bitmap {

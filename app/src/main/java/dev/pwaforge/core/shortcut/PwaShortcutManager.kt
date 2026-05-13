@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.WebApp
 
 object PwaShortcutManager {
@@ -30,10 +31,15 @@ object PwaShortcutManager {
 
     private fun buildInfo(context: Context, app: WebApp, label: String): ShortcutInfoCompat {
         val icon = ShortcutIconBuilder.build(context, app)
+        val iconCompat = if (app.iconSource is IconSource.SvgIcon) {
+            IconCompat.createWithAdaptiveBitmap(icon)
+        } else {
+            IconCompat.createWithBitmap(icon)
+        }
         return ShortcutInfoCompat.Builder(context, shortcutId(app))
             .setShortLabel(label.take(12))
             .setLongLabel(label)
-            .setIcon(IconCompat.createWithBitmap(icon))
+            .setIcon(iconCompat)
             .setIntent(buildIntent(context, app.id))
             .build()
     }

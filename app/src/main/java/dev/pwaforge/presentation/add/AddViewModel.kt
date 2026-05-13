@@ -157,7 +157,14 @@ class AddViewModel(
     // Basic info
     fun setName(v: String) = _state.update { it.copy(name = v, nameError = null, duplicateError = null) }
     fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null) }
-    fun setThemeColor(v: String?) = _state.update { it.copy(themeColor = v) }
+    fun setThemeColor(v: String?) {
+        _state.update { it.copy(themeColor = v) }
+        val src = _state.value.iconSource
+        if (src is IconSource.SvgIcon && v != null) {
+            val bgColorArgb = runCatching { android.graphics.Color.parseColor(v) }.getOrNull() ?: return
+            reRenderSvgIcon(src.slug, bgColorArgb)
+        }
+    }
     fun setIconPath(v: String) = _state.update { it.copy(iconPath = v, iconSource = IconSource.Path(v)) }
 
     // Fullscreen
@@ -320,55 +327,59 @@ class AddViewModel(
     fun selectPackIcon(entry: SimpleIconEntry, isolationId: String, bgColorArgb: Int) {
         viewModelScope.launch {
             _state.update { it.copy(isSelectingPackIcon = true) }
-            val oldIconPath = _state.value.iconPath
-            val path = withContext(Dispatchers.IO) {
-                runCatching {
-                    val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg"
-                    val iconSize = 140
-                    val canvasSize = 192
-                    val offset = (canvasSize - iconSize) / 2
-                    val loader = ImageLoader.Builder(context)
-                        .components { add(SvgDecoder.Factory()) }
-                        .build()
-                    val req = ImageRequest.Builder(context)
-                        .data(svgUrl)
-                        .size(iconSize, iconSize)
-                        .build()
-                    val result = loader.execute(req)
-                    if (result !is SuccessResult) return@runCatching null
-                    val svgBitmap = (result.drawable as? BitmapDrawable)?.bitmap
-                        ?: return@runCatching null
-
-                    val output = Bitmap.createBitmap(canvasSize, canvasSize, Bitmap.Config.ARGB_8888)
-                    val canvas = android.graphics.Canvas(output)
-                    canvas.drawColor(bgColorArgb)
-                    val paint = android.graphics.Paint().apply {
-                        colorFilter = android.graphics.PorterDuffColorFilter(
-                            android.graphics.Color.WHITE,
-                            android.graphics.PorterDuff.Mode.SRC_IN,
-                        )
-                    }
-                    canvas.drawBitmap(svgBitmap, offset.toFloat(), offset.toFloat(), paint)
-
-                    val dir = File(context.filesDir, "icons").also { it.mkdirs() }
-                    oldIconPath?.let { File(it).delete() }
-                    val file = File(dir, "${isolationId}_${System.currentTimeMillis()}.png")
-                    file.outputStream().use { out ->
-                        output.compress(Bitmap.CompressFormat.PNG, 100, out)
-                    }
-                    file.absolutePath
-                }.getOrNull()
-            }
+            reRenderSvgIconInternal(entry.slug, bgColorArgb, isSelection = true)
             _state.update { it.copy(isSelectingPackIcon = false, showIconPackPicker = false) }
-            if (path != null) {
-                val bgHex = String.format("#%06X", 0xFFFFFF and bgColorArgb)
-                _state.update {
-                    it.copy(
-                        iconPath = path,
-                        iconSource = IconSource.SvgIcon(entry.slug, bgHex),
+        }
+    }
+
+    private fun reRenderSvgIcon(slug: String, bgColorArgb: Int) {
+        viewModelScope.launch { reRenderSvgIconInternal(slug, bgColorArgb, isSelection = false) }
+    }
+
+    private suspend fun reRenderSvgIconInternal(slug: String, bgColorArgb: Int, isSelection: Boolean) {
+        val oldIconPath = _state.value.iconPath
+        val isolationId = _state.value.isolationId
+        val path = withContext(Dispatchers.IO) {
+            runCatching {
+                val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/$slug.svg"
+                val iconSize = 140
+                val canvasSize = 192
+                val offset = (canvasSize - iconSize) / 2
+                val loader = ImageLoader.Builder(context)
+                    .components { add(SvgDecoder.Factory()) }
+                    .build()
+                val req = ImageRequest.Builder(context)
+                    .data(svgUrl)
+                    .size(iconSize, iconSize)
+                    .build()
+                val result = loader.execute(req)
+                if (result !is SuccessResult) return@runCatching null
+                val svgBitmap = (result.drawable as? BitmapDrawable)?.bitmap
+                    ?: return@runCatching null
+
+                val output = Bitmap.createBitmap(canvasSize, canvasSize, Bitmap.Config.ARGB_8888)
+                val canvas = android.graphics.Canvas(output)
+                canvas.drawColor(bgColorArgb)
+                val paint = android.graphics.Paint().apply {
+                    colorFilter = android.graphics.PorterDuffColorFilter(
+                        android.graphics.Color.WHITE,
+                        android.graphics.PorterDuff.Mode.SRC_IN,
                     )
                 }
-            }
+                canvas.drawBitmap(svgBitmap, offset.toFloat(), offset.toFloat(), paint)
+
+                val dir = File(context.filesDir, "icons").also { it.mkdirs() }
+                oldIconPath?.let { File(it).delete() }
+                val file = File(dir, "${isolationId}_${System.currentTimeMillis()}.png")
+                file.outputStream().use { out ->
+                    output.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+                file.absolutePath
+            }.getOrNull()
+        }
+        if (path != null) {
+            val bgHex = String.format("#%06X", 0xFFFFFF and bgColorArgb)
+            _state.update { it.copy(iconPath = path, iconSource = IconSource.SvgIcon(slug, bgHex, path)) }
         }
     }
 
