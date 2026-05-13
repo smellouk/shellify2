@@ -265,11 +265,19 @@ fun CategoryScreen(
                 Spacer(Modifier.height(Dimens.sizeMd))
 
                 // Suggestion chips — 2×2 wrap, dashed border, maxWidth 280dp
+                data class ChipSuggestion(
+                    val label: String,
+                    val displayIcon: ImageVector,
+                    val fg: Color,
+                    val bg: Color,
+                    val iconKey: String,
+                    val hexColor: String,
+                )
                 val chipData = listOf(
-                    Triple(stringResource(R.string.categories_suggestion_media),   Icons.Default.Bolt,     CategoryMediaFg   to CategoryMediaBg),
-                    Triple(stringResource(R.string.categories_suggestion_work),    Icons.Default.Apps,     p40               to p90),
-                    Triple(stringResource(R.string.categories_suggestion_reading), Icons.Default.Home,     CategoryReadingFg to CategoryReadingBg),
-                    Triple(stringResource(R.string.categories_suggestion_tools),   Icons.Default.GridView, CategoryToolsFg   to CategoryToolsBg),
+                    ChipSuggestion(stringResource(R.string.categories_suggestion_media),   Icons.Default.Bolt,     CategoryMediaFg,   CategoryMediaBg,   "movie",      "#CA8A04"),
+                    ChipSuggestion(stringResource(R.string.categories_suggestion_work),    Icons.Default.Apps,     p40,               p90,               "work",       "#4338CA"),
+                    ChipSuggestion(stringResource(R.string.categories_suggestion_reading), Icons.Default.Home,     CategoryReadingFg, CategoryReadingBg, "menu_book",  "#DB2777"),
+                    ChipSuggestion(stringResource(R.string.categories_suggestion_tools),   Icons.Default.GridView, CategoryToolsFg,   CategoryToolsBg,   "lightbulb",  "#0D9488"),
                 )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -278,11 +286,10 @@ fun CategoryScreen(
                 ) {
                     chipData.chunked(2).forEach { rowChips ->
                         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
-                            rowChips.forEach { (label, icon, colors) ->
-                                val (fg, bg) = colors
+                            rowChips.forEach { chip ->
                                 Row(
                                     modifier = Modifier
-                                        .background(bg, RoundedCornerShape(Dimens.cornerFull))
+                                        .background(chip.bg, RoundedCornerShape(Dimens.cornerFull))
                                         .drawBehind {
                                             drawRoundRect(
                                                 color = surfDim,
@@ -295,14 +302,14 @@ fun CategoryScreen(
                                                 ),
                                             )
                                         }
-                                        .clickable { viewModel.showDialog() }
+                                        .clickable { viewModel.showDialogWithPreset(chip.label, chip.iconKey, chip.hexColor) }
                                         .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                                 ) {
-                                    Icon(icon, null, modifier = Modifier.size(Dimens.sizeTagIcon), tint = fg)
-                                    Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = fg)
-                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXxs), tint = fg)
+                                    Icon(chip.displayIcon, null, modifier = Modifier.size(Dimens.sizeTagIcon), tint = chip.fg)
+                                    Text(chip.label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = chip.fg)
+                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXxs), tint = chip.fg)
                                 }
                             }
                         }

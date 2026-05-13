@@ -34,6 +34,16 @@ class CategoryViewModel(
 
     fun showDialog() = _state.update { it.copy(showAddDialog = true, editingId = null) }
 
+    fun showDialogWithPreset(name: String, iconKey: String, hexColor: String) = _state.update {
+        it.copy(
+            showAddDialog = true,
+            editingId = null,
+            newName = name,
+            selectedIcon = iconKey,
+            selectedColor = hexColor,
+        )
+    }
+
     fun showEditDialog(category: Category) = _state.update {
         it.copy(
             showAddDialog = true,
