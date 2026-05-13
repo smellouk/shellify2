@@ -55,7 +55,17 @@ object PwaShortcutManager {
     }
 
     fun createShortcut(context: Context, app: WebApp): Boolean = runCatching {
-        ShortcutManagerCompat.requestPinShortcut(context, buildInfo(context, app, app.name), null)
+        val id = shortcutId(app)
+        val alreadyPinned = ShortcutManagerCompat
+            .getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
+            .any { it.id == id }
+        if (alreadyPinned) {
+            ShortcutManagerCompat.enableShortcuts(context, listOf(buildInfo(context, app, app.name)))
+            ShortcutManagerCompat.updateShortcuts(context, listOf(buildInfo(context, app, app.name)))
+            true
+        } else {
+            ShortcutManagerCompat.requestPinShortcut(context, buildInfo(context, app, app.name), null)
+        }
     }.getOrDefault(false)
 
     fun rename(context: Context, app: WebApp, newLabel: String): Boolean = runCatching {

@@ -872,14 +872,14 @@ private fun CategoryPickerDialog(
 
 @Composable
 private fun FeatureTags(app: WebApp) {
-    data class Tag(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String)
+    data class Tag(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String, val color: Color)
     val tags = buildList {
-        if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen"))
-        if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block"))
-        if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate"))
+        if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", TagFullscreen))
+        if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", TagAdBlock))
+        if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", TagTranslate))
         when (app.lockType) {
-            LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password"))
-            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "Lock"))
+            LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password", TagLockPassword))
+            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "Lock", TagLockSystem))
             LockType.NONE     -> Unit
         }
     }
@@ -889,7 +889,7 @@ private fun FeatureTags(app: WebApp) {
             Box(
                 modifier = Modifier
                     .background(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        tag.color.copy(alpha = 0.15f),
                         RoundedCornerShape(Dimens.cornerFull),
                     )
                     .padding(Dimens.spaceXxs),
@@ -899,7 +899,7 @@ private fun FeatureTags(app: WebApp) {
                     tag.icon,
                     contentDescription = tag.label,
                     modifier = Modifier.size(Dimens.sizeXs),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = tag.color,
                 )
             }
         }

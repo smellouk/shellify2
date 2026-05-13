@@ -4,10 +4,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +18,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,15 +31,20 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Shortcut
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
+
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -44,6 +55,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,6 +63,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +83,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.pwaforge.R
 import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.presentation.home.AppIcon
@@ -79,6 +95,23 @@ import dev.pwaforge.presentation.home.AppIcon
 fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     val state by viewModel.uiState.collectAsState()
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.load()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    var isGridView by remember { mutableStateOf(true) }
+    var iconPickItem by remember { mutableStateOf<ShortcutItem?>(null) }
+    val pickImage = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        val item = iconPickItem ?: return@rememberLauncherForActivityResult
+        iconPickItem = null
+        if (uri != null) viewModel.applyPickedIcon(item, uri)
+    }
+
     val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
     Scaffold(
         containerColor = screenBg,
@@ -86,7 +119,32 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
             TopAppBar(
                 title = { Text(stringResource(R.string.shortcuts_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+                actions = {
+                    if (state.items.isNotEmpty()) {
+                        IconButton(
+                            onClick = { isGridView = !isGridView },
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(
+                                if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                },
             )
+        },
+        floatingActionButton = {
+            if (state.items.isNotEmpty() && state.addableApps.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = viewModel::showAddSheet,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.shortcuts_add_button))
+                }
+            }
         },
     ) { padding ->
         when {
@@ -95,39 +153,48 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     CircularProgressIndicator()
                 }
             }
-            state.items.isEmpty() -> EmptyState(modifier = Modifier.fillMaxSize().padding(padding))
+            state.items.isEmpty() -> EmptyState(
+                onAddShortcut = viewModel::showAddSheet.takeIf { state.addableApps.isNotEmpty() },
+                modifier = Modifier.fillMaxSize().padding(padding),
+            )
             else -> {
-                var iconPickItem by remember { mutableStateOf<ShortcutItem?>(null) }
-                val pickImage = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
-                    val item = iconPickItem ?: return@rememberLauncherForActivityResult
-                    iconPickItem = null
-                    if (uri != null) viewModel.applyPickedIcon(item, uri)
-                }
-
-                LazyColumn(
-                    modifier = Modifier.padding(padding),
-                    contentPadding = PaddingValues(Dimens.spaceLg),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
-                ) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(Dimens.corner20),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        ) {
-                            state.items.forEachIndexed { index, shortcutItem ->
-                                if (index > 0) {
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = Dimens.space14),
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                    )
-                                }
+                if (isGridView) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(Dimens.sizeGridCell),
+                        modifier = Modifier.padding(padding),
+                        contentPadding = PaddingValues(Dimens.spaceLg),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                    ) {
+                        items(state.items) { shortcutItem ->
+                            ShortcutGridCard(
+                                item = shortcutItem,
+                                onRename = { viewModel.startRename(shortcutItem) },
+                                onChangeIcon = {
+                                    iconPickItem = shortcutItem
+                                    pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                                },
+                                onRemove = { viewModel.showRemove(shortcutItem) },
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.padding(padding),
+                        contentPadding = PaddingValues(Dimens.spaceLg),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                    ) {
+                        items(state.items) { shortcutItem ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(Dimens.cornerXl),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                            ) {
                                 ShortcutRow(
                                     item = shortcutItem,
                                     onRename = { viewModel.startRename(shortcutItem) },
-                                    onRefreshIcon = { viewModel.refreshIcon(shortcutItem) },
                                     onChangeIcon = {
                                         iconPickItem = shortcutItem
                                         pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
@@ -138,6 +205,48 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    if (state.showAddSheet) {
+        ModalBottomSheet(onDismissRequest = viewModel::dismissAddSheet) {
+            Text(
+                stringResource(R.string.shortcuts_add_button),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+            )
+            LazyColumn {
+                items(state.addableApps) { app ->
+                    ListItem(
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier
+                                    .size(Dimens.sizeCard)
+                                    .clip(RoundedCornerShape(Dimens.cornerLg))
+                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                AppIcon(app = app, modifier = Modifier.size(Dimens.sizeApp))
+                            }
+                        },
+                        headlineContent = {
+                            Text(app.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        },
+                        supportingContent = {
+                            Text(
+                                app.url.removePrefix("https://").removePrefix("http://"),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        modifier = Modifier.clickable { viewModel.createShortcut(app) },
+                    )
+                }
+                item { Spacer(Modifier.height(Dimens.spaceXl)) }
             }
         }
     }
@@ -191,7 +300,6 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
 private fun ShortcutRow(
     item: ShortcutItem,
     onRename: () -> Unit,
-    onRefreshIcon: () -> Unit,
     onChangeIcon: () -> Unit,
     onRemove: () -> Unit,
 ) {
@@ -236,11 +344,7 @@ private fun ShortcutRow(
                         leadingIcon = { Icon(Icons.Default.Image, null) },
                         onClick = { showMenu = false; onChangeIcon() },
                     )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.shortcuts_menu_refresh_icon)) },
-                        leadingIcon = { Icon(Icons.Default.Refresh, null) },
-                        onClick = { showMenu = false; onRefreshIcon() },
-                    )
+
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.shortcuts_menu_remove)) },
                         leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
@@ -253,7 +357,71 @@ private fun ShortcutRow(
 }
 
 @Composable
-private fun EmptyState(modifier: Modifier = Modifier) {
+private fun ShortcutGridCard(
+    item: ShortcutItem,
+    onRename: () -> Unit,
+    onChangeIcon: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(Dimens.cornerXl),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(Dimens.spaceMd)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AppIcon(app = item.app, modifier = Modifier.size(Dimens.sizeCard))
+                Spacer(Modifier.width(Dimens.spaceMd))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        item.label,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            item.app.url.removePrefix("https://").removePrefix("http://"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Box {
+                            IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
+                                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.shortcuts_options_cd), modifier = Modifier.size(Dimens.sizeXs))
+                            }
+                            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.shortcuts_menu_rename)) },
+                                    leadingIcon = { Icon(Icons.Default.Edit, null) },
+                                    onClick = { showMenu = false; onRename() },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.shortcuts_menu_change_icon)) },
+                                    leadingIcon = { Icon(Icons.Default.Image, null) },
+                                    onClick = { showMenu = false; onChangeIcon() },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.shortcuts_menu_remove)) },
+                                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                                    onClick = { showMenu = false; onRemove() },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(onAddShortcut: (() -> Unit)?, modifier: Modifier = Modifier) {
     val p97  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
     val p95  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
     val p90  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
@@ -318,6 +486,19 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        if (onAddShortcut != null) {
+            Spacer(Modifier.height(Dimens.space18))
+            Button(
+                onClick = onAddShortcut,
+                shape = RoundedCornerShape(Dimens.corner24),
+                modifier = Modifier.heightIn(min = Dimens.sizeApp),
+                contentPadding = PaddingValues(horizontal = Dimens.sizeLg),
+            ) {
+                Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
+                Spacer(Modifier.size(Dimens.spaceSm))
+                Text(stringResource(R.string.shortcuts_add_button), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            }
+        }
         Spacer(Modifier.weight(1f))
     }
 }

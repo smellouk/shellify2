@@ -27,6 +27,8 @@ data class ShortcutsUiState(
     val renameTarget: ShortcutItem? = null,
     val renameText: String = "",
     val removeTarget: ShortcutItem? = null,
+    val addableApps: List<WebApp> = emptyList(),
+    val showAddSheet: Boolean = false,
 )
 
 class ShortcutsViewModel(
@@ -40,10 +42,11 @@ class ShortcutsViewModel(
     init { load() }
 
     fun load() {
-        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch(Dispatchers.IO) {
             val appByIsolationId = repo.getAll().first().associateBy { it.isolationId }
-            val items = PwaShortcutManager.getPinnedShortcuts(context).mapNotNull { shortcut ->
+            val pinned = PwaShortcutManager.getPinnedShortcuts(context).filter { it.isEnabled }
+            val pinnedIds = pinned.map { it.id }.toSet()
+            val items = pinned.mapNotNull { shortcut ->
                 val isolationId = shortcut.id.removePrefix("pwa_")
                 val app = appByIsolationId[isolationId] ?: return@mapNotNull null
                 ShortcutItem(
@@ -54,7 +57,10 @@ class ShortcutsViewModel(
                         ?: app.name,
                 )
             }
-            _state.update { it.copy(items = items, isLoading = false) }
+            val addableApps = appByIsolationId.values
+                .filter { "pwa_${it.isolationId}" !in pinnedIds }
+                .sortedBy { it.name }
+            _state.update { it.copy(items = items, isLoading = false, addableApps = addableApps) }
         }
     }
 
@@ -104,7 +110,19 @@ class ShortcutsViewModel(
             s.copy(
                 removeTarget = null,
                 items = s.items.filter { it.shortcutId != item.shortcutId },
+                addableApps = (s.addableApps + item.app).sortedBy { it.name },
             )
         }
+    }
+
+    // ── Add ───────────────────────────────────────────────────────────────────
+
+    fun showAddSheet() = _state.update { it.copy(showAddSheet = true) }
+    fun dismissAddSheet() = _state.update { it.copy(showAddSheet = false) }
+
+    fun createShortcut(app: WebApp) {
+        PwaShortcutManager.createShortcut(context, app)
+        _state.update { it.copy(showAddSheet = false) }
+        load()
     }
 }
