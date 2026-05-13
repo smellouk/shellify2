@@ -35,3 +35,6 @@ val CategoryReadingFg = Color(0xFFB5365E)
 val CategoryReadingBg = Color(0xFFFFD9E2)
 val CategoryToolsFg   = Color(0xFF006B5F)
 val CategoryToolsBg   = Color(0xFFDAF8F2)
+val SuggestionVideoBg = Color(0xFFD1F5E5)  // teal-light bg for Video suggestion tile
+val SuggestionChatBg  = Color(0xFFDCE7FF)  // indigo-light bg for Chat suggestion tile
+val SuggestionChatFg  = Color(0xFF3A5BBF)  // indigo fg for Chat suggestion tile

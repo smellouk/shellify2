@@ -13,17 +13,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
@@ -53,6 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -86,7 +83,10 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     Scaffold(
         containerColor = screenBg,
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.shortcuts_title)) })
+            TopAppBar(
+                title = { Text(stringResource(R.string.shortcuts_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+            )
         },
     ) { padding ->
         when {
@@ -264,7 +264,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
         modifier = modifier.padding(horizontal = Dimens.size4xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd + Dimens.sizeApp))
+        Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd))
 
         // 160×160 illustration — 3 filled rings + single dashed orbit
         Box(modifier = Modifier.size(Dimens.illustrationSize), contentAlignment = Alignment.Center) {
@@ -318,17 +318,6 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(Dimens.space18))
-        Button(
-            onClick = {},
-            shape = RoundedCornerShape(Dimens.corner24),
-            modifier = Modifier.heightIn(min = Dimens.sizeApp),
-            contentPadding = PaddingValues(horizontal = Dimens.space22),
-        ) {
-            Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
-            Spacer(Modifier.width(Dimens.spaceSm))
-            Text(stringResource(R.string.shortcuts_add_button), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-        }
         Spacer(Modifier.weight(1f))
     }
 }

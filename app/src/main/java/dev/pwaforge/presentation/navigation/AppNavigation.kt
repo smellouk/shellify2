@@ -206,7 +206,8 @@ fun AppNavigation(
                 AddScreen(
                     viewModel = remember(appId) { AddViewModel(appId, app.webAppRepository, app.saveWebApp,
                         app.getCategories, app.pwaAnalyzer, app.faviconFetcher,
-                        app.geckoEngineManager, app.themeManager) },
+                        app.geckoEngineManager, app.themeManager,
+                        app.simpleIconsManager, app) },
                     onSaved = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
@@ -264,7 +265,7 @@ fun AppNavigation(
                             app.themeManager, app.isolationManager, app.webAppRepository,
                             app.categoryRepository, app.passwordManager,
                             app.backupSettings, app.backupManager, app,
-                            app.geckoEngineManager,
+                            app.geckoEngineManager, app.simpleIconsManager,
                         )
                     },
                 )
@@ -277,6 +278,9 @@ fun AppNavigation(
                             themeManager = app.themeManager,
                             passwordManager = app.passwordManager,
                             backupSettings = app.backupSettings,
+                            saveWebApp = app.saveWebApp,
+                            pwaAnalyzer = app.pwaAnalyzer,
+                            faviconFetcher = app.faviconFetcher,
                             onFinished = {
                                 navController.navigate(Screen.Home.route) {
                                     popUpTo(Screen.Onboarding.route) { inclusive = true }

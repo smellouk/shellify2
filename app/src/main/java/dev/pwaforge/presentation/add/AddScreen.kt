@@ -23,6 +23,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,8 +43,10 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material.icons.filled.Visibility
@@ -69,12 +74,14 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -87,6 +94,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -94,7 +102,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
 import dev.pwaforge.R
+import dev.pwaforge.core.iconpack.SimpleIconEntry
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.shortcut.PwaShortcutManager
@@ -304,10 +316,20 @@ fun AddScreen(
                             },
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (previewIconPath != null || state.name.isNotBlank()) {
+                        if (previewIconPath != null) {
+                            AsyncImage(
+                                model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                    .data(java.io.File(previewIconPath))
+                                    .memoryCachePolicy(coil.request.CachePolicy.DISABLED)
+                                    .build(),
+                                contentDescription = state.name,
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(Dimens.cornerIcon)),
+                            )
+                        } else if (state.name.isNotBlank()) {
                             AppIcon(
                                 app = WebApp(name = state.name, url = state.url,
-                                    iconPath = previewIconPath, themeColor = state.themeColor),
+                                    iconPath = null, themeColor = state.themeColor),
                                 modifier = Modifier.fillMaxSize(),
                             )
                         } else {
@@ -347,7 +369,22 @@ fun AddScreen(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                     ) {
-                        Icon(Icons.Default.AutoAwesome, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(Dimens.sizeXs))
+                        Icon(Icons.Default.Image, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(Dimens.sizeXs))
+                    }
+
+                    if (state.iconPackAvailable) {
+                        Spacer(Modifier.width(Dimens.spaceXxs))
+
+                        // Pick from icon pack
+                        FilledIconButton(
+                            onClick = viewModel::openIconPackPicker,
+                            modifier = Modifier.size(Dimens.size4xl),
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(Dimens.sizeXs))
+                        }
                     }
 
                     Spacer(Modifier.weight(1f))
@@ -515,7 +552,112 @@ fun AddScreen(
                 onDismiss = { showColorPicker = false },
             )
         }
+
+        if (state.showIconPackPicker) {
+            SimpleIconPickerSheet(
+                icons = state.packIcons,
+                query = state.iconPickerQuery,
+                isLoading = state.isSelectingPackIcon,
+                onQueryChange = viewModel::setIconPickerQuery,
+                onSelect = { entry, bgColorArgb ->
+                    viewModel.selectPackIcon(entry, state.isolationId, bgColorArgb)
+                },
+                onDismiss = viewModel::closeIconPackPicker,
+            )
+        }
     }
+}
+
+// ── Simple Icons Picker Dialog ────────────────────────────────────────────────
+
+@Composable
+private fun SimpleIconPickerSheet(
+    icons: List<SimpleIconEntry>,
+    query: String,
+    isLoading: Boolean,
+    onQueryChange: (String) -> Unit,
+    onSelect: (SimpleIconEntry, Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val primaryArgb = MaterialTheme.colorScheme.primary.toArgb()
+    val svgLoader = remember {
+        ImageLoader.Builder(context).components { add(SvgDecoder.Factory()) }.build()
+    }
+    val filtered = remember(icons, query) {
+        if (query.isBlank()) icons else icons.filter { it.title.contains(query, ignoreCase = true) }
+    }
+    val iconBgColor = MaterialTheme.colorScheme.primary
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.add_icon_pack_picker_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    placeholder = { Text(stringResource(R.string.add_icon_pack_search_hint)) },
+                    leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(Dimens.cornerMd),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(72.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                    ) {
+                        items(filtered, key = { it.slug }) { entry ->
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
+                                    .clickable { onSelect(entry, primaryArgb) }
+                                    .padding(Dimens.spaceXxs),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(Dimens.cornerMd))
+                                        .background(iconBgColor),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    AsyncImage(
+                                        model = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg",
+                                        contentDescription = entry.title,
+                                        imageLoader = svgLoader,
+                                        modifier = Modifier.size(36.dp),
+                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                            Color.White,
+                                            androidx.compose.ui.graphics.BlendMode.SrcIn,
+                                        ),
+                                    )
+                                }
+                                Text(
+                                    entry.title,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.add_cancel)) }
+        },
+    )
 }
 
 // ── PWA Analysis Report Dialog ────────────────────────────────────────────────

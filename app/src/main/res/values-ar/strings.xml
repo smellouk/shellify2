@@ -178,6 +178,18 @@
     <string name="global_settings_dynamic_colors">ألوان ديناميكية</string>
     <string name="global_settings_dynamic_colors_desc">اتباع ألوان خلفية الشاشة (Material You)</string>
     <string name="global_settings_accent_color">لون السمة</string>
+    <string name="global_settings_icon_pack_headline">حزمة الأيقونات</string>
+    <string name="global_settings_icon_pack_desc">حسّن أيقونات التطبيقات بأيقونات العلامات التجارية</string>
+    <string name="global_settings_icon_pack_not_imported">لم يتم استيراد أي حزمة أيقونات</string>
+    <string name="global_settings_simple_icons_title">Simple Icons</string>
+    <string name="global_settings_simple_icons_desc">+3000 أيقونة للعلامات التجارية لخدمات الويب · CC0</string>
+    <string name="global_settings_simple_icons_download">تنزيل</string>
+    <string name="global_settings_simple_icons_import">استيراد ملف</string>
+    <string name="global_settings_simple_icons_downloading">جارٍ التنزيل… %d%%</string>
+    <string name="global_settings_simple_icons_processing">معالجة الأيقونات…</string>
+    <string name="global_settings_simple_icons_imported">%d أيقونة مستوردة</string>
+    <string name="global_settings_simple_icons_remove">إزالة</string>
+    <string name="global_settings_simple_icons_retry">إعادة المحاولة</string>
     <string name="global_settings_section_browser">المتصفح</string>
     <string name="global_settings_default_ua">عميل المستخدم الافتراضي</string>
     <string name="global_settings_default_engine_label">المحرك الافتراضي للتطبيقات الجديدة</string>
@@ -264,10 +276,13 @@
     <string name="categories_empty">رتّب تطبيقاتك في فضاءات</string>
     <string name="categories_empty_subtitle">جمّع بلاطاتك حسب الغرض — عمل، قراءة، وسائط — ثم انتقل بينها من الدرج.</string>
     <string name="categories_new_dialog_title">فئة جديدة</string>
+    <string name="categories_edit_dialog_title">تعديل الفئة</string>
+    <string name="categories_edit_cd">تعديل</string>
     <string name="categories_name_label">الاسم</string>
     <string name="categories_icon_label">الأيقونة</string>
     <string name="categories_color_label">اللون</string>
     <string name="categories_add_button">إضافة</string>
+    <string name="categories_save_button">حفظ</string>
     <string name="categories_suggestion_media">وسائط</string>
     <string name="categories_suggestion_work">عمل</string>
     <string name="categories_suggestion_reading">قراءة</string>
@@ -287,8 +302,8 @@
     <string name="shortcuts_menu_change_icon">تغيير الأيقونة</string>
     <string name="shortcuts_menu_refresh_icon">تحديث الأيقونة</string>
     <string name="shortcuts_menu_remove">إزالة</string>
-    <string name="shortcuts_empty_title">اقفز مباشرةً إلى الصفحة</string>
-    <string name="shortcuts_empty_desc">ثبّت روابط عميقة — صندوق بريدك، القناة المباشرة، أجندة اليوم — وافتحها بنقرة واحدة.</string>
+    <string name="shortcuts_empty_title">لا توجد اختصارات بعد</string>
+    <string name="shortcuts_empty_desc">الاختصارات التي تضيفها من إعدادات التطبيق تظهر هنا. أعد تسميتها أو غيّر أيقوناتها أو احذفها في أي وقت.</string>
 
     <!-- Translate -->
     <string name="translate_title">إعدادات الترجمة</string>
@@ -355,6 +370,26 @@
     <string name="onboarding_ready">لنضف موقعك الأول. أدخل رابطاً في الشاشة التالية وسيحوله PWAForge إلى تطبيق معزول.</string>
     <string name="onboarding_done_tip_title">نصيحة — اضغط مطولاً على أي بلاطة</string>
     <string name="onboarding_done_tip_body">لضبط حظر الإعلانات والعزل والأذونات لكل تطبيق.</string>
+
+    <!-- Onboarding — QuickPicks -->
+    <string name="onboarding_quickpicks_title">ابدأ ببعض التطبيقات</string>
+    <string name="onboarding_quickpicks_subtitle">اختر من تطبيقات الويب الشائعة — يمكنك تغيير ذلك لاحقاً.</string>
+    <string name="onboarding_quickpicks_eyebrow">اقتراحات سريعة</string>
+    <string name="onboarding_quickpicks_selected">محدد</string>
+    <string name="onboarding_quickpicks_add_n">إضافة %d تطبيقات</string>
+    <string name="onboarding_quickpicks_add_one">إضافة تطبيق واحد</string>
+    <string name="onboarding_quickpicks_proton">بروتون ميل</string>
+    <string name="onboarding_quickpicks_proton_host">mail.proton.me</string>
+    <string name="onboarding_quickpicks_bitwarden">بيتووردن</string>
+    <string name="onboarding_quickpicks_bitwarden_host">vault.bitwarden.com</string>
+    <string name="onboarding_quickpicks_element">إيليمنت</string>
+    <string name="onboarding_quickpicks_element_host">app.element.io</string>
+    <string name="onboarding_quickpicks_excalidraw">إكسكاليدرو</string>
+    <string name="onboarding_quickpicks_excalidraw_host">excalidraw.com</string>
+    <string name="onboarding_quickpicks_notes">ستاندرد نوتس</string>
+    <string name="onboarding_quickpicks_notes_host">app.standardnotes.com</string>
+    <string name="onboarding_quickpicks_mastodon">ماستودون</string>
+    <string name="onboarding_quickpicks_mastodon_host">mastodon.social</string>
 
     <!-- Errors -->
     <string name="error_invalid_url">يرجى إدخال رابط صحيح</string>

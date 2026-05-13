@@ -1,8 +1,19 @@
 package dev.pwaforge.presentation.add
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.ImageLoader
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import dev.pwaforge.core.engine.GeckoEngineManager
+import dev.pwaforge.core.iconpack.SimpleIconEntry
+import dev.pwaforge.core.iconpack.SimpleIconsManager
+import dev.pwaforge.core.iconpack.SimpleIconsReader
+import dev.pwaforge.core.iconpack.SimpleIconsState
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
@@ -16,11 +27,14 @@ import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.domain.repository.WebAppRepository
 import dev.pwaforge.domain.usecase.GetCategoriesUseCase
 import dev.pwaforge.domain.usecase.SaveWebAppUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.UUID
 
 data class AddUiState(
@@ -67,6 +81,12 @@ data class AddUiState(
     val saved: Boolean = false,
     // Non-null after save-and-run — signals screen to launch WebViewActivity
     val launchAppId: Long? = null,
+    // Icon pack picker
+    val showIconPackPicker: Boolean = false,
+    val iconPackAvailable: Boolean = false,
+    val packIcons: List<SimpleIconEntry> = emptyList(),
+    val iconPickerQuery: String = "",
+    val isSelectingPackIcon: Boolean = false,
 )
 
 class AddViewModel(
@@ -78,9 +98,14 @@ class AddViewModel(
     private val faviconFetcher: FaviconFetcher,
     val geckoEngineManager: GeckoEngineManager,
     private val themeManager: ThemeManager,
+    private val simpleIconsManager: SimpleIconsManager,
+    private val context: Context,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(AddUiState(isLoading = appId != 0L))
+    private val _state = MutableStateFlow(AddUiState(
+        isLoading = appId != 0L,
+        iconPackAvailable = simpleIconsManager.state.value is SimpleIconsState.Imported,
+    ))
     val uiState: StateFlow<AddUiState> = _state
 
     private var originalApp: WebApp? = null
@@ -265,6 +290,67 @@ class AddViewModel(
     }
 
     fun onLaunched() = _state.update { it.copy(launchAppId = null) }
+
+    // ── Icon pack picker ──────────────────────────────────────────────────────
+
+    fun openIconPackPicker() {
+        viewModelScope.launch {
+            val reader = SimpleIconsReader(context)
+            val icons = reader.readAll()
+            _state.update { it.copy(showIconPackPicker = true, packIcons = icons, iconPickerQuery = "") }
+        }
+    }
+
+    fun closeIconPackPicker() = _state.update { it.copy(showIconPackPicker = false) }
+
+    fun setIconPickerQuery(q: String) = _state.update { it.copy(iconPickerQuery = q) }
+
+    fun selectPackIcon(entry: SimpleIconEntry, isolationId: String, bgColorArgb: Int) {
+        viewModelScope.launch {
+            _state.update { it.copy(isSelectingPackIcon = true) }
+            val oldIconPath = _state.value.iconPath
+            val path = withContext(Dispatchers.IO) {
+                runCatching {
+                    val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg"
+                    val iconSize = 140
+                    val canvasSize = 192
+                    val offset = (canvasSize - iconSize) / 2
+                    val loader = ImageLoader.Builder(context)
+                        .components { add(SvgDecoder.Factory()) }
+                        .build()
+                    val req = ImageRequest.Builder(context)
+                        .data(svgUrl)
+                        .size(iconSize, iconSize)
+                        .build()
+                    val result = loader.execute(req)
+                    if (result !is SuccessResult) return@runCatching null
+                    val svgBitmap = (result.drawable as? BitmapDrawable)?.bitmap
+                        ?: return@runCatching null
+
+                    val output = Bitmap.createBitmap(canvasSize, canvasSize, Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(output)
+                    canvas.drawColor(bgColorArgb)
+                    val paint = android.graphics.Paint().apply {
+                        colorFilter = android.graphics.PorterDuffColorFilter(
+                            android.graphics.Color.WHITE,
+                            android.graphics.PorterDuff.Mode.SRC_IN,
+                        )
+                    }
+                    canvas.drawBitmap(svgBitmap, offset.toFloat(), offset.toFloat(), paint)
+
+                    val dir = File(context.filesDir, "icons").also { it.mkdirs() }
+                    oldIconPath?.let { File(it).delete() }
+                    val file = File(dir, "${isolationId}_${System.currentTimeMillis()}.png")
+                    file.outputStream().use { out ->
+                        output.compress(Bitmap.CompressFormat.PNG, 100, out)
+                    }
+                    file.absolutePath
+                }.getOrNull()
+            }
+            _state.update { it.copy(isSelectingPackIcon = false, showIconPackPicker = false) }
+            if (path != null) setIconPath(path)
+        }
+    }
 
     private suspend fun persistApp(url: String): Long {
         val app = buildApp(url)

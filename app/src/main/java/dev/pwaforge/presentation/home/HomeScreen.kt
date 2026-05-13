@@ -75,7 +75,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -86,6 +86,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -152,18 +153,19 @@ fun HomeScreen(
                         Icon(Icons.Default.Language, contentDescription = languageChangeCd)
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
         floatingActionButton = {
             if (state.apps.isNotEmpty()) {
-                ExtendedFloatingActionButton(
+                FloatingActionButton(
                     onClick = onAddApp,
-                    icon = { Icon(Icons.Default.Add, null) },
-                    text = { Text(stringResource(R.string.home_add_fab_label)) },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
-                )
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.home_add_fab_cd))
+                }
             }
         },
     ) { padding ->
@@ -183,10 +185,10 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(padding)) {
 
             // Search bar + view controls
-            Row(
+            if (state.hasAnyApps) Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = Dimens.spaceLg, end = Dimens.spaceSm, top = Dimens.spaceMd, bottom = 0.dp),
+                    .padding(start = Dimens.spaceLg, end = Dimens.spaceMd, top = Dimens.spaceMd),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 BasicTextField(
@@ -227,16 +229,14 @@ fun HomeScreen(
                                 innerTextField()
                             }
                             if (searchFocused || state.searchQuery.isNotEmpty()) {
-                                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-                                    IconButton(
-                                        onClick = {
-                                            viewModel.setSearch("")
-                                            focusManager.clearFocus()
-                                        },
-                                        modifier = Modifier.size(Dimens.sizeApp),
-                                    ) {
-                                        Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(Dimens.sizeXs))
-                                    }
+                                IconButton(
+                                    onClick = {
+                                        viewModel.setSearch("")
+                                        focusManager.clearFocus()
+                                    },
+                                    modifier = Modifier.size(Dimens.sizeApp),
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(Dimens.sizeXs))
                                 }
                             } else {
                                 Spacer(Modifier.width(Dimens.spaceMd))
@@ -245,14 +245,21 @@ fun HomeScreen(
                     },
                 )
                 if (state.apps.isNotEmpty() && !searchFocused) {
+                    Spacer(Modifier.width(4.dp))
                     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-                        IconButton(onClick = { hideDetails = !hideDetails }) {
+                        IconButton(
+                            onClick = { hideDetails = !hideDetails },
+                            modifier = Modifier.size(32.dp),
+                        ) {
                             Icon(
                                 if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd,
                             )
                         }
-                        IconButton(onClick = { isGridView = !isGridView }) {
+                        IconButton(
+                            onClick = { isGridView = !isGridView },
+                            modifier = Modifier.size(32.dp),
+                        ) {
                             Icon(
                                 if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
                                 contentDescription = null,
@@ -488,7 +495,7 @@ private fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        Spacer(Modifier.height(Dimens.spaceXl))
+        Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd))
 
         // 160×160 illustration — 3 filled rings + single dashed orbit
         Box(

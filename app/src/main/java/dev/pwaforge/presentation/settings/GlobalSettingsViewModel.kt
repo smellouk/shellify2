@@ -12,6 +12,7 @@ import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.PWAForgeApplication
 import dev.pwaforge.core.engine.GeckoEngineManager
 import dev.pwaforge.core.engine.GeckoInstallState
+import dev.pwaforge.core.iconpack.SimpleIconsManager
 import dev.pwaforge.core.isolation.IsolationManager
 import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.security.verifyPassword
@@ -74,6 +75,7 @@ class GlobalSettingsViewModel(
     private val backupManager: BackupManager,
     private val context: Context,
     val geckoEngineManager: GeckoEngineManager,
+    val simpleIconsManager: SimpleIconsManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GlobalSettingsUiState())
@@ -317,4 +319,13 @@ class GlobalSettingsViewModel(
     fun checkForGeckoUpdate() = viewModelScope.launch { geckoEngineManager.checkForUpdate() }
 
     fun updateGeckoEngine() = viewModelScope.launch { geckoEngineManager.updateEngine() }
+
+    // ── Simple Icons ──────────────────────────────────────────────────────────
+
+    fun downloadSimpleIcons() = viewModelScope.launch { simpleIconsManager.download() }
+
+    fun importSimpleIcons(uri: android.net.Uri) =
+        viewModelScope.launch { simpleIconsManager.importFromUri(uri) }
+
+    fun removeSimpleIcons() = simpleIconsManager.remove()
 }

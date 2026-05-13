@@ -13,6 +13,7 @@ import dev.pwaforge.core.backup.BackupManager
 import dev.pwaforge.core.backup.BackupSettings
 import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.theme.ThemeManager
+import dev.pwaforge.core.iconpack.SimpleIconsManager
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
 import dev.pwaforge.data.local.AppDatabase
@@ -50,6 +51,7 @@ class PWAForgeApplication : Application() {
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
     val faviconFetcher by lazy { FaviconFetcher(this) }
     val adBlocker by lazy { AdBlocker() }
+    val simpleIconsManager by lazy { SimpleIconsManager(this) }
     val isolationManager by lazy { IsolationManager(this, cryptoManager, geckoEngineManager) }
 
     override fun onCreate() {

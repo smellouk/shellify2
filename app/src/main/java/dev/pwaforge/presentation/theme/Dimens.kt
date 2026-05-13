@@ -67,6 +67,9 @@ object Dimens {
     val sizeIllustrationTile: Dp = 64.dp  // Center tile in illustration
     val sizeIconContainer:    Dp = 36.dp  // Settings row icon container
     val sizeIconHero:         Dp = 56.dp  // Onboarding hero icon tile (security, backup)
+    val sizeIconTile:         Dp = 44.dp  // Suggestion / feature card icon tile
+    val sizeCheckPill:        Dp = 28.dp  // QuickPicks circular check toggle
+    val heroHeightSm:         Dp = 200.dp // Onboarding short hero (QuickPicks)
 
     // Additional corners
     val cornerFull: Dp = 100.dp  // Pill shape

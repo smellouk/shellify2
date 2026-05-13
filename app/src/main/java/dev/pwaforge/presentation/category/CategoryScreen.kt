@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -37,6 +36,7 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Flight
@@ -67,6 +67,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -75,6 +77,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -156,7 +159,20 @@ fun CategoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.categories_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
+        },
+        floatingActionButton = {
+            if (!categories.isNullOrEmpty()) {
+                FloatingActionButton(
+                    onClick = viewModel::showDialog,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.categories_add_fab_cd))
+                }
+            }
         },
     ) { padding ->
         if (categories == null) {
@@ -177,7 +193,7 @@ fun CategoryScreen(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Dimens.size4xl),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd + Dimens.sizeApp))
+                Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd))
 
                 // 160×160 illustration — 3 filled rings + single dashed orbit
                 Box(
@@ -336,6 +352,17 @@ fun CategoryScreen(
                                 }
                                 Spacer(Modifier.weight(1f))
                                 IconButton(
+                                    onClick = { viewModel.showEditDialog(cat) },
+                                    modifier = Modifier.size(Dimens.size4xl),
+                                ) {
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = stringResource(R.string.categories_edit_cd),
+                                        modifier = Modifier.size(Dimens.sizeXs),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                IconButton(
                                     onClick = { viewModel.delete(cat) },
                                     modifier = Modifier.size(Dimens.size4xl),
                                 ) {
@@ -356,42 +383,6 @@ fun CategoryScreen(
                         }
                     }
                 }
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .border(BorderStroke(Dimens.strokeSm, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(Dimens.corner20))
-                            .clickable { viewModel.showDialog() },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(Dimens.sizeCard)
-                                    .clip(RoundedCornerShape(Dimens.cornerLg))
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.Default.Add,
-                                    null,
-                                    modifier = Modifier.size(Dimens.sizeMd),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                            Text(
-                                "New category",
-                                fontSize = Dimens.textSizeBody,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
-                }
             }
         } // end else
     }
@@ -399,6 +390,7 @@ fun CategoryScreen(
     if (state.showAddDialog) {
         AddCategoryDialog(
             state = state,
+            isEditing = state.editingId != null,
             onNameChange = viewModel::setNewName,
             onIconSelect = viewModel::setSelectedIcon,
             onColorSelect = viewModel::setSelectedColor,
@@ -411,6 +403,7 @@ fun CategoryScreen(
 @Composable
 private fun AddCategoryDialog(
     state: CategoryUiState,
+    isEditing: Boolean,
     onNameChange: (String) -> Unit,
     onIconSelect: (String) -> Unit,
     onColorSelect: (String) -> Unit,
@@ -419,7 +412,14 @@ private fun AddCategoryDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.categories_new_dialog_title)) },
+        title = {
+            Text(
+                stringResource(
+                    if (isEditing) R.string.categories_edit_dialog_title
+                    else R.string.categories_new_dialog_title
+                )
+            )
+        },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -498,7 +498,12 @@ private fun AddCategoryDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm, enabled = state.newName.isNotBlank()) {
-                Text(stringResource(R.string.categories_add_button))
+                Text(
+                    stringResource(
+                        if (isEditing) R.string.categories_save_button
+                        else R.string.categories_add_button
+                    )
+                )
             }
         },
         dismissButton = {

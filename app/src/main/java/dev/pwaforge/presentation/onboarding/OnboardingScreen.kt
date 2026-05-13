@@ -46,15 +46,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Layers
@@ -69,6 +75,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -103,6 +110,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -111,12 +119,27 @@ import dev.pwaforge.core.backup.BackupSchedule
 import dev.pwaforge.core.locale.LocaleHelper
 import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.presentation.theme.ACCENT_COLORS
+import dev.pwaforge.presentation.theme.CategoryReadingBg
+import dev.pwaforge.presentation.theme.CategoryReadingFg
+import dev.pwaforge.presentation.theme.CategoryToolsFg
 import dev.pwaforge.presentation.theme.Dimens
+import dev.pwaforge.presentation.theme.SuggestionChatBg
+import dev.pwaforge.presentation.theme.SuggestionChatFg
+import dev.pwaforge.presentation.theme.SuggestionVideoBg
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-private const val PAGE_COUNT = 6
+private const val PAGE_COUNT = 7
+
+private val SUGGESTION_URLS = mapOf(
+    "proton"     to "mail.proton.me",
+    "bitwarden"  to "vault.bitwarden.com",
+    "element"    to "app.element.io",
+    "excalidraw" to "excalidraw.com",
+    "notes"      to "app.standardnotes.com",
+    "mastodon"   to "mastodon.social",
+)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -140,6 +163,15 @@ fun OnboardingScreen(
     var secPassword by remember { mutableStateOf("") }
     var secConfirm  by remember { mutableStateOf("") }
     val secValid = secPassword.length >= 6 && secPassword == secConfirm
+
+    val suggestionNames = mapOf(
+        "proton"     to stringResource(R.string.onboarding_quickpicks_proton),
+        "bitwarden"  to stringResource(R.string.onboarding_quickpicks_bitwarden),
+        "element"    to stringResource(R.string.onboarding_quickpicks_element),
+        "excalidraw" to stringResource(R.string.onboarding_quickpicks_excalidraw),
+        "notes"      to stringResource(R.string.onboarding_quickpicks_notes),
+        "mastodon"   to stringResource(R.string.onboarding_quickpicks_mastodon),
+    )
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary.copy(alpha = 0.04f))) {
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
@@ -182,7 +214,11 @@ fun OnboardingScreen(
                     onDirectoryUri = viewModel::setBackupDirectoryUri,
                     onSchedule = viewModel::setBackupSchedule,
                 )
-                5 -> DonePage()
+                5 -> QuickPicksPage(
+                    picked = state.pickedAppIds,
+                    onToggle = viewModel::togglePickedApp,
+                )
+                6 -> DonePage()
             }
         }
 
@@ -191,10 +227,24 @@ fun OnboardingScreen(
             page = pagerState.currentPage,
             passwordSet = state.passwordSet,
             secValid = secValid,
-            onSkip = { viewModel.goTo(5) },
+            pickedCount = state.pickedAppIds.size,
+            onSkip = { viewModel.goTo(PAGE_COUNT - 1) },
             onNext = { viewModel.goTo(pagerState.currentPage + 1) },
             onSetPassword = { viewModel.setPassword(secPassword); viewModel.goTo(4) },
             onFinish = viewModel::finish,
+            quickPicksStatus = state.quickPicksStatus,
+            onAddApps = {
+                val apps = state.pickedAppIds.mapNotNull { id ->
+                    val name = suggestionNames[id] ?: return@mapNotNull null
+                    val url = SUGGESTION_URLS[id] ?: return@mapNotNull null
+                    name to url
+                }
+                viewModel.addPickedApps(apps)
+            },
+            onCancelQuickPicks = {
+                viewModel.cancelQuickPicks()
+                viewModel.goTo(pagerState.currentPage + 1)
+            },
         )
 
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
@@ -243,6 +293,10 @@ private fun OnboardingFooter(
     page: Int,
     passwordSet: Boolean,
     secValid: Boolean,
+    pickedCount: Int,
+    quickPicksStatus: QuickPicksStatus,
+    onAddApps: () -> Unit,
+    onCancelQuickPicks: () -> Unit,
     onSkip: () -> Unit,
     onNext: () -> Unit,
     onSetPassword: () -> Unit,
@@ -295,7 +349,69 @@ private fun OnboardingFooter(
                     showPrimaryArrow = false,
                 )
             }
-            5 -> FooterRow(
+            5 -> when (quickPicksStatus) {
+                QuickPicksStatus.Idle -> if (pickedCount > 0) {
+                    FooterRow(
+                        secondaryLabel = stringResource(R.string.onboarding_skip_for_now),
+                        onSecondary = onNext,
+                        primaryLabel = if (pickedCount == 1)
+                            stringResource(R.string.onboarding_quickpicks_add_one)
+                        else
+                            stringResource(R.string.onboarding_quickpicks_add_n, pickedCount),
+                        onPrimary = onAddApps,
+                        showPrimaryArrow = true,
+                    )
+                } else {
+                    FooterRow(
+                        secondaryLabel = null,
+                        onSecondary = null,
+                        primaryLabel = stringResource(R.string.onboarding_skip_for_now),
+                        onPrimary = onNext,
+                        showPrimaryArrow = false,
+                    )
+                }
+                is QuickPicksStatus.Adding -> {
+                    val status = quickPicksStatus as QuickPicksStatus.Adding
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                    ) {
+                        OutlinedButton(
+                            onClick = onCancelQuickPicks,
+                            modifier = Modifier.heightIn(min = Dimens.sizeApp),
+                            shape = CircleShape,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.sizeMd),
+                        ) {
+                            Text(stringResource(R.string.onboarding_skip_for_now))
+                        }
+                        Spacer(Modifier.weight(1f))
+                        Button(
+                            onClick = {},
+                            enabled = false,
+                            modifier = Modifier.height(Dimens.sizeApp),
+                            shape = CircleShape,
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.spaceXl),
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimens.sizeSm),
+                                strokeWidth = Dimens.borderSelected,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
+                            Spacer(Modifier.width(Dimens.spaceSm))
+                            Text("${status.done} / ${status.total}")
+                        }
+                    }
+                }
+                QuickPicksStatus.Done -> FooterRow(
+                    secondaryLabel = null,
+                    onSecondary = null,
+                    primaryLabel = stringResource(R.string.common_continue),
+                    onPrimary = onNext,
+                    showPrimaryArrow = true,
+                )
+            }
+            6 -> FooterRow(
                 secondaryLabel = null,
                 onSecondary = null,
                 primaryLabel = stringResource(R.string.onboarding_get_started),
@@ -1281,7 +1397,225 @@ private fun BackupPage(
     }
 }
 
-// ── Page 6: Done ──────────────────────────────────────────────────────────────
+// ── Page 6: QuickPicks ────────────────────────────────────────────────────────
+
+@Composable
+private fun QuickPicksHero() {
+    val primary = MaterialTheme.colorScheme.primary
+    val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+
+    val tr = rememberInfiniteTransition(label = "quickpicks_hero")
+    val bobY by tr.animateFloat(
+        initialValue = -5f,
+        targetValue = 5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "bob",
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimens.heroHeightSm)
+            .background(
+                Brush.verticalGradient(
+                    listOf(MaterialTheme.colorScheme.background, primaryContainer.copy(alpha = 0.3f)),
+                ),
+            )
+            .clip(RoundedCornerShape(bottomStart = Dimens.corner28, bottomEnd = Dimens.corner28)),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Radial glow
+        Box(
+            modifier = Modifier
+                .size(220.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        listOf(primaryContainer.copy(alpha = 0.5f), Color.Transparent),
+                    ),
+                ),
+        )
+
+        data class FloatingTile(
+            val offsetX: Dp, val offsetY: Dp,
+            val size: Dp, val icon: ImageVector,
+            val bg: Color, val fg: Color,
+            val phaseOffset: Float,
+        )
+
+        val tiles = listOf(
+            FloatingTile((-120).dp, (-30).dp, 50.dp, Icons.Default.Email,       primaryContainer,  primary,          0.0f),
+            FloatingTile(110.dp,    (-45).dp, 48.dp, Icons.Default.Security,    SuggestionVideoBg, CategoryToolsFg,  0.5f),
+            FloatingTile((-85).dp,  45.dp,    46.dp, Icons.Default.ChatBubble,  SuggestionChatBg,  SuggestionChatFg, 1.0f),
+            FloatingTile(105.dp,    35.dp,    52.dp, Icons.Default.Edit,        CategoryReadingBg, CategoryReadingFg,1.5f),
+        )
+
+        tiles.forEach { tile ->
+            val yOff = bobY * cos(tile.phaseOffset * PI.toFloat()).toFloat()
+            Box(
+                modifier = Modifier
+                    .offset(x = tile.offsetX, y = tile.offsetY + yOff.dp)
+                    .size(tile.size)
+                    .clip(RoundedCornerShape(Dimens.corner14))
+                    .background(tile.bg),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    tile.icon,
+                    contentDescription = null,
+                    tint = tile.fg,
+                    modifier = Modifier.size(tile.size * 0.42f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickPicksPage(
+    picked: List<String>,
+    onToggle: (String) -> Unit,
+) {
+    val primary = MaterialTheme.colorScheme.primary
+    val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+    val outlineVariant = MaterialTheme.colorScheme.outlineVariant
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
+    data class Suggestion(
+        val id: String,
+        val name: String,
+        val host: String,
+        val icon: ImageVector,
+        val bg: Color,
+        val fg: Color,
+    )
+
+    val suggestions = listOf(
+        Suggestion("proton",     stringResource(R.string.onboarding_quickpicks_proton),     stringResource(R.string.onboarding_quickpicks_proton_host),     Icons.Default.Email,                   primaryContainer,                     primary),
+        Suggestion("bitwarden",  stringResource(R.string.onboarding_quickpicks_bitwarden),  stringResource(R.string.onboarding_quickpicks_bitwarden_host),  Icons.Default.Security,                SuggestionVideoBg,                    CategoryToolsFg),
+        Suggestion("element",    stringResource(R.string.onboarding_quickpicks_element),    stringResource(R.string.onboarding_quickpicks_element_host),    Icons.Default.ChatBubble,              SuggestionChatBg,                     SuggestionChatFg),
+        Suggestion("excalidraw", stringResource(R.string.onboarding_quickpicks_excalidraw), stringResource(R.string.onboarding_quickpicks_excalidraw_host), Icons.Default.Edit,                    CategoryReadingBg,                    CategoryReadingFg),
+        Suggestion("notes",      stringResource(R.string.onboarding_quickpicks_notes),      stringResource(R.string.onboarding_quickpicks_notes_host),      Icons.AutoMirrored.Filled.Article,     primaryContainer.copy(alpha = 0.55f), primary),
+        Suggestion("mastodon",   stringResource(R.string.onboarding_quickpicks_mastodon),   stringResource(R.string.onboarding_quickpicks_mastodon_host),   Icons.Default.Public,                  SuggestionChatBg.copy(alpha = 0.6f),  SuggestionChatFg),
+    )
+
+    OnboardingPageLayout(
+        hero = { QuickPicksHero() },
+    ) {
+        Text(
+            text = stringResource(R.string.onboarding_quickpicks_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        Spacer(Modifier.height(Dimens.spaceSm))
+
+        Text(
+            text = stringResource(R.string.onboarding_quickpicks_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            color = onSurfaceVariant,
+        )
+
+        Spacer(Modifier.height(Dimens.space22))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.onboarding_quickpicks_eyebrow).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = Dimens.letterSpacingOverline,
+                color = onSurfaceVariant,
+            )
+            if (picked.isNotEmpty()) {
+                Text(
+                    text = " · ${picked.size} ${stringResource(R.string.onboarding_quickpicks_selected)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = primary,
+                )
+            }
+        }
+
+        Spacer(Modifier.height(Dimens.spaceSm))
+
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.space10)) {
+            suggestions.forEach { s ->
+                val isSelected = s.id in picked
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(Dimens.corner18))
+                        .background(
+                            if (isSelected) primaryContainer.copy(alpha = 0.4f)
+                            else MaterialTheme.colorScheme.surface,
+                        )
+                        .border(
+                            width = if (isSelected) Dimens.strokeSm else Dimens.borderDefault,
+                            color = if (isSelected) primary else outlineVariant,
+                            shape = RoundedCornerShape(Dimens.corner18),
+                        )
+                        .clickable { onToggle(s.id) }
+                        .padding(horizontal = Dimens.space14, vertical = Dimens.spaceMd),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(Dimens.sizeIconTile)
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
+                            .background(s.bg),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            s.icon,
+                            contentDescription = null,
+                            tint = s.fg,
+                            modifier = Modifier.size(Dimens.sizeLg),
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = s.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = s.host,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(Dimens.sizeCheckPill)
+                            .clip(CircleShape)
+                            .background(if (isSelected) primary else Color.Transparent)
+                            .border(
+                                width = if (isSelected) 0.dp else Dimens.strokeSm,
+                                color = if (isSelected) Color.Transparent else outlineVariant,
+                                shape = CircleShape,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            if (isSelected) Icons.Default.Check else Icons.Default.Add,
+                            contentDescription = null,
+                            tint = if (isSelected) Color.White else onSurfaceVariant,
+                            modifier = Modifier.size(Dimens.sizeXs),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Page 7: Done ──────────────────────────────────────────────────────────────
 
 @Composable
 private fun DonePage() {

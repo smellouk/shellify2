@@ -178,6 +178,18 @@
     <string name="global_settings_dynamic_colors">Couleurs dynamiques</string>
     <string name="global_settings_dynamic_colors_desc">Suivre les couleurs d\'accent du fond d\'écran (Material You)</string>
     <string name="global_settings_accent_color">Couleur du thème</string>
+    <string name="global_settings_icon_pack_headline">Pack d\'icônes</string>
+    <string name="global_settings_icon_pack_desc">Améliorez les icônes avec des icônes de marque</string>
+    <string name="global_settings_icon_pack_not_imported">Aucun pack d\'icônes importé</string>
+    <string name="global_settings_simple_icons_title">Simple Icons</string>
+    <string name="global_settings_simple_icons_desc">3 000+ icônes de marque pour les services web · CC0</string>
+    <string name="global_settings_simple_icons_download">Télécharger</string>
+    <string name="global_settings_simple_icons_import">Importer un fichier</string>
+    <string name="global_settings_simple_icons_downloading">Téléchargement… %d%%</string>
+    <string name="global_settings_simple_icons_processing">Traitement des icônes…</string>
+    <string name="global_settings_simple_icons_imported">%d icônes importées</string>
+    <string name="global_settings_simple_icons_remove">Supprimer</string>
+    <string name="global_settings_simple_icons_retry">Réessayer</string>
     <string name="global_settings_section_browser">Navigateur</string>
     <string name="global_settings_default_ua">Agent utilisateur par défaut</string>
     <string name="global_settings_default_engine_label">Moteur par défaut pour les nouvelles applications</string>
@@ -264,10 +276,13 @@
     <string name="categories_empty">Triez vos apps par espace</string>
     <string name="categories_empty_subtitle">Regroupez vos tuiles par usage — Travail, Lecture, Médias — puis naviguez entre elles depuis le tiroir.</string>
     <string name="categories_new_dialog_title">Nouvelle catégorie</string>
+    <string name="categories_edit_dialog_title">Modifier la catégorie</string>
+    <string name="categories_edit_cd">Modifier</string>
     <string name="categories_name_label">Nom</string>
     <string name="categories_icon_label">Icône</string>
     <string name="categories_color_label">Couleur</string>
     <string name="categories_add_button">Ajouter</string>
+    <string name="categories_save_button">Enregistrer</string>
     <string name="categories_suggestion_media">Médias</string>
     <string name="categories_suggestion_work">Travail</string>
     <string name="categories_suggestion_reading">Lecture</string>
@@ -287,8 +302,8 @@
     <string name="shortcuts_menu_change_icon">Changer l\'icône</string>
     <string name="shortcuts_menu_refresh_icon">Actualiser l\'icône</string>
     <string name="shortcuts_menu_remove">Supprimer</string>
-    <string name="shortcuts_empty_title">Accédez directement à la page</string>
-    <string name="shortcuts_empty_desc">Épinglez des liens profonds — votre boîte mail, la chaîne en direct, l\'agenda du jour — et ouvrez-les en un tap.</string>
+    <string name="shortcuts_empty_title">Aucun raccourci pour l\'instant</string>
+    <string name="shortcuts_empty_desc">Les raccourcis ajoutés depuis les paramètres d\'une application apparaissent ici. Renommez-les, changez les icônes ou supprimez-les à tout moment.</string>
 
     <!-- Translate -->
     <string name="translate_title">Paramètres de traduction</string>
@@ -355,6 +370,26 @@
     <string name="onboarding_ready">Ajoutons votre premier site. Saisissez une URL sur l\'écran suivant et PWAForge en fera une application isolée.</string>
     <string name="onboarding_done_tip_title">Astuce — appui long sur une tuile</string>
     <string name="onboarding_done_tip_body">Pour configurer le blocage des publicités, l\'isolation et les permissions par application.</string>
+
+    <!-- Onboarding — QuickPicks -->
+    <string name="onboarding_quickpicks_title">Commencez avec quelques apps</string>
+    <string name="onboarding_quickpicks_subtitle">Choisissez parmi les apps web courantes — vous pourrez modifier ça plus tard.</string>
+    <string name="onboarding_quickpicks_eyebrow">Suggestions rapides</string>
+    <string name="onboarding_quickpicks_selected">sélectionnée(s)</string>
+    <string name="onboarding_quickpicks_add_n">Ajouter %d apps</string>
+    <string name="onboarding_quickpicks_add_one">Ajouter 1 app</string>
+    <string name="onboarding_quickpicks_proton">Proton Mail</string>
+    <string name="onboarding_quickpicks_proton_host">mail.proton.me</string>
+    <string name="onboarding_quickpicks_bitwarden">Bitwarden</string>
+    <string name="onboarding_quickpicks_bitwarden_host">vault.bitwarden.com</string>
+    <string name="onboarding_quickpicks_element">Element</string>
+    <string name="onboarding_quickpicks_element_host">app.element.io</string>
+    <string name="onboarding_quickpicks_excalidraw">Excalidraw</string>
+    <string name="onboarding_quickpicks_excalidraw_host">excalidraw.com</string>
+    <string name="onboarding_quickpicks_notes">Standard Notes</string>
+    <string name="onboarding_quickpicks_notes_host">app.standardnotes.com</string>
+    <string name="onboarding_quickpicks_mastodon">Mastodon</string>
+    <string name="onboarding_quickpicks_mastodon_host">mastodon.social</string>
 
     <!-- Errors -->
     <string name="error_invalid_url">Veuillez entrer une URL valide</string>

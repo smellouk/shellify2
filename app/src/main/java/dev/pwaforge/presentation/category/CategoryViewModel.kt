@@ -32,10 +32,20 @@ class CategoryViewModel(
     private val _state = MutableStateFlow(CategoryUiState())
     val uiState = _state
 
-    fun showDialog() = _state.update { it.copy(showAddDialog = true) }
+    fun showDialog() = _state.update { it.copy(showAddDialog = true, editingId = null) }
+
+    fun showEditDialog(category: Category) = _state.update {
+        it.copy(
+            showAddDialog = true,
+            editingId = category.id,
+            newName = category.name,
+            selectedIcon = category.icon,
+            selectedColor = category.color,
+        )
+    }
 
     fun dismissDialog() = _state.update {
-        it.copy(showAddDialog = false, newName = "", selectedIcon = "folder", selectedColor = "#6D28D9")
+        it.copy(showAddDialog = false, editingId = null, newName = "", selectedIcon = "folder", selectedColor = "#6D28D9")
     }
 
     fun setNewName(name: String) = _state.update { it.copy(newName = name) }
@@ -46,8 +56,9 @@ class CategoryViewModel(
         val name = _state.value.newName.trim().takeIf { it.isNotBlank() } ?: return
         val icon = _state.value.selectedIcon
         val color = _state.value.selectedColor
+        val id = _state.value.editingId ?: 0L
         viewModelScope.launch {
-            saveCategory(Category(name = name, icon = icon, color = color))
+            saveCategory(Category(id = id, name = name, icon = icon, color = color))
             dismissDialog()
         }
     }

@@ -35,6 +35,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Category
@@ -60,9 +61,12 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -84,6 +88,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -103,6 +108,7 @@ import dev.pwaforge.presentation.theme.ACCENT_COLORS
 import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
+import dev.pwaforge.core.iconpack.SimpleIconsState
 import dev.pwaforge.core.theme.ThemeMode
 import dev.pwaforge.domain.model.UserAgentMode
 import android.app.Activity
@@ -122,6 +128,7 @@ fun GlobalSettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
+    val simpleIconsState by viewModel.simpleIconsManager.state.collectAsState()
     val geckoLatestVersion by viewModel.geckoEngineManager.latestVersion.collectAsState()
     var showUaDialog by remember { mutableStateOf(false) }
 
@@ -152,11 +159,16 @@ fun GlobalSettingsScreen(
     ) { uri ->
         uri?.let { viewModel.showImportDialog(it) }
     }
+    val iconPackFilePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { viewModel.importSimpleIcons(it) }
+    }
 
     val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
     Scaffold(
         containerColor = screenBg,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.global_settings_title)) }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.global_settings_title)) }, colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)) },
     ) { padding ->
         AnimatedVisibility(
             visible = state.isLoaded,
@@ -246,6 +258,14 @@ fun GlobalSettingsScreen(
                     onSelect = viewModel::setAccentColor,
                 )
             }
+
+            // ── Icon Pack ─────────────────────────────────────────────────────
+            IconPackCard(
+                state = simpleIconsState,
+                onDownload = viewModel::downloadSimpleIcons,
+                onImport = { iconPackFilePicker.launch(arrayOf("application/json", "text/plain", "*/*")) },
+                onRemove = viewModel::removeSimpleIcons,
+            )
 
             // ── Browser ───────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.global_settings_section_browser))
@@ -1167,6 +1187,158 @@ internal fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
                         Icon(Icons.Default.Check, null,
                             modifier = Modifier.align(Alignment.Center).size(Dimens.sizeMd),
                             tint = Color.White)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IconPackCard(
+    state: SimpleIconsState,
+    onDownload: () -> Unit,
+    onImport: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    val iconColor = when (state) {
+        is SimpleIconsState.Imported -> MaterialTheme.colorScheme.primary
+        is SimpleIconsState.Error    -> MaterialTheme.colorScheme.error
+        else                         -> MaterialTheme.colorScheme.primary
+    }
+    val iconVector = when (state) {
+        is SimpleIconsState.Imported -> Icons.Default.CheckCircle
+        is SimpleIconsState.Error    -> Icons.Default.Warning
+        else                         -> Icons.Default.AutoAwesome
+    }
+
+    SettingsCard {
+        when (state) {
+            is SimpleIconsState.Imported -> {
+                ListItem(
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(iconVector, null, modifier = Modifier.size(20.dp), tint = iconColor) }
+                    },
+                    headlineContent = {
+                        Text(stringResource(R.string.global_settings_simple_icons_title),
+                            style = MaterialTheme.typography.bodyMedium)
+                    },
+                    supportingContent = {
+                        Text(stringResource(R.string.global_settings_simple_icons_imported, state.iconCount))
+                    },
+                    trailingContent = {
+                        TextButton(
+                            onClick = onRemove,
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        ) { Text(stringResource(R.string.global_settings_simple_icons_remove)) }
+                    },
+                )
+            }
+
+            is SimpleIconsState.Processing -> {
+                ListItem(
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = Dimens.strokeMd) }
+                    },
+                    headlineContent = {
+                        Text(stringResource(R.string.global_settings_icon_pack_headline),
+                            style = MaterialTheme.typography.bodyMedium)
+                    },
+                    supportingContent = {
+                        Text(stringResource(R.string.global_settings_simple_icons_processing))
+                    },
+                )
+            }
+
+            else -> {
+                ListItem(
+                    leadingContent = {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(iconVector, null, modifier = Modifier.size(20.dp), tint = iconColor) }
+                    },
+                    headlineContent = {
+                        Text(stringResource(R.string.global_settings_icon_pack_headline),
+                            style = MaterialTheme.typography.bodyMedium)
+                    },
+                    supportingContent = {
+                        Text(
+                            when (state) {
+                                is SimpleIconsState.Error -> state.message
+                                else -> stringResource(R.string.global_settings_icon_pack_not_imported)
+                            }
+                        )
+                    },
+                )
+                HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+                Column(
+                    modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                ) {
+                    when (state) {
+                        is SimpleIconsState.Downloading -> {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(Dimens.sizeXs),
+                                    strokeWidth = Dimens.strokeMd,
+                                )
+                                Text(
+                                    stringResource(R.string.global_settings_simple_icons_downloading,
+                                        (state.progress * 100).toInt()),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                            androidx.compose.material3.LinearProgressIndicator(
+                                progress = { state.progress },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+
+                        else -> {
+                            if (state is SimpleIconsState.NotImported) {
+                                Text(
+                                    stringResource(R.string.global_settings_simple_icons_title),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Text(
+                                    stringResource(R.string.global_settings_simple_icons_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Spacer(Modifier.height(Dimens.spaceXxs))
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                                Button(onClick = onDownload) {
+                                    Icon(Icons.Default.FileDownload, null, modifier = Modifier.size(Dimens.sizeSm))
+                                    Spacer(Modifier.width(Dimens.spaceXxs))
+                                    Text(
+                                        if (state is SimpleIconsState.Error)
+                                            stringResource(R.string.global_settings_simple_icons_retry)
+                                        else
+                                            stringResource(R.string.global_settings_simple_icons_download)
+                                    )
+                                }
+                                OutlinedButton(onClick = onImport) {
+                                    Icon(Icons.Default.Restore, null, modifier = Modifier.size(Dimens.sizeSm))
+                                    Spacer(Modifier.width(Dimens.spaceXxs))
+                                    Text(stringResource(R.string.global_settings_simple_icons_import))
+                                }
+                            }
+                        }
                     }
                 }
             }
