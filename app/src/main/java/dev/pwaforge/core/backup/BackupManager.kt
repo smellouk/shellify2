@@ -78,6 +78,11 @@ class BackupManager(
                 zip.entry("icons/$relative") { file.readBytes() }
             }
 
+            // Icon pack data (simple_icons.json — needed so icons are available after restore)
+            File(context.filesDir, "icon_packs").walkSafe { file, relative ->
+                zip.entry("icon_packs/$relative") { file.readBytes() }
+            }
+
             // All DataStore preference files (plain protobuf, no device-specific encryption)
             val datastoreDir = File(context.filesDir.parent!!, "datastore")
             listOf(
@@ -87,6 +92,13 @@ class BackupManager(
             ).forEach { name ->
                 val f = File(datastoreDir, name)
                 if (f.exists()) zip.entry("datastore/$name") { f.readBytes() }
+            }
+
+            // SharedPreferences — user locale + icon pack import state (device-agnostic)
+            val prefsDir = File(context.filesDir.parent!!, "shared_prefs")
+            listOf("locale_prefs.xml", "simple_icons.xml").forEach { name ->
+                val f = File(prefsDir, name)
+                if (f.exists()) zip.entry("shared_prefs/$name") { f.readBytes() }
             }
 
             // Cookies — decrypted for cross-device portability, re-encrypted by BackupCrypto
@@ -130,10 +142,26 @@ class BackupManager(
                             }
                         }
 
+                        entry.name.startsWith("icon_packs/") -> {
+                            val name = entry.name.removePrefix("icon_packs/")
+                            if (name.isNotBlank()) {
+                                val dir = File(context.filesDir, "icon_packs").also { it.mkdirs() }
+                                File(dir, name).writeBytes(bytes)
+                            }
+                        }
+
                         entry.name.startsWith("datastore/") -> {
                             val name = entry.name.removePrefix("datastore/")
                             if (name.isNotBlank()) {
                                 val dir = File(context.filesDir.parent!!, "datastore").also { it.mkdirs() }
+                                File(dir, name).writeBytes(bytes)
+                            }
+                        }
+
+                        entry.name.startsWith("shared_prefs/") -> {
+                            val name = entry.name.removePrefix("shared_prefs/")
+                            if (name.isNotBlank()) {
+                                val dir = File(context.filesDir.parent!!, "shared_prefs").also { it.mkdirs() }
                                 File(dir, name).writeBytes(bytes)
                             }
                         }
