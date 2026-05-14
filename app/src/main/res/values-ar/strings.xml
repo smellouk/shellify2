@@ -46,7 +46,7 @@
     <string name="home_menu_settings">الإعدادات</string>
     <string name="home_menu_clear_data">مسح البيانات</string>
     <string name="home_menu_delete">حذف</string>
-    <string name="home_gecko_required">GeckoView مطلوب</string>
+    <string name="home_gecko_required">محرك GeckoView مفقود</string>
     <string name="home_clear_data_title">مسح بيانات التطبيق</string>
     <string name="home_clear_data_body">سيؤدي هذا إلى حذف جميع ملفات تعريف الارتباط والتخزين المحلي والبيانات المؤقتة لـ \"%s\". سيبقى التطبيق في قائمتك لكنك ستتم تسجيل الخروج من جميع الجلسات.</string>
     <string name="home_clear_data_button">مسح البيانات</string>
@@ -118,6 +118,7 @@
     <string name="add_engine_gecko_downloading">جارٍ التنزيل في الإعدادات… %d%%</string>
     <string name="add_engine_gecko_installing">جارٍ التثبيت…</string>
     <string name="add_engine_gecko_error">خطأ — أعد المحاولة في الإعدادات</string>
+    <string name="settings_engine_gecko_missing">GeckoView غير مثبَّت</string>
     <string name="add_translate_engine_label">محرك الترجمة</string>
 
     <!-- WebView -->
@@ -204,6 +205,8 @@
     <string name="global_settings_gecko_update_available">تحديث متاح: %s</string>
     <string name="global_settings_gecko_version">الإصدار %1$s  ·  ~%2$d ميغابايت</string>
     <string name="global_settings_gecko_download_failed">فشل التنزيل: %s</string>
+    <string name="global_settings_gecko_sha_verified">تم التحقق من SHA-256 — يطابق إصدار Mozilla</string>
+    <string name="global_settings_gecko_sha_unverified">لم يتم التحقق من التكامل — أعد التثبيت للتحقق</string>
     <string name="global_settings_section_security">الأمان</string>
     <string name="global_settings_app_password_headline">كلمة مرور التطبيق</string>
     <string name="global_settings_password_set">كلمة المرور محددة</string>

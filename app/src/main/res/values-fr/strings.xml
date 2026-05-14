@@ -46,7 +46,7 @@
     <string name="home_menu_settings">Paramètres</string>
     <string name="home_menu_clear_data">Effacer les données</string>
     <string name="home_menu_delete">Supprimer</string>
-    <string name="home_gecko_required">GeckoView requis</string>
+    <string name="home_gecko_required">Moteur GeckoView manquant</string>
     <string name="home_clear_data_title">Effacer les données de l\'application</string>
     <string name="home_clear_data_body">Ceci supprimera tous les cookies, le stockage local et les données mises en cache pour \"%s\". L\'application restera dans votre liste mais vous serez déconnecté de toutes les sessions.</string>
     <string name="home_clear_data_button">Effacer les données</string>
@@ -118,6 +118,7 @@
     <string name="add_engine_gecko_downloading">Téléchargement dans les paramètres… %d%%</string>
     <string name="add_engine_gecko_installing">Installation…</string>
     <string name="add_engine_gecko_error">Erreur — réessayer dans les paramètres</string>
+    <string name="settings_engine_gecko_missing">GeckoView non installé</string>
     <string name="add_translate_engine_label">Moteur de traduction</string>
 
     <!-- WebView -->
@@ -204,6 +205,8 @@
     <string name="global_settings_gecko_update_available">Mise à jour disponible : %s</string>
     <string name="global_settings_gecko_version">Version %1$s  ·  ~%2$d Mo</string>
     <string name="global_settings_gecko_download_failed">Échec du téléchargement : %s</string>
+    <string name="global_settings_gecko_sha_verified">SHA-256 vérifié — correspond à la version de Mozilla</string>
+    <string name="global_settings_gecko_sha_unverified">Intégrité non vérifiée — réinstallez pour vérifier</string>
     <string name="global_settings_section_security">Sécurité</string>
     <string name="global_settings_app_password_headline">Mot de passe de l\'application</string>
     <string name="global_settings_password_set">Mot de passe défini</string>
