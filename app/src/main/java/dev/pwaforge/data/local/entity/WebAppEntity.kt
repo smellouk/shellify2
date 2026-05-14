@@ -46,6 +46,7 @@ data class WebAppEntity(
     val showTranslateButton: Boolean = true,
     val autoTranslateOnLoad: Boolean = false,
     val libreTranslateUrl: String = "https://libretranslate.com",
+    val libreTranslateApiKey: String = "",
     // Browser
     val uaMode: String = "CHROME_MOBILE",
     val createdAt: Long = System.currentTimeMillis(),

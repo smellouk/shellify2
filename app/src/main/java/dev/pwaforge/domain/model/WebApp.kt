@@ -26,6 +26,7 @@ data class WebApp(
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
     val libreTranslateUrl: String = "https://libretranslate.com",
+    val libreTranslateApiKey: String = "",
     val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,

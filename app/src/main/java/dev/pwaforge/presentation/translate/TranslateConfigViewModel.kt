@@ -40,5 +40,6 @@ class TranslateConfigViewModel(
 
     fun setLanguage(lang: TranslateLanguage) = update { it.copy(translateTarget = lang) }
     fun setInstanceUrl(v: String) = update { it.copy(libreTranslateUrl = v) }
+    fun setApiKey(v: String) = update { it.copy(libreTranslateApiKey = v) }
     fun setAutoTranslate(v: Boolean) = update { it.copy(autoTranslateOnLoad = v) }
 }
