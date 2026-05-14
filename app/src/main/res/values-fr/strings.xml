@@ -258,7 +258,7 @@
     <string name="consent_what_1">Permet aux utilisateurs de créer des conteneurs d\'applications web isolés sur leur propre appareil</string>
     <string name="consent_what_2">Fonctionne comme un outil de navigation web qui charge les sites choisis par l\'utilisateur</string>
     <string name="consent_what_3">Toutes les données restent stockées localement sur l\'appareil, sauf interaction directe avec un site tiers</string>
-    <string name="consent_what_4">Shellify peut permettre aux utilisateurs de partager localement des liens de sites ou des configurations d\'applications via les fonctions de partage standard du système d\'exploitation, sans transmettre ces données via l\'infrastructure de Shellify</string>
+    <string name="consent_what_4">Shellify peut permettre aux utilisateurs de partager localement des liens de sites ou des configurations d\'applications via les fonctions de partage standard du système d\'exploitation. Ce partage est initié uniquement par les utilisateurs et n\'est pas transmis, stocké, indexé ou modéré par Shellify</string>
     <string name="consent_section_not_title">Ce que Shellify ne fait pas</string>
     <string name="consent_not_1">Nous ne possédons, hébergeons, contrôlons, surveillons, modifions ni n\'approuvons les sites ou services tiers</string>
     <string name="consent_not_2">Nous ne collectons, ne stockons ni ne transmettons intentionnellement votre activité de navigation ou le contenu consulté via des sites tiers</string>
@@ -275,6 +275,7 @@
     <string name="consent_acceptable_6">Usurper l\'identité d\'individus, d\'organisations, de marques ou de services officiels</string>
     <string name="consent_acceptable_7">Partager ou distribuer des liens à des fins d\'hameçonnage, de vol d\'identifiants, de diffusion de logiciels malveillants ou d\'activité illégale</string>
     <string name="consent_acceptable_8">Partager des fichiers de sauvegarde ou des données de session d\'une manière violant les droits de tiers, les exigences de sécurité des comptes ou la loi applicable</string>
+    <string name="consent_acceptable_9">Partager des liens ou des configurations d\'applications destinés à faciliter une activité illégale, une usurpation d\'identité, le hameçonnage, la distribution de logiciels malveillants ou une violation du droit d\'auteur</string>
     <string name="consent_acceptable_reserve">Nous nous réservons le droit de mettre à jour, suspendre, restreindre ou interrompre Shellify ou certaines fonctionnalités à tout moment, notamment en cas de problème de sécurité, de prévention des abus, de conformité légale ou de violation de ces conditions.</string>
     <string name="consent_section_responsibility_title">Votre responsabilité</string>
     <string name="consent_responsibility_1">Vous êtes seul responsable des sites web auxquels vous accédez et du contenu que vous utilisez via Shellify</string>

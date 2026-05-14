@@ -262,7 +262,7 @@
     <string name="consent_what_1">Allows users to create isolated web-based app containers on their own device</string>
     <string name="consent_what_2">Functions as a web-viewing tool that loads websites selected by the user</string>
     <string name="consent_what_3">All browsing data and app data remain stored locally on the user\'s device unless the user interacts directly with a third-party website or service</string>
-    <string name="consent_what_4">Shellify may allow users to locally share user-selected website links or app configurations using standard operating-system sharing features without transmitting that data through Shellify infrastructure</string>
+    <string name="consent_what_4">Shellify may allow users to locally share user-selected website links or app configurations through standard operating-system sharing features. Such sharing is initiated solely by users and is not transmitted, stored, indexed, or moderated by Shellify</string>
     <string name="consent_section_not_title">What Shellify does not do</string>
     <string name="consent_not_1">We do not own, host, control, monitor, modify, or endorse third-party websites or services</string>
     <string name="consent_not_2">We do not intentionally collect, store, or transmit your browsing activity or the content you access through third-party websites</string>
@@ -279,6 +279,7 @@
     <string name="consent_acceptable_6">Impersonate individuals, organizations, brands, or official services</string>
     <string name="consent_acceptable_7">Share or distribute links intended for phishing, credential theft, malware distribution, or unlawful activity</string>
     <string name="consent_acceptable_8">Share backup files or session data in ways that violate third-party rights, account security requirements, or applicable law</string>
+    <string name="consent_acceptable_9">Share links or app configurations intended to facilitate unlawful activity, impersonation, phishing, malware distribution, or copyright infringement</string>
     <string name="consent_acceptable_reserve">We reserve the right to update, suspend, restrict, or discontinue Shellify or specific features at any time, particularly in cases involving security, abuse prevention, legal compliance, or violations of these terms.</string>
     <string name="consent_section_responsibility_title">Your responsibility</string>
     <string name="consent_responsibility_1">You are solely responsible for the websites you access and the content you use through Shellify</string>
