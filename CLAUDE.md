@@ -74,6 +74,11 @@ feature/onboarding → First-run flow
 | New domain model | `core/domain/src/main/java/io/shellify/app/domain/model/` |
 | New infrastructure | `core/<name>/` with `shellify.android.library` plugin |
 | Shared UI component | `core/ui/src/main/java/io/shellify/app/core/ui/` |
+| Feature-local strings | `feature/<name>/src/main/res/values/strings.xml` |
+| Shared UI strings | `core/ui/src/main/res/values/strings.xml` |
+| Colors | `core/ui/src/main/java/io/shellify/app/presentation/theme/Color.kt` |
+| Spacing / sizes | `core/ui/src/main/java/io/shellify/app/presentation/theme/Dimens.kt` |
+| Typography / text sizes | `core/ui/src/main/java/io/shellify/app/presentation/theme/Theme.kt` (Typography object) |
 
 ---
 
@@ -123,6 +128,10 @@ App module only: `shellify.android.application`
 - **No `System.out.*` or `.printStackTrace()`** — use Logcat
 - **No `java.lang.Math`** — use `kotlin.math`
 - **No `java.util.stream.*`** — use Kotlin collections
+- **No hardcoded user-visible strings** — all translatable text must go in `strings.xml` (feature-local or `core/ui`); never inline string literals in Composables or Activities
+- **No hardcoded colors** — use tokens from `Color.kt` via `MaterialTheme.colorScheme`; never use `Color(0xFF…)` inline
+- **No hardcoded dimensions** — spacing, padding, icon sizes, and corner radii must be defined in `Dimens.kt`; never use raw `dp`/`sp` literals outside that file
+- **No hardcoded text sizes** — define in `Theme.kt` Typography and reference via `MaterialTheme.typography`
 - **Comments explain *why*, not *what*.** Self-documenting code is expected.
 - `FIXME`, `HACK`, `STOPSHIP` are forbidden (detekt will fail).
 
