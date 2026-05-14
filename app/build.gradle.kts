@@ -30,6 +30,8 @@ android {
         versionName = "1.0.0"
 
         vectorDrawables { useSupportLibrary = true }
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -153,4 +155,14 @@ dependencies {
 
     // Detekt formatting rules (ktlint-based)
     detektPlugins(libs.detekt.formatting)
+
+    // Instrumented tests
+    androidTestImplementation(composeBom)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.1")
+    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("io.mockk:mockk-android:1.13.14")
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
