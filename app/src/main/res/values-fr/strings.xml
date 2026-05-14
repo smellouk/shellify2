@@ -260,6 +260,7 @@
     <string name="consent_not_2">Nous ne collectons ni ne stockons votre activité de navigation ou le contenu consulté via des sites tiers</string>
     <string name="consent_not_3">Nous ne sommes affiliés à aucun site tiers, sauf mention explicite</string>
     <string name="consent_not_4">Nous ne garantissons pas la légalité, la sécurité, la disponibilité ou la fiabilité d\'un site ou contenu tiers</string>
+    <string name="consent_not_5">Shellify est un outil polyvalent contrôlé par l\'utilisateur et n\'encourage, ne promeut ni ne facilite aucune activité illégale ou tout accès non autorisé à des services</string>
     <string name="consent_section_acceptable_title">Utilisation acceptable</string>
     <string name="consent_acceptable_intro">Vous acceptez de ne pas utiliser Shellify pour :</string>
     <string name="consent_acceptable_1">Violer toute loi ou réglementation applicable</string>

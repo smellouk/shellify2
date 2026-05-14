@@ -260,6 +260,7 @@
     <string name="consent_not_2">لا نجمع نشاط تصفّحك أو المحتوى الذي تصل إليه عبر مواقع الأطراف الثالثة ولا نخزّنه</string>
     <string name="consent_not_3">لسنا تابعين لأي موقع طرف ثالث إلا إذا صُرِّح بذلك صراحةً</string>
     <string name="consent_not_4">لا نضمن مشروعية أي موقع أو محتوى طرف ثالث أو أمانه أو توافره أو موثوقيته</string>
+    <string name="consent_not_5">شيليفاي أداة متعددة الأغراض يتحكم فيها المستخدم، ولا تشجع على أي نشاط غير مشروع أو الوصول غير المصرح به إلى الخدمات، ولا تروّج له ولا تُيسّره</string>
     <string name="consent_section_acceptable_title">الاستخدام المقبول</string>
     <string name="consent_acceptable_intro">توافق على عدم استخدام شيليفاي من أجل:</string>
     <string name="consent_acceptable_1">انتهاك أي قانون أو لائحة مُطبَّقة</string>

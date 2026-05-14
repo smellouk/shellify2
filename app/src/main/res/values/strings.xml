@@ -264,6 +264,7 @@
     <string name="consent_not_2">We do not collect or store your browsing activity or the content you access through third-party websites</string>
     <string name="consent_not_3">We are not affiliated with any third-party website unless explicitly stated</string>
     <string name="consent_not_4">We do not guarantee the legality, security, availability, or reliability of any third-party website or content</string>
+    <string name="consent_not_5">Shellify is a general-purpose user-controlled tool and does not encourage, promote, or facilitate unlawful activity or unauthorized access to services</string>
     <string name="consent_section_acceptable_title">Acceptable use</string>
     <string name="consent_acceptable_intro">You agree not to use Shellify to:</string>
     <string name="consent_acceptable_1">Violate any applicable law or regulation</string>
