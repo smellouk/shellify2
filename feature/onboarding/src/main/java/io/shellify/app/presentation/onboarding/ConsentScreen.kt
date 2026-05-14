@@ -100,8 +100,6 @@ fun ConsentScreen(onAccepted: () -> Unit) {
                     stringResource(R.string.consent_acceptable_5),
                     stringResource(R.string.consent_acceptable_6),
                     stringResource(R.string.consent_acceptable_7),
-                    stringResource(R.string.consent_acceptable_8),
-                    stringResource(R.string.consent_acceptable_9),
                 ),
                 footer = stringResource(R.string.consent_acceptable_reserve),
             )

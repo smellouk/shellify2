@@ -273,9 +273,7 @@
     <string name="consent_acceptable_4">Distribuer des logiciels malveillants, codes nuisibles ou contenus non autorisés</string>
     <string name="consent_acceptable_5">Se livrer à la fraude, au harcèlement, à des abus ou à toute activité illicite</string>
     <string name="consent_acceptable_6">Usurper l\'identité d\'individus, d\'organisations, de marques ou de services officiels</string>
-    <string name="consent_acceptable_7">Partager ou distribuer des liens à des fins d\'hameçonnage, de vol d\'identifiants, de diffusion de logiciels malveillants ou d\'activité illégale</string>
-    <string name="consent_acceptable_8">Partager des fichiers de sauvegarde ou des données de session d\'une manière violant les droits de tiers, les exigences de sécurité des comptes ou la loi applicable</string>
-    <string name="consent_acceptable_9">Partager des liens ou des configurations d\'applications destinés à faciliter une activité illégale, une usurpation d\'identité, le hameçonnage, la distribution de logiciels malveillants ou une violation du droit d\'auteur</string>
+    <string name="consent_acceptable_7">Partager ou distribuer des liens, configurations d\'applications, fichiers de sauvegarde ou données de session destinés à faciliter l\'hameçonnage, le vol d\'identifiants, la distribution de logiciels malveillants, l\'usurpation d\'identité, la violation du droit d\'auteur ou toute autre activité illégale</string>
     <string name="consent_acceptable_reserve">Nous nous réservons le droit de mettre à jour, suspendre, restreindre ou interrompre Shellify ou certaines fonctionnalités à tout moment, notamment en cas de problème de sécurité, de prévention des abus, de conformité légale ou de violation de ces conditions.</string>
     <string name="consent_section_responsibility_title">Votre responsabilité</string>
     <string name="consent_responsibility_1">Vous êtes seul responsable des sites web auxquels vous accédez et du contenu que vous utilisez via Shellify</string>
