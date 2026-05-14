@@ -10,6 +10,8 @@ import dev.pwaforge.core.iconpack.SimpleIconsState
 import dev.pwaforge.core.isolation.IsolationManager
 import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
+import dev.pwaforge.core.security.PasswordManager
+import dev.pwaforge.core.security.verifyPassword
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.core.shortcut.SvgIconRenderer
 import dev.pwaforge.domain.model.IconSource
@@ -20,6 +22,7 @@ import dev.pwaforge.domain.usecase.DeleteWebAppUseCase
 import dev.pwaforge.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -34,6 +37,8 @@ data class AppSettingsUiState(
     val packIcons: List<SimpleIconEntry> = emptyList(),
     val iconPickerQuery: String = "",
     val isSelectingPackIcon: Boolean = false,
+    val showDisableLockDialog: Boolean = false,
+    val disableLockError: Boolean = false,
 )
 
 class AppSettingsViewModel(
@@ -46,6 +51,7 @@ class AppSettingsViewModel(
     private val analyzer: PwaAnalyzer,
     private val faviconFetcher: FaviconFetcher,
     private val simpleIconsManager: SimpleIconsManager,
+    private val passwordManager: PasswordManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AppSettingsUiState(
@@ -100,6 +106,22 @@ class AppSettingsViewModel(
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
     fun setTranslateTarget(lang: dev.pwaforge.domain.model.TranslateLanguage) = update { it.copy(translateTarget = lang) }
     fun setLockType(v: LockType) = update { it.copy(lockType = v) }
+
+    fun requestDisableLock() = _state.update { it.copy(showDisableLockDialog = true, disableLockError = false) }
+    fun dismissDisableLockDialog() = _state.update { it.copy(showDisableLockDialog = false, disableLockError = false) }
+
+    fun confirmDisableLock(password: String) {
+        viewModelScope.launch {
+            val hash = passwordManager.passwordHash.first()
+            if (hash != null && verifyPassword(password, hash)) {
+                _state.update { it.copy(showDisableLockDialog = false, disableLockError = false) }
+                update { it.copy(lockType = LockType.NONE) }
+            } else {
+                _state.update { it.copy(disableLockError = true) }
+            }
+        }
+    }
+
     fun setWipeOnFailedAttempts(v: Boolean) = update { it.copy(wipeOnFailedAttempts = v) }
     fun markShortcutCreated(app: WebApp) = update { it.copy(hasLauncherShortcut = true) }
 

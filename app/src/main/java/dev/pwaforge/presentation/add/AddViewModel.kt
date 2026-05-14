@@ -67,7 +67,6 @@ data class AddUiState(
     // Translation
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
-    val libreTranslateUrl: String = "https://libretranslate.com",
     val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
@@ -135,7 +134,6 @@ class AddViewModel(
                         adBlockCustomRules = app.adBlockCustomRules,
                         translateEnabled = app.translateEnabled,
                         translateTarget = app.translateTarget,
-                        libreTranslateUrl = app.libreTranslateUrl,
                         autoTranslateOnLoad = app.autoTranslateOnLoad,
                         uaMode = app.uaMode,
                         engineType = app.engineType,
@@ -185,7 +183,6 @@ class AddViewModel(
     // Translation
     fun setTranslate(v: Boolean) = _state.update { it.copy(translateEnabled = v) }
     fun setTranslateTarget(v: TranslateLanguage) = _state.update { it.copy(translateTarget = v) }
-    fun setLibreTranslateUrl(v: String) = _state.update { it.copy(libreTranslateUrl = v) }
     fun setAutoTranslateOnLoad(v: Boolean) = _state.update { it.copy(autoTranslateOnLoad = v) }
 
     // Browser
@@ -371,7 +368,6 @@ class AddViewModel(
             adBlockCustomRules = s.adBlockCustomRules,
             translateEnabled = s.translateEnabled,
             translateTarget = s.translateTarget,
-            libreTranslateUrl = s.libreTranslateUrl,
             autoTranslateOnLoad = s.autoTranslateOnLoad,
             uaMode = s.uaMode,
             engineType = s.engineType,

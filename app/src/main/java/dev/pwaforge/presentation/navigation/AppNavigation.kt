@@ -225,7 +225,7 @@ fun AppNavigation(
                 AppSettingsScreen(
                     viewModel = remember(appId) { AppSettingsViewModel(appId, app.webAppRepository, app.saveWebApp,
                         app.deleteWebApp, app.isolationManager, app,
-                        app.pwaAnalyzer, app.faviconFetcher, app.simpleIconsManager) },
+                        app.pwaAnalyzer, app.faviconFetcher, app.simpleIconsManager, app.passwordManager) },
                     onBack = { navController.popBackStack() },
                     onDeleted = { navController.popBackStack(Screen.Home.route, inclusive = false) },
                 )

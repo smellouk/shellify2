@@ -25,7 +25,6 @@ data class WebApp(
     // Translation
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
-    val libreTranslateUrl: String = "https://translate.fedilab.app",
     val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,

@@ -17,7 +17,7 @@ import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 11,
+    version = 12,
     exportSchema = true,
 )
 @TypeConverters(IconSourceConverter::class)
@@ -97,6 +97,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("UPDATE web_apps SET libreTranslateUrl = 'https://translate.fedilab.app' WHERE libreTranslateUrl = 'https://libretranslate.com'")
+            }
+        }
+
         fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: buildDatabase(context, crypto).also { instance = it }
@@ -113,7 +119,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "pwaforge.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                 .build()
                 .also { passphrase.fill(0) }
         }

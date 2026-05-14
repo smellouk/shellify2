@@ -4,7 +4,6 @@ object TranslateBridge {
 
     fun buildScript(
         targetLang: String,
-        instanceUrl: String,
         autoTranslate: Boolean,
     ): String = """
 (function() {
@@ -12,29 +11,19 @@ object TranslateBridge {
   window.__pwaforgeTranslateLoaded = true;
 
   const TARGET = '${targetLang.replace("'", "\\'")}';
-  const INSTANCE = '${instanceUrl.trimEnd('/').replace("'", "\\'")}';
-  console.log('[PWATranslate] instance=' + INSTANCE + ' target=' + TARGET);
 
-  async function translateBatch(texts) {
-    console.log('[PWATranslate] POST /translate texts=' + texts.length);
+  async function translateText(text) {
+    if (!text || !text.trim()) return text;
     try {
-      const res = await fetch(INSTANCE + '/translate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({q: texts, source: 'auto', target: TARGET, format: 'text'}),
-      });
-      console.log('[PWATranslate] response status=' + res.status);
+      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='
+        + encodeURIComponent(TARGET) + '&dt=t&q=' + encodeURIComponent(text);
+      const res = await fetch(url);
       const json = await res.json();
-      if (json.error) { console.log('[PWATranslate] API error: ' + json.error); return texts; }
-      return Array.isArray(json.translatedText) ? json.translatedText : [json.translatedText];
-    } catch(e) {
-      console.log('[PWATranslate] fetch error: ' + e);
-      return texts;
-    }
+      return json[0].map(function(x){ return x[0]; }).join('');
+    } catch(e) { return text; }
   }
 
   async function translatePage() {
-    console.log('[PWATranslate] translatePage called');
     const walker = document.createTreeWalker(
       document.body,
       NodeFilter.SHOW_TEXT,
@@ -46,14 +35,15 @@ object TranslateBridge {
     );
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    console.log('[PWATranslate] found ' + nodes.length + ' text nodes');
 
     for (let i = 0; i < nodes.length; i += 50) {
       const chunk = nodes.slice(i, i + 50);
-      const translated = await translateBatch(chunk.map(function(n){ return n.nodeValue; }));
-      chunk.forEach(function(n, j) { if (translated[j]) n.nodeValue = translated[j]; });
+      const texts = chunk.map(function(n){ return n.nodeValue; });
+      const joined = texts.join('\n​​\n');
+      const translated = await translateText(joined);
+      const parts = translated.split('\n​​\n');
+      chunk.forEach(function(n, j) { if (parts[j]) n.nodeValue = parts[j]; });
     }
-    console.log('[PWATranslate] done');
   }
 
   window.__pwaforgeTranslate = translatePage;

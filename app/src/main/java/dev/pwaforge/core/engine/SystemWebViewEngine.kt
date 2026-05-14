@@ -2,9 +2,7 @@ package dev.pwaforge.core.engine
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import android.view.View
-import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -56,11 +54,7 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
             override fun onHideCustomView() =
                 callback.onHideCustomView()
 
-            override fun onConsoleMessage(msg: ConsoleMessage): Boolean {
-                if (msg.message().startsWith("[PWATranslate]"))
-                    Log.d("PWATranslate", msg.message())
-                return true
-            }
+
         }
 
         webView = wv

@@ -58,6 +58,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -312,15 +314,24 @@ fun AppSettingsScreen(
                 )
                 CardDivider()
                 ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_translate_lang), style = MaterialTheme.typography.bodyMedium) },
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_translate_lang),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (app.translateEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        )
+                    },
                     trailingContent = {
                         androidx.compose.foundation.layout.Box {
-                            TextButton(onClick = { showLangMenu = true }) {
+                            TextButton(
+                                onClick = { if (app.translateEnabled) showLangMenu = true },
+                                enabled = app.translateEnabled,
+                            ) {
                                 Icon(Icons.Default.GTranslate, null, modifier = Modifier.size(Dimens.sizeSm))
                                 Text(
                                     " ${app.translateTarget.displayName}",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = if (app.translateEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                 )
                             }
                             DropdownMenu(expanded = showLangMenu, onDismissRequest = { showLangMenu = false }) {
@@ -365,7 +376,15 @@ fun AppSettingsScreen(
                         Switch(
                             checked = app.lockType != LockType.NONE,
                             onCheckedChange = { on ->
-                                viewModel.setLockType(if (on) LockType.PASSWORD else LockType.NONE)
+                                if (on) {
+                                    viewModel.setLockType(LockType.PASSWORD)
+                                } else {
+                                    if (app.lockType == LockType.PASSWORD) {
+                                        viewModel.requestDisableLock()
+                                    } else {
+                                        viewModel.setLockType(LockType.NONE)
+                                    }
+                                }
                             },
                         )
                     },
@@ -450,6 +469,43 @@ fun AppSettingsScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = viewModel::dismissDeleteDialog) { Text(stringResource(R.string.common_cancel)) }
+                },
+            )
+        }
+
+        if (state.showDisableLockDialog) {
+            var disableLockPassword by remember { mutableStateOf("") }
+            AlertDialog(
+                onDismissRequest = viewModel::dismissDisableLockDialog,
+                icon = { Icon(Icons.Default.LockOpen, null) },
+                title = { Text(stringResource(R.string.settings_disable_lock_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                        Text(stringResource(R.string.settings_disable_lock_body))
+                        OutlinedTextField(
+                            value = disableLockPassword,
+                            onValueChange = { disableLockPassword = it },
+                            label = { Text(stringResource(R.string.common_current_password)) },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            isError = state.disableLockError,
+                            supportingText = if (state.disableLockError) {
+                                { Text(stringResource(R.string.common_wrong_password), color = MaterialTheme.colorScheme.error) }
+                            } else null,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(Dimens.cornerLg),
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { viewModel.confirmDisableLock(disableLockPassword) },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    ) { Text(stringResource(R.string.settings_disable_lock_title)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = viewModel::dismissDisableLockDialog) { Text(stringResource(R.string.common_cancel)) }
                 },
             )
         }
