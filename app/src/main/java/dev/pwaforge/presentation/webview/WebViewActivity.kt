@@ -123,9 +123,10 @@ class WebViewActivity : FragmentActivity() {
             ?: run { finish(); return }
         currentAppFlow.value = pwaApp
 
-        engine = when (pwaApp.engineType) {
-            EngineType.GECKOVIEW -> GeckoViewEngine(this, app.geckoEngineManager)
-            EngineType.SYSTEM_WEBVIEW -> SystemWebViewEngine(app.adBlocker)
+        engine = when {
+            pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
+                GeckoViewEngine(this, app.geckoEngineManager)
+            else -> SystemWebViewEngine(app.adBlocker)
         }
 
         container = FrameLayout(this)

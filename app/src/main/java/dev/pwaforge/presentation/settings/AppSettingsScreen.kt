@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -85,7 +86,9 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import dev.pwaforge.R
+import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.shortcut.PwaShortcutManager
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.WebApp
@@ -100,8 +103,10 @@ fun AppSettingsScreen(
     viewModel: AppSettingsViewModel,
     onBack: () -> Unit,
     onDeleted: () -> Unit,
+    onGoToGlobalSettings: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
+    val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val app = state.app
@@ -347,6 +352,15 @@ fun AppSettingsScreen(
                 )
             }
 
+            // ── Browser Engine ────────────────────────────────────────────────
+            SectionLabel(stringResource(R.string.add_engine_section))
+            AppEngineCard(
+                selected = app.engineType,
+                geckoInstallState = geckoInstallState,
+                onSelect = viewModel::setEngineType,
+                onGoToGlobalSettings = onGoToGlobalSettings,
+            )
+
             // ── Shortcut ──────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_shortcut))
             SettingsCard {
@@ -529,6 +543,93 @@ fun AppSettingsScreen(
                 },
                 onDismiss = viewModel::closeIconPackPicker,
             )
+        }
+    }
+}
+
+@Composable
+private fun AppEngineCard(
+    selected: EngineType,
+    geckoInstallState: GeckoInstallState,
+    onSelect: (EngineType) -> Unit,
+    onGoToGlobalSettings: () -> Unit,
+) {
+    val geckoAvailable = geckoInstallState is GeckoInstallState.Installed
+    val geckoMissing = selected == EngineType.GECKOVIEW && !geckoAvailable
+
+    SettingsCard {
+        Column {
+            if (geckoMissing) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(androidx.compose.ui.graphics.Color(0xFFFF9800).copy(alpha = 0.12f))
+                        .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                ) {
+                    Icon(
+                        Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = androidx.compose.ui.graphics.Color(0xFFFF9800),
+                        modifier = Modifier.size(Dimens.sizeMd),
+                    )
+                    Text(
+                        stringResource(R.string.settings_engine_gecko_missing),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = androidx.compose.ui.graphics.Color(0xFFFF9800),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                CardDivider()
+            }
+            Column(
+                modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+            ) {
+                EngineType.entries.forEach { engine ->
+                    val isGecko = engine == EngineType.GECKOVIEW
+                    val enabled = !isGecko || geckoAvailable
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = enabled) { onSelect(engine) }
+                            .padding(vertical = Dimens.spaceXxs),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                            RadioButton(
+                                selected = selected == engine,
+                                onClick = if (enabled) ({ onSelect(engine) }) else null,
+                                enabled = enabled,
+                                modifier = Modifier.size(Dimens.sizeMd),
+                            )
+                        }
+                        Spacer(Modifier.width(Dimens.spaceMd))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                engine.displayName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (enabled) MaterialTheme.colorScheme.onSurface
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                            )
+                            if (isGecko && !geckoAvailable) {
+                                val label = when (geckoInstallState) {
+                                    is GeckoInstallState.Downloading -> stringResource(R.string.add_engine_gecko_downloading, (geckoInstallState.progress * 100).toInt())
+                                    is GeckoInstallState.Installing -> stringResource(R.string.add_engine_gecko_installing)
+                                    is GeckoInstallState.Error -> stringResource(R.string.add_engine_gecko_error)
+                                    else -> stringResource(R.string.add_engine_gecko_not_installed, engine.estimatedSizeMb)
+                                }
+                                Text(label, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            } else {
+                                Text(engine.description, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

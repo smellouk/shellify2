@@ -225,9 +225,11 @@ fun AppNavigation(
                 AppSettingsScreen(
                     viewModel = remember(appId) { AppSettingsViewModel(appId, app.webAppRepository, app.saveWebApp,
                         app.deleteWebApp, app.isolationManager, app,
-                        app.pwaAnalyzer, app.faviconFetcher, app.simpleIconsManager, app.passwordManager) },
+                        app.pwaAnalyzer, app.faviconFetcher, app.simpleIconsManager, app.passwordManager,
+                        app.geckoEngineManager) },
                     onBack = { navController.popBackStack() },
                     onDeleted = { navController.popBackStack(Screen.Home.route, inclusive = false) },
+                    onGoToGlobalSettings = { navController.navigate(Screen.GlobalSettings.route) },
                 )
             }
 

@@ -33,9 +33,9 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items as gridItems
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items as staggeredItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -63,6 +63,8 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -340,13 +342,13 @@ fun HomeScreen(
                     quickAddDoneUrl = state.quickAddDoneUrl,
                 )
             } else if (isGridView) {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(Dimens.sizeGridCell),
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(Dimens.sizeGridCell),
                     contentPadding = PaddingValues(start = Dimens.spaceLg, end = Dimens.spaceLg, top = Dimens.spaceSm, bottom = Dimens.spaceLg),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                    verticalItemSpacing = Dimens.spaceMd,
                 ) {
-                    gridItems(state.apps, key = { it.id }) { app ->
+                    staggeredItems(state.apps, key = { it.id }) { app ->
                         AppCard(
                             app = app,
                             geckoInstalled = geckoInstalled,
@@ -686,7 +688,10 @@ private fun AppCard(
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+        border = BorderStroke(
+            Dimens.borderDefault,
+            if (engineMissing) GeckoWarning.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant,
+        ),
     ) {
         Column(modifier = Modifier.padding(Dimens.spaceMd)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -752,21 +757,34 @@ private fun AppCard(
             }
         }
         if (engineMissing) {
+            HorizontalDivider(color = GeckoWarning.copy(alpha = 0.25f))
             Row(
-                modifier = Modifier.padding(top = Dimens.spaceXxs),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(GeckoWarning.copy(alpha = 0.08f))
+                    .clickable { onSettings() }
+                    .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
             ) {
                 Icon(
                     Icons.Default.Warning,
                     contentDescription = null,
-                    modifier = Modifier.size(Dimens.sizeXxs),
+                    modifier = Modifier.size(Dimens.sizeSm),
                     tint = GeckoWarning,
                 )
                 Text(
                     stringResource(R.string.home_gecko_required),
                     style = MaterialTheme.typography.labelSmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                     color = GeckoWarning,
+                    modifier = Modifier.weight(1f),
+                )
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimens.sizeSm),
+                    tint = GeckoWarning.copy(alpha = 0.7f),
                 )
             }
         }

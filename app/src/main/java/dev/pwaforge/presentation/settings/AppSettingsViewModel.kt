@@ -3,6 +3,8 @@ package dev.pwaforge.presentation.settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.pwaforge.core.engine.GeckoEngineManager
+import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.iconpack.SimpleIconEntry
 import dev.pwaforge.core.iconpack.SimpleIconsManager
 import dev.pwaforge.core.iconpack.SimpleIconsReader
@@ -14,6 +16,7 @@ import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.security.verifyPassword
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.core.shortcut.SvgIconRenderer
+import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.WebApp
@@ -52,6 +55,7 @@ class AppSettingsViewModel(
     private val faviconFetcher: FaviconFetcher,
     private val simpleIconsManager: SimpleIconsManager,
     private val passwordManager: PasswordManager,
+    val geckoEngineManager: GeckoEngineManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AppSettingsUiState(
@@ -121,6 +125,8 @@ class AppSettingsViewModel(
             }
         }
     }
+
+    fun setEngineType(engine: EngineType) = update { it.copy(engineType = engine) }
 
     fun setWipeOnFailedAttempts(v: Boolean) = update { it.copy(wipeOnFailedAttempts = v) }
     fun markShortcutCreated(app: WebApp) = update { it.copy(hasLauncherShortcut = true) }
