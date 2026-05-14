@@ -105,7 +105,8 @@ fun AppNavigation(
     val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
     if (onboardingDone == null) return
 
-    val startDestination = if (onboardingDone == true) Screen.Home.route else Screen.Onboarding.route
+    val startDestination =
+        if (onboardingDone == true) Screen.Home.route else Screen.Onboarding.route
 
     LaunchedEffect(Unit) {
         app.pendingDeepLink.collect { (url, name) ->
@@ -122,30 +123,61 @@ fun AppNavigation(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(modifier = Modifier.navigationBarsPadding()) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(
+                                alpha = 0.4f
+                            )
+                        )
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceSm),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceSm),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                         ) {
-                            data class NavItem(val route: String, val icon: ImageVector, val label: String)
+                            data class NavItem(
+                                val route: String,
+                                val icon: ImageVector,
+                                val label: String
+                            )
                             listOf(
-                                NavItem(Screen.Home.route, Icons.Default.PhoneAndroid, stringResource(R.string.nav_apps)),
-                                NavItem(Screen.Categories.route, Icons.Default.Layers, stringResource(R.string.nav_categories)),
-                                NavItem(Screen.Shortcuts.route, Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.nav_shortcuts)),
-                                NavItem(Screen.GlobalSettings.route, Icons.Default.Settings, stringResource(R.string.nav_settings)),
+                                NavItem(
+                                    Screen.Home.route,
+                                    Icons.Default.PhoneAndroid,
+                                    stringResource(R.string.nav_apps)
+                                ),
+                                NavItem(
+                                    Screen.Categories.route,
+                                    Icons.Default.Layers,
+                                    stringResource(R.string.nav_categories)
+                                ),
+                                NavItem(
+                                    Screen.Shortcuts.route,
+                                    Icons.AutoMirrored.Filled.Shortcut,
+                                    stringResource(R.string.nav_shortcuts)
+                                ),
+                                NavItem(
+                                    Screen.GlobalSettings.route,
+                                    Icons.Default.Settings,
+                                    stringResource(R.string.nav_settings)
+                                ),
                             ).forEach { item ->
                                 val active = currentRoute == item.route
                                 Column(
-                                    modifier = Modifier.weight(1f).clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                    ) { navController.navigateToTab(item.route) },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() },
+                                        ) { navController.navigateToTab(item.route) },
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(width = Dimens.sizeIllustrationTile, height = Dimens.size4xl)
+                                            .size(
+                                                width = Dimens.sizeIllustrationTile,
+                                                height = Dimens.size4xl
+                                            )
                                             .background(
                                                 if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                                                 RoundedCornerShape(Dimens.cornerXl),
@@ -186,7 +218,18 @@ fun AppNavigation(
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    viewModel = remember { HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories, app.saveWebApp, app.isolationManager, app, app.pwaAnalyzer, app.faviconFetcher) },
+                    viewModel = remember {
+                        HomeViewModel(
+                            app.getWebApps,
+                            app.deleteWebApp,
+                            app.getCategories,
+                            app.saveWebApp,
+                            app.isolationManager,
+                            app,
+                            app.pwaAnalyzer,
+                            app.faviconFetcher
+                        )
+                    },
                     geckoInstalled = geckoInstalled,
                     currentLanguage = currentLanguage,
                     onLanguageChange = { code ->
@@ -217,11 +260,15 @@ fun AppNavigation(
                 val prefilledUrl = back.arguments?.getString("url") ?: ""
                 val prefilledName = back.arguments?.getString("name") ?: ""
                 AddScreen(
-                    viewModel = remember(appId) { AddViewModel(appId, app.webAppRepository, app.saveWebApp,
-                        app.getCategories, app.pwaAnalyzer, app.faviconFetcher,
-                        app.geckoEngineManager, app.themeManager,
-                        app.simpleIconsManager, app,
-                        prefilledUrl = prefilledUrl, prefilledName = prefilledName) },
+                    viewModel = remember(appId) {
+                        AddViewModel(
+                            appId, app.getWebAppById, app.getWebAppByName, app.saveWebApp,
+                            app.getCategories, app.pwaAnalyzer, app.faviconFetcher,
+                            app.geckoEngineManager, app.themeManager,
+                            app.simpleIconsManager, app,
+                            prefilledUrl = prefilledUrl, prefilledName = prefilledName
+                        )
+                    },
                     onSaved = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
@@ -237,24 +284,54 @@ fun AppNavigation(
             ) { back ->
                 val appId = back.arguments!!.getLong("appId")
                 AppSettingsScreen(
-                    viewModel = remember(appId) { AppSettingsViewModel(appId, app.webAppRepository, app.saveWebApp,
-                        app.deleteWebApp, app.isolationManager, app,
-                        app.pwaAnalyzer, app.faviconFetcher, app.simpleIconsManager, app.passwordManager,
-                        app.geckoEngineManager) },
+                    viewModel = remember(appId) {
+                        AppSettingsViewModel(
+                            appId,
+                            app.getWebAppById,
+                            app.saveWebApp,
+                            app.deleteWebApp,
+                            app.isolationManager,
+                            app,
+                            app.pwaAnalyzer,
+                            app.faviconFetcher,
+                            app.simpleIconsManager,
+                            app.passwordManager,
+                            app.geckoEngineManager
+                        )
+                    },
                     onBack = { navController.popBackStack() },
-                    onDeleted = { navController.popBackStack(Screen.Home.route, inclusive = false) },
+                    onDeleted = {
+                        navController.popBackStack(
+                            Screen.Home.route,
+                            inclusive = false
+                        )
+                    },
                 )
             }
 
             composable(Screen.Categories.route) {
                 CategoryScreen(
-                    viewModel = remember { CategoryViewModel(app.getCategories, app.saveCategory, app.categoryRepository) },
+                    viewModel = remember {
+                        CategoryViewModel(
+                            app.getCategories,
+                            app.saveCategory,
+                            app.deleteCategory,
+                        )
+                    },
                 )
             }
 
             composable(Screen.Shortcuts.route) {
                 ShortcutsScreen(
-                    viewModel = remember { ShortcutsViewModel(context = app, repo = app.webAppRepository, analyzer = app.pwaAnalyzer, faviconFetcher = app.faviconFetcher) },
+                    viewModel = remember {
+                        ShortcutsViewModel(
+                            context = app,
+                            getWebApps = app.getWebApps,
+                            saveWebApp = app.saveWebApp,
+                            analyzer = app.pwaAnalyzer,
+                            faviconFetcher = app.faviconFetcher,
+                        )
+                    },
                 )
             }
 
@@ -262,9 +339,10 @@ fun AppNavigation(
                 GlobalSettingsScreen(
                     viewModel = remember {
                         GlobalSettingsViewModel(
-                            app.themeManager, app.isolationManager, app.webAppRepository,
-                            app.categoryRepository, app.passwordManager,
-                            app.backupSettings, app.backupManager, app,
+                            app.themeManager, app.isolationManager,
+                            app.getWebApps, app.saveWebApp,
+                            app.deleteAllApps, app.deleteAllCategories,
+                            app.passwordManager, app.backupSettings, app.backupManager, app,
                             app.geckoEngineManager, app.simpleIconsManager,
                         )
                     },

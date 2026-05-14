@@ -35,6 +35,7 @@ sealed class IconSource {
                         background = obj.getString("background"),
                         renderedPath = obj.optString("renderedPath").takeIf { it.isNotBlank() },
                     )
+
                     else -> null
                 }
             }.getOrNull()

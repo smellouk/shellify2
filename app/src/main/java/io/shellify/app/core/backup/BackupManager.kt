@@ -39,32 +39,35 @@ class BackupManager(
     // ── Public API ────────────────────────────────────────────────────────────
 
     /** Creates an encrypted .pwab file inside [directoryUri] (SAF tree URI). Returns the filename. */
-    suspend fun backup(password: String, directoryUri: Uri): Result<String> = withContext(Dispatchers.IO) {
-        runCatching {
-            val zipBytes = buildZipArchive()
-            val encrypted = BackupCrypto.encrypt(zipBytes, password)
-            val filename = "pwaforge_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.pwab"
-            val dir = DocumentFile.fromTreeUri(context, directoryUri)
-                ?: error("Cannot open backup directory")
-            val file = dir.createFile("application/octet-stream", filename)
-                ?: error("Cannot create backup file in selected directory")
-            context.contentResolver.openOutputStream(file.uri)!!.use { it.write(encrypted) }
-            filename
+    suspend fun backup(password: String, directoryUri: Uri): Result<String> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val zipBytes = buildZipArchive()
+                val encrypted = BackupCrypto.encrypt(zipBytes, password)
+                val filename =
+                    "pwaforge_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.pwab"
+                val dir = DocumentFile.fromTreeUri(context, directoryUri)
+                    ?: error("Cannot open backup directory")
+                val file = dir.createFile("application/octet-stream", filename)
+                    ?: error("Cannot create backup file in selected directory")
+                context.contentResolver.openOutputStream(file.uri)!!.use { it.write(encrypted) }
+                filename
+            }
         }
-    }
 
     /** Decrypts and restores a .pwab file from [sourceUri]. */
-    suspend fun restore(password: String, sourceUri: Uri): Result<Unit> = withContext(Dispatchers.IO) {
-        runCatching {
-            val encrypted = context.contentResolver.openInputStream(sourceUri)!!.readBytes()
-            val zipBytes = try {
-                BackupCrypto.decrypt(encrypted, password)
-            } catch (e: Exception) {
-                error("Wrong password or corrupted backup")
+    suspend fun restore(password: String, sourceUri: Uri): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val encrypted = context.contentResolver.openInputStream(sourceUri)!!.readBytes()
+                val zipBytes = try {
+                    BackupCrypto.decrypt(encrypted, password)
+                } catch (e: Exception) {
+                    error("Wrong password or corrupted backup")
+                }
+                applyZipArchive(zipBytes)
             }
-            applyZipArchive(zipBytes)
         }
-    }
 
     // ── Build archive ─────────────────────────────────────────────────────────
 
@@ -137,41 +140,42 @@ class BackupManager(
     }
 
     private suspend fun buildSettingsJson(): String {
-        val themeMode      = themeManager.themeMode.first()
-        val dynamicColor   = themeManager.dynamicColor.first()
-        val accentColor    = themeManager.accentColor.first()
-        val defaultUaMode  = themeManager.defaultUaMode.first()
-        val defaultEngine  = themeManager.defaultEngineType.first()
-        val languageCode   = themeManager.languageCode.first()
-        val wipe           = passwordManager.wipeOnFailedAttempts.first()
-        val screenshot     = passwordManager.screenshotProtection.first()
-        val passwordHash   = passwordManager.passwordHash.first()
-        val bkEnabled      = backupSettings.enabled.first()
-        val bkSchedule     = backupSettings.schedule.first()
-        val bkDirectory    = backupSettings.directoryUri.first()
-        val bkLastTime     = backupSettings.lastBackupTime.first()
-        val bkPasswordEnc  = backupSettings.getEncryptedPassword()
-        val iconsState     = simpleIconsManager.state.value
-        val iconsImported  = iconsState is SimpleIconsState.Imported
-        val iconsCount     = if (iconsImported) (iconsState as SimpleIconsState.Imported).iconCount else 0
+        val themeMode = themeManager.themeMode.first()
+        val dynamicColor = themeManager.dynamicColor.first()
+        val accentColor = themeManager.accentColor.first()
+        val defaultUaMode = themeManager.defaultUaMode.first()
+        val defaultEngine = themeManager.defaultEngineType.first()
+        val languageCode = themeManager.languageCode.first()
+        val wipe = passwordManager.wipeOnFailedAttempts.first()
+        val screenshot = passwordManager.screenshotProtection.first()
+        val passwordHash = passwordManager.passwordHash.first()
+        val bkEnabled = backupSettings.enabled.first()
+        val bkSchedule = backupSettings.schedule.first()
+        val bkDirectory = backupSettings.directoryUri.first()
+        val bkLastTime = backupSettings.lastBackupTime.first()
+        val bkPasswordEnc = backupSettings.getEncryptedPassword()
+        val iconsState = simpleIconsManager.state.value
+        val iconsImported = iconsState is SimpleIconsState.Imported
+        val iconsCount =
+            if (iconsImported) (iconsState as SimpleIconsState.Imported).iconCount else 0
 
         return JSONObject().apply {
-            put("theme_mode",              themeMode.name)
-            put("dynamic_color",           dynamicColor)
-            if (accentColor != null)  put("accent_color", accentColor)
-            put("default_ua_mode",         defaultUaMode.name)
-            put("default_engine",          defaultEngine.name)
-            put("language_code",           languageCode)
+            put("theme_mode", themeMode.name)
+            put("dynamic_color", dynamicColor)
+            if (accentColor != null) put("accent_color", accentColor)
+            put("default_ua_mode", defaultUaMode.name)
+            put("default_engine", defaultEngine.name)
+            put("language_code", languageCode)
             put("wipe_on_failed_attempts", wipe)
-            put("screenshot_protection",   screenshot)
+            put("screenshot_protection", screenshot)
             if (passwordHash != null) put("password_hash", passwordHash)
-            put("backup_enabled",          bkEnabled)
-            put("backup_schedule",         bkSchedule.name)
-            if (bkDirectory != null)  put("backup_directory_uri", bkDirectory)
-            put("backup_last_time",        bkLastTime)
+            put("backup_enabled", bkEnabled)
+            put("backup_schedule", bkSchedule.name)
+            if (bkDirectory != null) put("backup_directory_uri", bkDirectory)
+            put("backup_last_time", bkLastTime)
             if (bkPasswordEnc != null) put("backup_password_encrypted", bkPasswordEnc)
-            put("simple_icons_imported",   iconsImported)
-            put("simple_icons_count",      iconsCount)
+            put("simple_icons_imported", iconsImported)
+            put("simple_icons_count", iconsCount)
         }.toString()
     }
 
@@ -235,7 +239,8 @@ class BackupManager(
 
                         entry.name.startsWith("datastore/") -> {
                             val name = entry.name.removePrefix("datastore/")
-                            val dir = File(context.filesDir.parent!!, "datastore").also { it.mkdirs() }
+                            val dir =
+                                File(context.filesDir.parent!!, "datastore").also { it.mkdirs() }
                             val file = dir.safeResolve(name)?.also { it.writeBytes(bytes) }
                             // Reload in-memory state for the backup password (device-specific
                             // Keystore-encrypted value that can't go into settings.json).
@@ -249,7 +254,8 @@ class BackupManager(
 
                         entry.name.startsWith("shared_prefs/") -> {
                             val name = entry.name.removePrefix("shared_prefs/")
-                            val dir = File(context.filesDir.parent!!, "shared_prefs").also { it.mkdirs() }
+                            val dir =
+                                File(context.filesDir.parent!!, "shared_prefs").also { it.mkdirs() }
                             dir.safeResolve(name)?.writeBytes(bytes)
                         }
 
@@ -259,7 +265,7 @@ class BackupManager(
                         }
 
                         entry.name.startsWith("webview/") &&
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                             val relative = entry.name.removePrefix("webview/")
                             val baseDir = File(context.filesDir.parent!!, "app_webview")
                             val target = baseDir.safeResolve(relative)
@@ -281,7 +287,15 @@ class BackupManager(
         val obj = JSONObject(json)
 
         // Theme
-        runCatching { themeManager.setThemeMode(io.shellify.app.core.theme.ThemeMode.valueOf(obj.getString("theme_mode"))) }
+        runCatching {
+            themeManager.setThemeMode(
+                io.shellify.app.core.theme.ThemeMode.valueOf(
+                    obj.getString(
+                        "theme_mode"
+                    )
+                )
+            )
+        }
         runCatching { themeManager.setDynamicColor(obj.getBoolean("dynamic_color")) }
         runCatching { themeManager.setAccentColor(if (obj.has("accent_color")) obj.getInt("accent_color") else null) }
         runCatching { themeManager.setDefaultUaMode(UserAgentMode.valueOf(obj.getString("default_ua_mode"))) }
@@ -316,7 +330,11 @@ class BackupManager(
         val bkLastTime = obj.optLong("backup_last_time", 0L)
         if (bkLastTime > 0L) runCatching { backupSettings.setLastBackupTime(bkLastTime) }
         val bkPasswordEnc = obj.optString("backup_password_encrypted", "")
-        if (bkPasswordEnc.isNotEmpty()) runCatching { backupSettings.setEncryptedPassword(bkPasswordEnc) }
+        if (bkPasswordEnc.isNotEmpty()) runCatching {
+            backupSettings.setEncryptedPassword(
+                bkPasswordEnc
+            )
+        }
 
         // Simple Icons
         val iconsImported = obj.optBoolean("simple_icons_imported", false)
@@ -340,8 +358,8 @@ class BackupManager(
                     }
                     sb.appendLine(
                         "INSERT OR REPLACE INTO `$table` " +
-                        "(${cols.joinToString(",") { "`$it`" }}) " +
-                        "VALUES (${values.joinToString(",")});"
+                                "(${cols.joinToString(",") { "`$it`" }}) " +
+                                "VALUES (${values.joinToString(",")});"
                     )
                 }
             }

@@ -26,10 +26,10 @@ class PwaAnalyzer(private val client: OkHttpClient) {
         // Supplement missing fields from <meta> / <link> tags
         return@withContext manifest.copy(
             name = manifest.name ?: extractMeta(html, "application-name")
-                ?: extractMeta(html, "og:title")
-                ?: extractTitle(html),
+            ?: extractMeta(html, "og:title")
+            ?: extractTitle(html),
             description = manifest.description ?: extractMeta(html, "description")
-                ?: extractMeta(html, "og:description"),
+            ?: extractMeta(html, "og:description"),
             themeColor = manifest.themeColor ?: extractMeta(html, "theme-color"),
             // When the manifest had no icons, harvest from HTML link/meta tags
             icons = manifest.icons.ifEmpty {
@@ -59,7 +59,10 @@ class PwaAnalyzer(private val client: OkHttpClient) {
     }.getOrNull()
 
     private fun extractManifestUrl(html: String, baseUrl: String): String? {
-        val regex = Regex("""<link[^>]+rel=["']manifest["'][^>]+href=["']([^"']+)["']""", RegexOption.IGNORE_CASE)
+        val regex = Regex(
+            """<link[^>]+rel=["']manifest["'][^>]+href=["']([^"']+)["']""",
+            RegexOption.IGNORE_CASE
+        )
         val href = regex.find(html)?.groupValues?.get(1) ?: return null
         return when {
             href.startsWith("http") -> href
@@ -71,7 +74,8 @@ class PwaAnalyzer(private val client: OkHttpClient) {
 
     private fun fetchManifest(manifestUrl: String, siteUrl: String): PwaManifest = runCatching {
         val request = Request.Builder().url(manifestUrl).build()
-        val body = client.newCall(request).execute().use { it.body?.string() } ?: return PwaManifest()
+        val body =
+            client.newCall(request).execute().use { it.body?.string() } ?: return PwaManifest()
         parseManifest(JSONObject(body), siteUrl)
     }.getOrDefault(PwaManifest())
 
@@ -109,10 +113,17 @@ class PwaAnalyzer(private val client: OkHttpClient) {
     /** Extracts href from `<link rel="[rel]" href="...">`, handles both attribute orderings. */
     private fun extractLinkHref(html: String, rel: String, baseUrl: String): String? {
         val patterns = listOf(
-            Regex("""<link[^>]+rel=["']${Regex.escape(rel)}["'][^>]+href=["']([^"']+)["']""", RegexOption.IGNORE_CASE),
-            Regex("""<link[^>]+href=["']([^"']+)["'][^>]+rel=["']${Regex.escape(rel)}["']""", RegexOption.IGNORE_CASE),
+            Regex(
+                """<link[^>]+rel=["']${Regex.escape(rel)}["'][^>]+href=["']([^"']+)["']""",
+                RegexOption.IGNORE_CASE
+            ),
+            Regex(
+                """<link[^>]+href=["']([^"']+)["'][^>]+rel=["']${Regex.escape(rel)}["']""",
+                RegexOption.IGNORE_CASE
+            ),
         )
-        val href = patterns.firstNotNullOfOrNull { it.find(html)?.groupValues?.get(1) } ?: return null
+        val href =
+            patterns.firstNotNullOfOrNull { it.find(html)?.groupValues?.get(1) } ?: return null
         return resolveUrl(href, baseUrl)
     }
 
@@ -125,15 +136,25 @@ class PwaAnalyzer(private val client: OkHttpClient) {
 
     private fun extractMeta(html: String, name: String): String? {
         val patterns = listOf(
-            Regex("""<meta[^>]+name=["']${Regex.escape(name)}["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE),
-            Regex("""<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${Regex.escape(name)}["']""", RegexOption.IGNORE_CASE),
-            Regex("""<meta[^>]+property=["']${Regex.escape(name)}["'][^>]+content=["']([^"']+)["']""", RegexOption.IGNORE_CASE),
+            Regex(
+                """<meta[^>]+name=["']${Regex.escape(name)}["'][^>]+content=["']([^"']+)["']""",
+                RegexOption.IGNORE_CASE
+            ),
+            Regex(
+                """<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${Regex.escape(name)}["']""",
+                RegexOption.IGNORE_CASE
+            ),
+            Regex(
+                """<meta[^>]+property=["']${Regex.escape(name)}["'][^>]+content=["']([^"']+)["']""",
+                RegexOption.IGNORE_CASE
+            ),
         )
         return patterns.firstNotNullOfOrNull { it.find(html)?.groupValues?.get(1) }
     }
 
     private fun extractTitle(html: String): String? =
-        Regex("<title>([^<]+)</title>", RegexOption.IGNORE_CASE).find(html)?.groupValues?.get(1)?.trim()
+        Regex("<title>([^<]+)</title>", RegexOption.IGNORE_CASE).find(html)?.groupValues?.get(1)
+            ?.trim()
 
     private fun extractOrigin(url: String): String {
         val proto = if (url.startsWith("https")) "https" else "http"

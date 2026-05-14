@@ -19,6 +19,7 @@ object WebViewManager {
         with(webView.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
+            @Suppress("DEPRECATION")
             databaseEnabled = true
             allowFileAccess = false
             allowContentAccess = false

@@ -18,7 +18,8 @@ object GeckoNativeLoader {
         injectDirIntoClassLoader(context, libDir)
         val all = libDir.listFiles()?.filter { it.extension == "so" }?.associateBy { it.name }
             ?: return
-        val order = PRELOAD_ORDER.mapNotNull { all[it] } + all.values.filter { it.name !in PRELOAD_ORDER }
+        val order =
+            PRELOAD_ORDER.mapNotNull { all[it] } + all.values.filter { it.name !in PRELOAD_ORDER }
         for (lib in order) {
             try {
                 System.load(lib.absolutePath)
@@ -41,8 +42,12 @@ object GeckoNativeLoader {
             val elemClass = existing.javaClass.componentType ?: return
             // Avoid adding the same dir twice
             if (existing.any { e ->
-                    try { elemClass.getDeclaredField("path").also { it.isAccessible = true }.get(e) == libDir }
-                    catch (_: Exception) { false }
+                    try {
+                        elemClass.getDeclaredField("path").also { it.isAccessible = true }
+                            .get(e) == libDir
+                    } catch (_: Exception) {
+                        false
+                    }
                 }) return
             val newElem = try {
                 elemClass.getDeclaredConstructor(File::class.java)

@@ -1,7 +1,6 @@
 package io.shellify.app.presentation.home
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,8 +28,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -41,11 +38,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -107,14 +104,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.TextButton
 import io.shellify.app.domain.model.Category
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.WebApp
+import io.shellify.app.presentation.components.ConfirmDialog
+import io.shellify.app.presentation.components.EmptyStateIllustration
 import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.theme.GeckoWarning
 import io.shellify.app.presentation.theme.TagAdBlock
@@ -186,7 +182,10 @@ fun HomeScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.home_add_fab_cd))
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.home_add_fab_cd)
+                    )
                 }
             }
         },
@@ -229,7 +228,10 @@ fun HomeScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(Dimens.cornerFull)),
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(Dimens.cornerFull)
+                                ),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Spacer(Modifier.width(Dimens.spaceMd))
@@ -258,7 +260,11 @@ fun HomeScreen(
                                     },
                                     modifier = Modifier.size(Dimens.sizeApp),
                                 ) {
-                                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(Dimens.sizeXs))
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimens.sizeXs)
+                                    )
                                 }
                             } else {
                                 Spacer(Modifier.width(Dimens.spaceMd))
@@ -283,7 +289,7 @@ fun HomeScreen(
                             modifier = Modifier.size(32.dp),
                         ) {
                             Icon(
-                                if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
+                                if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
                                 contentDescription = null,
                             )
                         }
@@ -346,7 +352,12 @@ fun HomeScreen(
             } else if (isGridView) {
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(Dimens.sizeGridCell),
-                    contentPadding = PaddingValues(start = Dimens.spaceLg, end = Dimens.spaceLg, top = Dimens.spaceSm, bottom = Dimens.spaceLg),
+                    contentPadding = PaddingValues(
+                        start = Dimens.spaceLg,
+                        end = Dimens.spaceLg,
+                        top = Dimens.spaceSm,
+                        bottom = Dimens.spaceLg
+                    ),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                     verticalItemSpacing = Dimens.spaceMd,
                 ) {
@@ -356,16 +367,33 @@ fun HomeScreen(
                             geckoInstalled = geckoInstalled,
                             categories = state.categories,
                             hideDetails = hideDetails,
-                            onClick = { context.startActivity(WebViewActivity.launchIntent(context, app.id)) },
+                            onClick = {
+                                context.startActivity(
+                                    WebViewActivity.launchIntent(
+                                        context,
+                                        app.id
+                                    )
+                                )
+                            },
                             onSettings = { onOpenSettings(app.id) },
-                            onAssignCategory = { categoryId -> viewModel.assignCategory(app, categoryId) },
+                            onAssignCategory = { categoryId ->
+                                viewModel.assignCategory(
+                                    app,
+                                    categoryId
+                                )
+                            },
                             onClearData = { viewModel.clearData(app) },
                         )
                     }
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(start = Dimens.spaceLg, end = Dimens.spaceLg, top = Dimens.spaceSm, bottom = Dimens.spaceLg),
+                    contentPadding = PaddingValues(
+                        start = Dimens.spaceLg,
+                        end = Dimens.spaceLg,
+                        top = Dimens.spaceSm,
+                        bottom = Dimens.spaceLg
+                    ),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                 ) {
                     items(state.apps, key = { it.id }) { app ->
@@ -374,9 +402,21 @@ fun HomeScreen(
                             geckoInstalled = geckoInstalled,
                             categories = state.categories,
                             hideDetails = hideDetails,
-                            onClick = { context.startActivity(WebViewActivity.launchIntent(context, app.id)) },
+                            onClick = {
+                                context.startActivity(
+                                    WebViewActivity.launchIntent(
+                                        context,
+                                        app.id
+                                    )
+                                )
+                            },
                             onSettings = { onOpenSettings(app.id) },
-                            onAssignCategory = { categoryId -> viewModel.assignCategory(app, categoryId) },
+                            onAssignCategory = { categoryId ->
+                                viewModel.assignCategory(
+                                    app,
+                                    categoryId
+                                )
+                            },
                             onClearData = { viewModel.clearData(app) },
                         )
                     }
@@ -396,6 +436,7 @@ private fun LanguagePickerDialog(
     onSelect: (String) -> Unit,
 ) {
     data class LangOption(val code: String, val nativeName: String, val englishName: String)
+
     val options = listOf(
         LangOption("en", "English", "English"),
         LangOption("fr", "Français", "French"),
@@ -406,7 +447,11 @@ private fun LanguagePickerDialog(
             stringResource(R.string.language_dialog_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+            modifier = Modifier.padding(
+                start = Dimens.spaceLg,
+                end = Dimens.spaceLg,
+                bottom = Dimens.spaceSm
+            ),
         )
         Column(
             modifier = Modifier.padding(horizontal = Dimens.spaceMd),
@@ -433,13 +478,15 @@ private fun LanguagePickerDialog(
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
                             color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                    else MaterialTheme.colorScheme.onSurface,
+                            else MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             lang.englishName,
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.7f
+                            )
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     RadioButton(selected = isSelected, onClick = { onSelect(lang.code) })
@@ -466,7 +513,7 @@ private fun EmptyState(
 ) {
     val filteredTitle = if (reason is HomeEmptyState.FilteredCategory)
         stringResource(R.string.home_empty_filtered_category, reason.name)
-        else ""
+    else ""
     val filteredSubtitle = stringResource(R.string.home_empty_filtered_subtitle)
 
     if (reason is HomeEmptyState.FilteredCategory) {
@@ -499,10 +546,7 @@ private fun EmptyState(
         return
     }
 
-    // NoApps empty state — pixel-accurate from design handoff
-    val p97 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
     val p95 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-    val p90 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
     val p40 = MaterialTheme.colorScheme.primary
     val surfDim = MaterialTheme.colorScheme.outlineVariant
     val surface = MaterialTheme.colorScheme.surface
@@ -514,61 +558,7 @@ private fun EmptyState(
     ) {
         Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd))
 
-        // 160×160 illustration — 3 filled rings + single dashed orbit
-        Box(
-            modifier = Modifier.size(Dimens.illustrationSize),
-            contentAlignment = Alignment.Center,
-        ) {
-            // Outermost tinted ring
-            Box(modifier = Modifier.size(Dimens.illustrationSize).background(p97, CircleShape))
-            // Middle ring
-            Box(modifier = Modifier.size(Dimens.illustrationSizeMid).background(p95, CircleShape))
-            // Inner ring
-            Box(modifier = Modifier.size(Dimens.illustrationSizeInner).background(p90, CircleShape))
-            // Single dashed orbit at r=70
-            Canvas(modifier = Modifier.size(Dimens.illustrationSize)) {
-                drawCircle(
-                    color = p40.copy(alpha = 0.35f),
-                    radius = Dimens.illustrationRadius.toPx(),
-                    style = Stroke(
-                        width = 1.2.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(
-                            floatArrayOf(3.dp.toPx(), 7.dp.toPx()), 0f,
-                        ),
-                    ),
-                )
-            }
-            // Center tile: 64dp / radius 20dp / icon 30dp
-            Box(
-                modifier = Modifier
-                    .size(Dimens.sizeIllustrationTile)
-                    .background(p40, RoundedCornerShape(Dimens.corner20)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(Icons.Default.GridView, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
-            }
-            // Ghost tiles — positions match design handoff absolute coords
-            Box(
-                modifier = Modifier.size(Dimens.size2xl).offset(x = (-49).dp, y = (-57).dp)
-                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
-                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
-            )
-            Box(
-                modifier = Modifier.size(Dimens.sizeLg).offset(x = 57.dp, y = (-45).dp)
-                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
-                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
-            )
-            Box(
-                modifier = Modifier.size(Dimens.sizeLg).offset(x = (-61).dp, y = 51.dp)
-                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
-                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
-            )
-            Box(
-                modifier = Modifier.size(Dimens.size2xl).offset(x = 41.dp, y = 59.dp)
-                    .background(surface, RoundedCornerShape(Dimens.cornerSm))
-                    .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)),
-            )
-        }
+        EmptyStateIllustration(centerIcon = Icons.Default.GridView)
 
         Spacer(Modifier.height(Dimens.space14))
         Text(
@@ -596,14 +586,20 @@ private fun EmptyState(
         ) {
             Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
             Spacer(Modifier.width(Dimens.spaceSm))
-            Text(stringResource(R.string.home_empty_subtitle_action), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                stringResource(R.string.home_empty_subtitle_action),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold
+            )
         }
         Spacer(Modifier.height(Dimens.space22))
 
         // Quick suggestions
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.widthIn(max = 300.dp).fillMaxWidth(),
+            modifier = Modifier
+                .widthIn(max = 300.dp)
+                .fillMaxWidth(),
         ) {
             Text(
                 stringResource(R.string.home_quick_suggestions),
@@ -616,7 +612,7 @@ private fun EmptyState(
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                 listOf(
                     Triple("YouTube", "youtube.com", Icons.Default.PlayArrow),
-                    Triple("WhatsApp", "web.whatsapp.com", Icons.Default.Chat),
+                    Triple("WhatsApp", "web.whatsapp.com", Icons.AutoMirrored.Filled.Chat),
                     Triple("Spotify", "open.spotify.com", Icons.Default.MusicNote),
                 ).forEach { (name, host, icon) ->
                     val isLoading = quickAddLoadingUrl == host
@@ -627,7 +623,11 @@ private fun EmptyState(
                             .fillMaxWidth()
                             .heightIn(min = Dimens.sizeApp)
                             .background(surface, RoundedCornerShape(Dimens.corner14))
-                            .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.corner14))
+                            .border(
+                                Dimens.borderDefault,
+                                surfDim,
+                                RoundedCornerShape(Dimens.corner14)
+                            )
                             .clickable(
                                 enabled = quickAddLoadingUrl == null && !isDone,
                                 indication = null,
@@ -646,10 +646,24 @@ private fun EmptyState(
                         ) {
                             Icon(icon, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                         }
-                        val noFontPadding = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                        val noFontPadding =
+                            TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(name, fontSize = Dimens.textSizeBody, lineHeight = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, style = noFontPadding)
-                            Text(host, fontSize = Dimens.textSizeCaption, lineHeight = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant, style = noFontPadding)
+                            Text(
+                                name,
+                                fontSize = Dimens.textSizeBody,
+                                lineHeight = Dimens.textSizeBody,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = noFontPadding
+                            )
+                            Text(
+                                host,
+                                fontSize = Dimens.textSizeCaption,
+                                lineHeight = Dimens.textSizeCaption,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = noFontPadding
+                            )
                         }
                         when {
                             isLoading -> CircularProgressIndicator(
@@ -657,8 +671,20 @@ private fun EmptyState(
                                 strokeWidth = 2.dp,
                                 color = p40,
                             )
-                            isDone -> Icon(Icons.Default.Check, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
-                            isIdle -> Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
+
+                            isDone -> Icon(
+                                Icons.Default.Check,
+                                null,
+                                modifier = Modifier.size(Dimens.sizeXs),
+                                tint = p40
+                            )
+
+                            isIdle -> Icon(
+                                Icons.Default.Add,
+                                null,
+                                modifier = Modifier.size(Dimens.sizeXs),
+                                tint = p40
+                            )
                         }
                     }
                 }
@@ -688,7 +714,9 @@ private fun AppCard(
     var showShareSheet by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -707,9 +735,11 @@ private fun AppCard(
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Default.VisibilityOff, null,
+                        Icon(
+                            Icons.Default.VisibilityOff, null,
                             modifier = Modifier.size(Dimens.sizeLg),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 } else {
                     AppIcon(app = app, modifier = Modifier.size(Dimens.sizeCard))
@@ -723,7 +753,8 @@ private fun AppCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        if (hideDetails) "••••••••••••" else app.url.removePrefix("https://").removePrefix("http://"),
+                        if (hideDetails) "••••••••••••" else app.url.removePrefix("https://")
+                            .removePrefix("http://"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -736,9 +767,14 @@ private fun AppCard(
                 FeatureTags(app)
                 Spacer(Modifier.weight(1f))
                 Box {
-                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu",
-                            modifier = Modifier.size(Dimens.sizeXs))
+                    IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(Dimens.sizeXl)
+                    ) {
+                        Icon(
+                            Icons.Default.MoreVert, contentDescription = "Menu",
+                            modifier = Modifier.size(Dimens.sizeXs)
+                        )
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
@@ -812,20 +848,14 @@ private fun AppCard(
     }
 
     if (showClearDataDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearDataDialog = false },
-            icon = { Icon(Icons.Default.DeleteSweep, null) },
-            title = { Text(stringResource(R.string.home_clear_data_title)) },
-            text = { Text(stringResource(R.string.home_clear_data_body, app.name)) },
-            confirmButton = {
-                TextButton(
-                    onClick = { showClearDataDialog = false; onClearData() },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text(stringResource(R.string.home_clear_data_button)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showClearDataDialog = false }) { Text(stringResource(R.string.common_cancel)) }
-            },
+        ConfirmDialog(
+            title = stringResource(R.string.home_clear_data_title),
+            body = stringResource(R.string.home_clear_data_body, app.name),
+            confirmLabel = stringResource(R.string.home_clear_data_button),
+            onConfirm = { showClearDataDialog = false; onClearData() },
+            onDismiss = { showClearDataDialog = false },
+            icon = Icons.Default.DeleteSweep,
+            isDestructive = true,
         )
     }
 
@@ -852,7 +882,11 @@ private fun CategoryPickerDialog(
             stringResource(R.string.home_assign_category_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+            modifier = Modifier.padding(
+                start = Dimens.spaceLg,
+                end = Dimens.spaceLg,
+                bottom = Dimens.spaceSm
+            ),
         )
         Column(modifier = Modifier.padding(horizontal = Dimens.spaceMd)) {
             Row(
@@ -865,7 +899,10 @@ private fun CategoryPickerDialog(
             ) {
                 RadioButton(selected = currentCategoryId == null, onClick = { onSelect(null) })
                 Spacer(Modifier.width(Dimens.spaceSm))
-                Text(stringResource(R.string.common_none), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(R.string.common_none),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
             categories.forEach { cat ->
                 Row(
@@ -876,7 +913,9 @@ private fun CategoryPickerDialog(
                         .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceXxs),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    RadioButton(selected = currentCategoryId == cat.id, onClick = { onSelect(cat.id) })
+                    RadioButton(
+                        selected = currentCategoryId == cat.id,
+                        onClick = { onSelect(cat.id) })
                     Spacer(Modifier.width(Dimens.spaceSm))
                     Text(cat.name, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -888,15 +927,20 @@ private fun CategoryPickerDialog(
 
 @Composable
 private fun FeatureTags(app: WebApp) {
-    data class Tag(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String, val color: Color)
+    data class Tag(
+        val icon: androidx.compose.ui.graphics.vector.ImageVector,
+        val label: String,
+        val color: Color
+    )
+
     val tags = buildList {
         if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", TagFullscreen))
         if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", TagAdBlock))
         if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", TagTranslate))
         when (app.lockType) {
             LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password", TagLockPassword))
-            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "Lock", TagLockSystem))
-            LockType.NONE     -> Unit
+            LockType.SYSTEM -> add(Tag(Icons.Default.Fingerprint, "Lock", TagLockSystem))
+            LockType.NONE -> Unit
         }
     }
     if (tags.isEmpty()) return
@@ -935,11 +979,14 @@ fun AppIcon(app: WebApp, modifier: Modifier = Modifier) {
         val color = runCatching { Color(android.graphics.Color.parseColor(app.themeColor)) }
             .getOrDefault(MaterialTheme.colorScheme.primary)
         Box(
-            modifier = modifier.clip(RoundedCornerShape(Dimens.cornerLg)).background(color),
+            modifier = modifier
+                .clip(RoundedCornerShape(Dimens.cornerLg))
+                .background(color),
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = app.name.firstOrNull { it.isLetterOrDigit() }?.uppercaseChar()?.toString() ?: "P",
+                text = app.name.firstOrNull { it.isLetterOrDigit() }?.uppercaseChar()?.toString()
+                    ?: "P",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
             )

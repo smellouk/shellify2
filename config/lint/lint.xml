@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+
+    <!-- ── Severity overrides ──────────────────────────────────────────── -->
+
+    <!-- Errors: must fix before shipping -->
+    <issue id="ApplySharedPref" severity="error" />
+    <issue id="CommitPrefEdits" severity="error" />
+    <issue id="SecureRandom" severity="error" />
+    <issue id="SQLiteString" severity="error" />
+    <issue id="TrulyRandom" severity="error" />
+    <issue id="UnsafeDynamicallyLoadedCode" severity="error" />
+    <issue id="UnsafeNativeCodeLocation" severity="error" />
+    <issue id="WorldReadableFiles" severity="error" />
+    <issue id="WorldWriteableFiles" severity="error" />
+    <issue id="SetWorldReadable" severity="error" />
+    <issue id="SetWorldWritable" severity="error" />
+
+    <!-- Security: this app stores passwords and encrypted data -->
+    <issue id="HardcodedDebugMode" severity="error" />
+    <issue id="AllowBackup" severity="warning" />
+    <issue id="ExportedActivity" severity="warning" />
+    <issue id="ExportedReceiver" severity="warning" />
+    <issue id="ExportedService" severity="warning" />
+    <issue id="ExportedContentProvider" severity="warning" />
+
+    <!-- Correctness -->
+    <issue id="Recycle" severity="error" />
+    <issue id="InflateParams" severity="warning" />
+    <issue id="WrongConstant" severity="error" />
+    <issue id="CheckResult" severity="warning" />
+    <issue id="InvalidWakeLockTag" severity="warning" />
+    <issue id="FragmentTagUsage" severity="warning" />
+
+    <!-- Performance -->
+    <issue id="ObsoleteLayoutParam" severity="warning" />
+    <issue id="UseCompoundDrawables" severity="warning" />
+    <issue id="UseSparseArrays" severity="warning" />
+    <issue id="UseValueOf" severity="warning" />
+
+    <!-- API level: minSdk = 23 -->
+    <issue id="NewApi" severity="error" />
+    <issue id="InlinedApi" severity="warning" />
+    <issue id="ObsoleteSdkInt" severity="warning" />
+    <issue id="UnusedAttribute" severity="warning" />
+
+    <!-- Accessibility -->
+    <issue id="ContentDescription" severity="warning" />
+    <issue id="LabelFor" severity="warning" />
+    <issue id="KeyboardInaccessibleWidget" severity="warning" />
+
+    <!-- Internationalization -->
+    <issue id="HardcodedText" severity="warning" />
+    <issue id="SetTextI18n" severity="warning" />
+    <issue id="StringFormatInvalid" severity="error" />
+    <issue id="StringFormatMatches" severity="error" />
+
+    <!-- Unused resources -->
+    <issue id="UnusedResources" severity="warning" />
+
+    <!-- ── Disabled rules ─────────────────────────────────────────────── -->
+
+    <!-- Compose uses programmatic UI — no XML layouts -->
+    <issue id="UnusedIds" severity="ignore" />
+
+    <!-- Accepted: GeckoView native libs are downloaded at runtime intentionally -->
+    <issue id="UnsafeDynamicallyLoadedCode" severity="ignore" />
+
+    <!-- We use SQLCipher (custom SQLite) — standard SQLiteString rules don't apply -->
+    <issue id="SQLiteString" severity="ignore" />
+
+    <!-- Backup is managed manually via BackupManager -->
+    <issue id="AllowBackup" severity="ignore" />
+
+</lint>

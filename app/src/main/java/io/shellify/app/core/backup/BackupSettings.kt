@@ -35,13 +35,21 @@ class BackupSettings(private val context: Context, private val crypto: CryptoMan
     val hasPassword: Flow<Boolean> = context.backupStore.data.map { it[keyPasswordEnc] != null }
     val directoryUri: Flow<String?> = context.backupStore.data.map { it[keyDirectoryUri] }
     val schedule: Flow<BackupSchedule> = context.backupStore.data.map {
-        runCatching { BackupSchedule.valueOf(it[keySchedule] ?: "") }.getOrDefault(BackupSchedule.NONE)
+        runCatching {
+            BackupSchedule.valueOf(
+                it[keySchedule] ?: ""
+            )
+        }.getOrDefault(BackupSchedule.NONE)
     }
     val lastBackupTime: Flow<Long> = context.backupStore.data.map { it[keyLastBackup] ?: 0L }
 
     suspend fun setEnabled(v: Boolean) = context.backupStore.edit { it[keyEnabled] = v }
-    suspend fun setDirectoryUri(uri: String) = context.backupStore.edit { it[keyDirectoryUri] = uri }
-    suspend fun setSchedule(s: BackupSchedule) = context.backupStore.edit { it[keySchedule] = s.name }
+    suspend fun setDirectoryUri(uri: String) =
+        context.backupStore.edit { it[keyDirectoryUri] = uri }
+
+    suspend fun setSchedule(s: BackupSchedule) =
+        context.backupStore.edit { it[keySchedule] = s.name }
+
     suspend fun setLastBackupTime(t: Long) = context.backupStore.edit { it[keyLastBackup] = t }
 
     suspend fun setPassword(password: String) {

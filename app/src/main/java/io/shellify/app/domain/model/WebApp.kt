@@ -38,11 +38,12 @@ data class WebApp(
     val hasLauncherShortcut: Boolean = false,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
-    val iconPath: String? get() = when (val s = iconSource) {
-        is IconSource.Path -> s.path
-        is IconSource.SvgIcon -> s.renderedPath
-        null -> null
-    }
+    val iconPath: String?
+        get() = when (val s = iconSource) {
+            is IconSource.Path -> s.path
+            is IconSource.SvgIcon -> s.renderedPath
+            null -> null
+        }
 }
 
 enum class LockType { NONE, PASSWORD, SYSTEM }

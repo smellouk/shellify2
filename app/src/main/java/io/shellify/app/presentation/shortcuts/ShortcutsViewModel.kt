@@ -15,7 +15,8 @@ import io.shellify.app.core.shortcut.ShortcutIconBuilder
 import io.shellify.app.core.shortcut.SvgIconRenderer
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.domain.repository.WebAppRepository
+import io.shellify.app.domain.usecase.GetWebAppsUseCase
+import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -51,7 +52,8 @@ data class ShortcutsUiState(
 
 class ShortcutsViewModel(
     private val context: Context,
-    private val repo: WebAppRepository,
+    private val getWebApps: GetWebAppsUseCase,
+    private val saveWebApp: SaveWebAppUseCase,
     private val analyzer: PwaAnalyzer,
     private val faviconFetcher: FaviconFetcher,
 ) : ViewModel() {
@@ -59,11 +61,13 @@ class ShortcutsViewModel(
     private val _state = MutableStateFlow(ShortcutsUiState())
     val uiState: StateFlow<ShortcutsUiState> = _state
 
-    init { load() }
+    init {
+        load()
+    }
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
-            val appByIsolationId = repo.getAll().first().associateBy { it.isolationId }
+            val appByIsolationId = getWebApps().first().associateBy { it.isolationId }
             val pinned = PwaShortcutManager.getPinnedShortcuts(context).filter { it.isEnabled }
             val pinnedIds = pinned.map { it.id }.toSet()
             val items = pinned.mapNotNull { shortcut ->
@@ -86,7 +90,9 @@ class ShortcutsViewModel(
 
     // ── Rename ────────────────────────────────────────────────────────────────
 
-    fun startRename(item: ShortcutItem) = _state.update { it.copy(renameTarget = item, renameText = item.label) }
+    fun startRename(item: ShortcutItem) =
+        _state.update { it.copy(renameTarget = item, renameText = item.label) }
+
     fun setRenameText(text: String) = _state.update { it.copy(renameText = text) }
     fun dismissRename() = _state.update { it.copy(renameTarget = null, renameText = "") }
 
@@ -107,19 +113,24 @@ class ShortcutsViewModel(
 
     // ── Icon ──────────────────────────────────────────────────────────────────
 
-    fun showIconSheet(item: ShortcutItem) = _state.update { it.copy(iconSheetTarget = item, iconRefreshState = IconRefreshState.Idle) }
-    fun dismissIconSheet() = _state.update { it.copy(iconSheetTarget = null, iconRefreshState = IconRefreshState.Idle) }
+    fun showIconSheet(item: ShortcutItem) =
+        _state.update { it.copy(iconSheetTarget = item, iconRefreshState = IconRefreshState.Idle) }
+
+    fun dismissIconSheet() =
+        _state.update { it.copy(iconSheetTarget = null, iconRefreshState = IconRefreshState.Idle) }
 
     fun refreshIconFromSource() {
         val item = _state.value.iconSheetTarget ?: return
         _state.update { it.copy(iconRefreshState = IconRefreshState.Loading) }
         viewModelScope.launch(Dispatchers.IO) {
             val success = runCatching {
-                val iconUrl = runCatching { analyzer.analyze(item.app.url).bestIconUrl(item.app.url) }.getOrNull()
+                val iconUrl = runCatching {
+                    analyzer.analyze(item.app.url).bestIconUrl(item.app.url)
+                }.getOrNull()
                 val path = faviconFetcher.fetch(iconUrl, item.app.url, item.app.isolationId)
                     ?: return@runCatching false
                 val updated = item.app.copy(iconSource = IconSource.Path(path))
-                repo.save(updated)
+                saveWebApp(updated)
                 val bitmap = ShortcutIconBuilder.build(context, updated)
                 PwaShortcutManager.changeIcon(context, updated, item.label, bitmap)
                 true
@@ -134,13 +145,31 @@ class ShortcutsViewModel(
     fun openIconPackPicker() {
         val item = _state.value.iconSheetTarget ?: return
         viewModelScope.launch {
-            _state.update { it.copy(isLoadingIconPack = true, showIconPackPicker = true, iconSheetTarget = item) }
+            _state.update {
+                it.copy(
+                    isLoadingIconPack = true,
+                    showIconPackPicker = true,
+                    iconSheetTarget = item
+                )
+            }
             val icons = SimpleIconsReader(context).readAll()
-            _state.update { it.copy(packIcons = icons, isLoadingIconPack = false, iconPickerQuery = "") }
+            _state.update {
+                it.copy(
+                    packIcons = icons,
+                    isLoadingIconPack = false,
+                    iconPickerQuery = ""
+                )
+            }
         }
     }
 
-    fun closeIconPackPicker() = _state.update { it.copy(showIconPackPicker = false, packIcons = emptyList(), iconSheetTarget = null) }
+    fun closeIconPackPicker() = _state.update {
+        it.copy(
+            showIconPackPicker = false,
+            packIcons = emptyList(),
+            iconSheetTarget = null
+        )
+    }
 
     fun setIconPickerQuery(q: String) = _state.update { it.copy(iconPickerQuery = q) }
 
@@ -156,7 +185,7 @@ class ShortcutsViewModel(
                 existingIconPath = item.app.iconPath,
             ) ?: return@launch
             val updated = item.app.copy(iconSource = iconSource)
-            repo.save(updated)
+            saveWebApp(updated)
             val bitmap = ShortcutIconBuilder.build(context, updated)
             PwaShortcutManager.changeIcon(context, updated, item.label, bitmap)
             load()
@@ -170,7 +199,7 @@ class ShortcutsViewModel(
         val scaled = ShortcutIconBuilder.scaleCentered(bitmap)
         val path = saveBitmap(item.app, scaled) ?: return@launch
         val updated = item.app.copy(iconSource = IconSource.Path(path))
-        repo.save(updated)
+        saveWebApp(updated)
         PwaShortcutManager.changeIcon(context, updated, item.label, scaled)
         load()
     }
@@ -179,7 +208,8 @@ class ShortcutsViewModel(
         val dir = File(context.filesDir, "icons").also { it.mkdirs() }
         app.iconPath?.let { File(it).delete() }
         val file = File(dir, "${app.isolationId}_${System.currentTimeMillis()}.png")
-        file.outputStream().use { stream -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream) }
+        file.outputStream()
+            .use { stream -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream) }
         file.absolutePath
     }.getOrNull()
 
@@ -191,7 +221,7 @@ class ShortcutsViewModel(
     fun confirmRemove() {
         val item = _state.value.removeTarget ?: return
         PwaShortcutManager.removeShortcut(context, item.app)
-        viewModelScope.launch { repo.save(item.app.copy(hasLauncherShortcut = false)) }
+        viewModelScope.launch { saveWebApp(item.app.copy(hasLauncherShortcut = false)) }
         _state.update { s ->
             s.copy(
                 removeTarget = null,
@@ -208,7 +238,7 @@ class ShortcutsViewModel(
 
     fun createShortcut(app: WebApp) {
         PwaShortcutManager.createShortcut(context, app)
-        viewModelScope.launch { repo.save(app.copy(hasLauncherShortcut = true)) }
+        viewModelScope.launch { saveWebApp(app.copy(hasLauncherShortcut = true)) }
         _state.update { it.copy(showAddSheet = false) }
         load()
     }

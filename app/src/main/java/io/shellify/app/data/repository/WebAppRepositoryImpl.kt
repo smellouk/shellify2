@@ -28,7 +28,9 @@ class WebAppRepositoryImpl(private val dao: WebAppDao) : WebAppRepository {
     override suspend fun save(app: WebApp): Long {
         val entity = app.toEntity()
         return if (entity.id == 0L) dao.insert(entity)
-        else { dao.update(entity); entity.id }
+        else {
+            dao.update(entity); entity.id
+        }
     }
 
     override suspend fun delete(app: WebApp) = dao.delete(app.toEntity())

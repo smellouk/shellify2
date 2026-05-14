@@ -41,19 +41,20 @@ class CookieJarManager(
     }
 
     /** Call when the user closes the WebView — saves (encrypted) cookies for every visited URL, then clears. */
-    suspend fun saveAndClearFor(isolationId: String, visitedUrls: Set<String>) = withContext(Dispatchers.IO) {
-        // Flush pending writes before reading so no cookie is missed
-        cookieManager.flush()
-        var merged = loadDecrypted(isolationId) ?: ""
-        for (url in visitedUrls) {
-            val cookies = cookieManager.getCookie(url)
-            if (!cookies.isNullOrBlank()) {
-                merged = mergeCookieLines(merged, "$url|$cookies")
+    suspend fun saveAndClearFor(isolationId: String, visitedUrls: Set<String>) =
+        withContext(Dispatchers.IO) {
+            // Flush pending writes before reading so no cookie is missed
+            cookieManager.flush()
+            var merged = loadDecrypted(isolationId) ?: ""
+            for (url in visitedUrls) {
+                val cookies = cookieManager.getCookie(url)
+                if (!cookies.isNullOrBlank()) {
+                    merged = mergeCookieLines(merged, "$url|$cookies")
+                }
             }
+            if (merged.isNotBlank()) saveEncrypted(isolationId, merged)
+            clearAll()
         }
-        if (merged.isNotBlank()) saveEncrypted(isolationId, merged)
-        clearAll()
-    }
 
     /** Permanently wipe all cookies for a given PWA (called on app delete). */
     suspend fun deleteFor(isolationId: String) = withContext(Dispatchers.IO) {
@@ -102,7 +103,8 @@ class CookieJarManager(
 
     private fun mergeCookieLines(existing: String, newLine: String): String {
         val prefix = newLine.substringBefore("|")
-        val lines = existing.split("\n").filter { it.isNotBlank() && !it.startsWith(prefix) }.toMutableList()
+        val lines = existing.split("\n").filter { it.isNotBlank() && !it.startsWith(prefix) }
+            .toMutableList()
         lines += newLine
         return lines.joinToString("\n")
     }

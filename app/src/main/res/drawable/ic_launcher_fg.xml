@@ -21,7 +21,7 @@
         android:fillColor="#FFFFFF"
         android:pathData="M54,82 L22,37 A36,34 0 0,1 32,25 Z
                           M54,82 L46,19 A36,34 0 0,1 62,19 Z
-                          M54,82 L76,25 A36,34 0 0,1 86,37 Z"/>
+                          M54,82 L76,25 A36,34 0 0,1 86,37 Z" />
 
     <!-- Lavender sections: S1 (P0→P1), S3 (P2→P3), S5 (P4→P5), S7 (P6→P7) -->
     <path
@@ -29,14 +29,14 @@
         android:pathData="M54,82 L18,52 A36,34 0 0,1 22,37 Z
                           M54,82 L32,25 A36,34 0 0,1 46,19 Z
                           M54,82 L62,19 A36,34 0 0,1 76,25 Z
-                          M54,82 L86,37 A36,34 0 0,1 90,52 Z"/>
+                          M54,82 L86,37 A36,34 0 0,1 90,52 Z" />
 
     <!-- Shell silhouette outline -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
         android:strokeWidth="2"
-        android:pathData="M54,82 L18,52 A36,34 0 0,1 90,52 Z"/>
+        android:pathData="M54,82 L18,52 A36,34 0 0,1 90,52 Z" />
 
     <!-- Internal rib lines: 6 lines (outer 2 edges covered by outline) -->
     <path
@@ -49,11 +49,11 @@
                           M54,82 L46,19
                           M54,82 L62,19
                           M54,82 L76,25
-                          M54,82 L86,37"/>
+                          M54,82 L86,37" />
 
     <!-- Hinge bump -->
     <path
         android:fillColor="#9A8FBD"
-        android:pathData="M49,82 Q54,90 59,82 Q54,78 49,82 Z"/>
+        android:pathData="M49,82 Q54,90 59,82 Q54,78 49,82 Z" />
 
 </vector>

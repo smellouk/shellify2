@@ -21,7 +21,8 @@ object PwaShortcutManager {
     private fun shortcutId(app: WebApp) = "pwa_${app.isolationId}"
 
     private fun buildIntent(context: Context, appId: Long): Intent {
-        val cls = checkNotNull(shortcutActivityClass) { "PwaShortcutManager.init() must be called before use" }
+        val cls =
+            checkNotNull(shortcutActivityClass) { "PwaShortcutManager.init() must be called before use" }
         return Intent(context, cls).apply {
             action = Intent.ACTION_VIEW
             putExtra(EXTRA_APP_ID, appId)
@@ -44,7 +45,13 @@ object PwaShortcutManager {
 
     fun removeShortcut(context: Context, app: WebApp) {
         val id = shortcutId(app)
-        runCatching { ShortcutManagerCompat.disableShortcuts(context, listOf(id), "This app has been removed") }
+        runCatching {
+            ShortcutManagerCompat.disableShortcuts(
+                context,
+                listOf(id),
+                "This app has been removed"
+            )
+        }
         runCatching { ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id)) }
     }
 
@@ -54,11 +61,21 @@ object PwaShortcutManager {
             .getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
             .any { it.id == id }
         if (alreadyPinned) {
-            ShortcutManagerCompat.enableShortcuts(context, listOf(buildInfo(context, app, app.name)))
-            ShortcutManagerCompat.updateShortcuts(context, listOf(buildInfo(context, app, app.name)))
+            ShortcutManagerCompat.enableShortcuts(
+                context,
+                listOf(buildInfo(context, app, app.name))
+            )
+            ShortcutManagerCompat.updateShortcuts(
+                context,
+                listOf(buildInfo(context, app, app.name))
+            )
             true
         } else {
-            ShortcutManagerCompat.requestPinShortcut(context, buildInfo(context, app, app.name), null)
+            ShortcutManagerCompat.requestPinShortcut(
+                context,
+                buildInfo(context, app, app.name),
+                null
+            )
         }
     }.getOrDefault(false)
 
@@ -67,16 +84,20 @@ object PwaShortcutManager {
     }.getOrDefault(false)
 
     fun refreshIcon(context: Context, app: WebApp, currentLabel: String): Boolean = runCatching {
-        ShortcutManagerCompat.updateShortcuts(context, listOf(buildInfo(context, app, currentLabel)))
+        ShortcutManagerCompat.updateShortcuts(
+            context,
+            listOf(buildInfo(context, app, currentLabel))
+        )
     }.getOrDefault(false)
 
-    fun changeIcon(context: Context, app: WebApp, currentLabel: String, bitmap: Bitmap): Boolean = runCatching {
-        val info = ShortcutInfoCompat.Builder(context, shortcutId(app))
-            .setShortLabel(currentLabel.take(12))
-            .setLongLabel(currentLabel)
-            .setIcon(IconCompat.createWithAdaptiveBitmap(bitmap))
-            .setIntent(buildIntent(context, app.id))
-            .build()
-        ShortcutManagerCompat.updateShortcuts(context, listOf(info))
-    }.getOrDefault(false)
+    fun changeIcon(context: Context, app: WebApp, currentLabel: String, bitmap: Bitmap): Boolean =
+        runCatching {
+            val info = ShortcutInfoCompat.Builder(context, shortcutId(app))
+                .setShortLabel(currentLabel.take(12))
+                .setLongLabel(currentLabel)
+                .setIcon(IconCompat.createWithAdaptiveBitmap(bitmap))
+                .setIntent(buildIntent(context, app.id))
+                .build()
+            ShortcutManagerCompat.updateShortcuts(context, listOf(info))
+        }.getOrDefault(false)
 }

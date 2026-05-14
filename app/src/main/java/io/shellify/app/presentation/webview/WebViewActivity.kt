@@ -118,9 +118,11 @@ class WebViewActivity : FragmentActivity() {
         isolationManager = app.isolationManager
 
         val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
-        if (appId == -1L) { finish(); return }
+        if (appId == -1L) {
+            finish(); return
+        }
 
-        val pwaApp = runBlocking(Dispatchers.IO) { app.webAppRepository.getById(appId) }
+        val pwaApp = runBlocking(Dispatchers.IO) { app.getWebAppById(appId) }
             ?: run { finish(); return }
         currentAppFlow.value = pwaApp
 
@@ -138,15 +140,18 @@ class WebViewActivity : FragmentActivity() {
         engine = when {
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
                 GeckoViewEngine(this, app.geckoEngineManager)
+
             else -> SystemWebViewEngine(app.adBlocker)
         }
 
         container = FrameLayout(this)
         container.setBackgroundColor(
-            pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: Color.BLACK
+            pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                ?: Color.BLACK
         )
 
-        val engineView = engine.createView(this, pwaApp, buildCallback({ currentAppFlow.value }, container))
+        val engineView =
+            engine.createView(this, pwaApp, buildCallback({ currentAppFlow.value }, container))
 
         if (engine is SystemWebViewEngine) {
             val wv = (engine as SystemWebViewEngine).getWebView()
@@ -181,7 +186,11 @@ class WebViewActivity : FragmentActivity() {
         }
         container.addView(
             progressBar,
-            FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, barHeightPx, Gravity.TOP),
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                barHeightPx,
+                Gravity.TOP
+            ),
         )
 
         setContentView(container)
@@ -199,6 +208,7 @@ class WebViewActivity : FragmentActivity() {
                 val hash = runBlocking { app.passwordManager.passwordHash.first() }
                 if (hash != null) showPasswordDialog(app, pwaApp) else startLoading(pwaApp)
             }
+
             LockType.SYSTEM -> showSystemLockWithWipe(app, pwaApp)
         }
     }
@@ -229,13 +239,21 @@ class WebViewActivity : FragmentActivity() {
                     else -> null
                 }
 
-                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
+                ShellifyTheme(
+                    themeMode = themeMode,
+                    dynamicColor = dynamicColor,
+                    controlStatusBar = false
+                ) {
                     AlertDialog(
                         onDismissRequest = { finish() },
                         icon = { Icon(Icons.Default.Lock, null) },
                         title = { Text(pwaApp.name) },
                         text = {
-                            Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.spaceXxs)) {
+                            Column(
+                                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(
+                                    Dimens.spaceXxs
+                                )
+                            ) {
                                 Text(stringResource(R.string.webview_password_prompt))
                                 Spacer(Modifier.height(Dimens.spaceSm))
                                 OutlinedTextField(
@@ -248,7 +266,10 @@ class WebViewActivity : FragmentActivity() {
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                     trailingIcon = {
                                         IconButton(onClick = { visible = !visible }) {
-                                            Icon(if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                                            Icon(
+                                                if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                                null
+                                            )
                                         }
                                     },
                                     isError = error != null,
@@ -324,7 +345,7 @@ class WebViewActivity : FragmentActivity() {
     private fun wipeAndUnlock(app: ShellifyApplication, pwaApp: WebApp) {
         scope.launch(Dispatchers.IO) {
             app.isolationManager.clearData(pwaApp.isolationId)
-            app.webAppRepository.save(pwaApp.copy(lockType = LockType.NONE))
+            app.saveWebApp(pwaApp.copy(lockType = LockType.NONE))
             finish()
         }
     }
@@ -351,11 +372,18 @@ class WebViewActivity : FragmentActivity() {
                 val passwordHash by app.passwordManager.passwordHash.collectAsState(initial = null)
                 val hasGlobalPassword = passwordHash != null
 
-                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
+                ShellifyTheme(
+                    themeMode = themeMode,
+                    dynamicColor = dynamicColor,
+                    controlStatusBar = false
+                ) {
                     var showSheet by remember { mutableStateOf(false) }
 
                     Box(
-                        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(Dimens.spaceLg),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding()
+                            .padding(Dimens.spaceLg),
                         contentAlignment = Alignment.BottomEnd,
                     ) {
                         SmallFloatingActionButton(
@@ -363,7 +391,10 @@ class WebViewActivity : FragmentActivity() {
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         ) {
-                            Icon(Icons.Default.Tune, contentDescription = stringResource(R.string.webview_controls_fab_cd))
+                            Icon(
+                                Icons.Default.Tune,
+                                contentDescription = stringResource(R.string.webview_controls_fab_cd)
+                            )
                         }
                     }
 
@@ -375,9 +406,17 @@ class WebViewActivity : FragmentActivity() {
                             Text(
                                 stringResource(R.string.webview_sheet_title),
                                 style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceXxs),
+                                modifier = Modifier.padding(
+                                    horizontal = Dimens.spaceLg,
+                                    vertical = Dimens.spaceXxs
+                                ),
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm))
+                            HorizontalDivider(
+                                modifier = Modifier.padding(
+                                    horizontal = Dimens.spaceLg,
+                                    vertical = Dimens.spaceSm
+                                )
+                            )
 
                             ListItem(
                                 colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
@@ -389,7 +428,11 @@ class WebViewActivity : FragmentActivity() {
                                         onCheckedChange = { on ->
                                             val updated = pwaApp.copy(adBlockEnabled = on)
                                             currentAppFlow.value = updated
-                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            scope.launch(Dispatchers.IO) {
+                                                app.saveWebApp(
+                                                    updated
+                                                )
+                                            }
                                             engine.getCurrentUrl()?.let { engine.loadUrl(it) }
                                         },
                                     )
@@ -406,9 +449,16 @@ class WebViewActivity : FragmentActivity() {
                                         onCheckedChange = { on ->
                                             val updated = pwaApp.copy(translateEnabled = on)
                                             currentAppFlow.value = updated
-                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            scope.launch(Dispatchers.IO) {
+                                                app.saveWebApp(
+                                                    updated
+                                                )
+                                            }
                                             if (on) {
-                                                engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
+                                                engine.evaluateJavascript(
+                                                    "window.__pwaforgeTranslateLoaded = false;",
+                                                    null
+                                                )
                                                 val script = TranslateBridge.buildScript(
                                                     targetLang = updated.translateTarget.code,
                                                     autoTranslate = true,
@@ -432,7 +482,11 @@ class WebViewActivity : FragmentActivity() {
                                         onCheckedChange = { on ->
                                             val updated = pwaApp.copy(isFullscreen = on)
                                             currentAppFlow.value = updated
-                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            scope.launch(Dispatchers.IO) {
+                                                app.saveWebApp(
+                                                    updated
+                                                )
+                                            }
                                             applyWindowMode(updated)
                                         },
                                     )
@@ -446,14 +500,14 @@ class WebViewActivity : FragmentActivity() {
                                         if (pwaApp.lockType != LockType.NONE) Icons.Default.Lock else Icons.Default.LockOpen,
                                         null,
                                         tint = if (hasGlobalPassword) MaterialTheme.colorScheme.onSurface
-                                               else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                     )
                                 },
                                 headlineContent = {
                                     Text(
                                         stringResource(R.string.webview_control_applock),
                                         color = if (hasGlobalPassword) MaterialTheme.colorScheme.onSurface
-                                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                     )
                                 },
                                 supportingContent = if (!hasGlobalPassword) ({
@@ -471,7 +525,11 @@ class WebViewActivity : FragmentActivity() {
                                                 lockType = if (on) LockType.PASSWORD else LockType.NONE,
                                             )
                                             currentAppFlow.value = updated
-                                            scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
+                                            scope.launch(Dispatchers.IO) {
+                                                app.saveWebApp(
+                                                    updated
+                                                )
+                                            }
                                         },
                                         enabled = hasGlobalPassword,
                                     )
@@ -491,7 +549,10 @@ class WebViewActivity : FragmentActivity() {
         )
     }
 
-    private fun buildCallback(currentApp: () -> WebApp?, container: FrameLayout): BrowserEngineCallback =
+    private fun buildCallback(
+        currentApp: () -> WebApp?,
+        container: FrameLayout
+    ): BrowserEngineCallback =
         object : BrowserEngineCallback {
             override fun onPageStarted(url: String?) {
                 url?.let { visitedUrls += it }
@@ -544,7 +605,8 @@ class WebViewActivity : FragmentActivity() {
             override fun onDownloadStart(
                 url: String, userAgent: String, contentDisposition: String,
                 mimeType: String, contentLength: Long,
-            ) {}
+            ) {
+            }
         }
 
     private fun applyWindowMode(app: WebApp) {
@@ -555,12 +617,23 @@ class WebViewActivity : FragmentActivity() {
         if (fullscreen) {
             val showStatus = app.fullscreenShowStatusBar
             val showNav = app.fullscreenShowNavBar
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             when {
                 showStatus && showNav -> controller.show(WindowInsetsCompat.Type.systemBars())
-                showStatus -> { controller.hide(WindowInsetsCompat.Type.navigationBars()); controller.show(WindowInsetsCompat.Type.statusBars()) }
-                showNav -> { controller.hide(WindowInsetsCompat.Type.statusBars()); controller.show(WindowInsetsCompat.Type.navigationBars()) }
+                showStatus -> {
+                    controller.hide(WindowInsetsCompat.Type.navigationBars()); controller.show(
+                        WindowInsetsCompat.Type.statusBars()
+                    )
+                }
+
+                showNav -> {
+                    controller.hide(WindowInsetsCompat.Type.statusBars()); controller.show(
+                        WindowInsetsCompat.Type.navigationBars()
+                    )
+                }
+
                 else -> controller.hide(WindowInsetsCompat.Type.systemBars())
             }
         } else {
@@ -572,9 +645,11 @@ class WebViewActivity : FragmentActivity() {
     @Suppress("DEPRECATION")
     private fun applyStatusBarColor(themeColor: String?) {
         val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: return
-        val isLight = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
+        val isLight =
+            (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isStatusBarContrastEnforced = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isStatusBarContrastEnforced =
+            false
         window.statusBarColor = color
         // Remove any scrim left over from a previous approach.
         statusBarScrim?.let { container.removeView(it) }
@@ -583,7 +658,8 @@ class WebViewActivity : FragmentActivity() {
 
     @Suppress("DEPRECATION")
     private fun applyTaskDescription(app: WebApp) {
-        val icon: Bitmap? = app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
+        val icon: Bitmap? =
+            app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
         setTaskDescription(ActivityManager.TaskDescription(app.name, icon))
     }
 

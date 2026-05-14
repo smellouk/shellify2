@@ -19,7 +19,8 @@ class SimpleIconsReader(private val context: Context) {
             for (i in 0 until array.length()) {
                 val obj = array.getJSONObject(i)
                 val title = obj.optString("title").takeIf { it.isNotBlank() } ?: continue
-                val slug = obj.optString("slug").takeIf { it.isNotBlank() } ?: slugify(title)
+                val slug =
+                    obj.optString("slug").takeIf { it.isNotBlank() } ?: Companion.slugify(title)
                 val hex = obj.optString("hex").takeIf { it.isNotBlank() } ?: "000000"
                 result.add(SimpleIconEntry(title = title, slug = slug, hex = hex))
             }
@@ -27,11 +28,13 @@ class SimpleIconsReader(private val context: Context) {
         }.getOrDefault(emptyList())
     }
 
-    // Matches simple-icons' own slug derivation algorithm
-    private fun slugify(title: String): String =
-        title.lowercase()
-            .replace("+", "plus")
-            .replace(".", "dot")
-            .replace(" ", "")
-            .replace(Regex("[^a-z0-9]"), "")
+    companion object {
+        // Matches simple-icons' own slug derivation algorithm
+        fun slugify(title: String): String =
+            title.lowercase()
+                .replace("+", "plus")
+                .replace(".", "dot")
+                .replace(" ", "")
+                .replace(Regex("[^a-z0-9]"), "")
+    }
 }

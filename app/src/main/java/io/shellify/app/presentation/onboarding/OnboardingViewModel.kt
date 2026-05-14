@@ -59,13 +59,13 @@ class OnboardingViewModel(
         viewModelScope.launch {
             _state.update {
                 it.copy(
-                    page             = themeManager.onboardingPage.first(),
-                    passwordSet      = passwordManager.passwordHash.first() != null,
-                    backupEnabled    = backupSettings.enabled.first(),
+                    page = themeManager.onboardingPage.first(),
+                    passwordSet = passwordManager.passwordHash.first() != null,
+                    backupEnabled = backupSettings.enabled.first(),
                     backupDirectoryUri = backupSettings.directoryUri.first(),
-                    backupSchedule   = backupSettings.schedule.first(),
-                    accentColor      = themeManager.accentColor.first(),
-                    themeMode        = themeManager.themeMode.first(),
+                    backupSchedule = backupSettings.schedule.first(),
+                    accentColor = themeManager.accentColor.first(),
+                    themeMode = themeManager.themeMode.first(),
                 )
             }
         }
@@ -112,7 +112,7 @@ class OnboardingViewModel(
         _state.update { s ->
             s.copy(
                 pickedAppIds = if (id in s.pickedAppIds) s.pickedAppIds - id
-                               else s.pickedAppIds + id,
+                else s.pickedAppIds + id,
             )
         }
     }
@@ -137,7 +137,9 @@ class OnboardingViewModel(
                                         ?: manifest.shortName?.takeIf { it.isNotBlank() }
                                         ?: name,
                                     url = fullUrl,
-                                    iconSource = io.shellify.app.domain.model.IconSource.fromLegacyPath(fetchedIconPath),
+                                    iconSource = io.shellify.app.domain.model.IconSource.fromLegacyPath(
+                                        fetchedIconPath
+                                    ),
                                     themeColor = manifest.themeColor,
                                     backgroundColor = manifest.backgroundColor,
                                     description = manifest.description,

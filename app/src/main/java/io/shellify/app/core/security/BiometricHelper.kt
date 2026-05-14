@@ -14,14 +14,18 @@ fun showSystemLockPrompt(
     onFailed: () -> Unit,
 ) {
     val executor = ContextCompat.getMainExecutor(activity)
-    val prompt = BiometricPrompt(activity, executor, object : BiometricPrompt.AuthenticationCallback() {
-        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) = onSuccess()
-        override fun onAuthenticationError(code: Int, msg: CharSequence) {
-            if (code != BiometricPrompt.ERROR_USER_CANCELED && code != BiometricPrompt.ERROR_NEGATIVE_BUTTON)
-                onFailed()
-        }
-        override fun onAuthenticationFailed() = onFailed()
-    })
+    val prompt =
+        BiometricPrompt(activity, executor, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) =
+                onSuccess()
+
+            override fun onAuthenticationError(code: Int, msg: CharSequence) {
+                if (code != BiometricPrompt.ERROR_USER_CANCELED && code != BiometricPrompt.ERROR_NEGATIVE_BUTTON)
+                    onFailed()
+            }
+
+            override fun onAuthenticationFailed() = onFailed()
+        })
     val info = BiometricPrompt.PromptInfo.Builder()
         .setTitle(title)
         .setSubtitle("Authenticate to open this app")

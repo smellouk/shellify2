@@ -1,6 +1,5 @@
 package io.shellify.app.core.security
 
-import android.util.Base64
 import java.security.MessageDigest
 import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
@@ -15,16 +14,20 @@ private const val V2_PREFIX = "v2:"
  * Hash a password with PBKDF2-HMAC-SHA256 + random salt.
  * Output format: "v2:<base64(salt)>:<base64(hash)>"
  */
-fun hashPassword(password: String): String {
+fun hashPassword(password: String, codec: Base64Codec = StandardBase64Codec): String {
     val salt = ByteArray(SALT_LENGTH).also { SecureRandom().nextBytes(it) }
     val hash = deriveKey(password, salt)
-    val saltB64 = Base64.encodeToString(salt, Base64.NO_WRAP)
-    val hashB64 = Base64.encodeToString(hash, Base64.NO_WRAP)
+    val saltB64 = codec.encode(salt)
+    val hashB64 = codec.encode(hash)
     return "$V2_PREFIX$saltB64:$hashB64"
 }
 
-fun verifyPassword(input: String, stored: String): Boolean = when {
-    stored.startsWith(V2_PREFIX) -> verifyPbkdf2(input, stored)
+fun verifyPassword(
+    input: String,
+    stored: String,
+    codec: Base64Codec = StandardBase64Codec
+): Boolean = when {
+    stored.startsWith(V2_PREFIX) -> verifyPbkdf2(input, stored, codec)
     else -> verifyLegacySha256(input, stored)   // migrate on next setPassword call
 }
 
@@ -33,11 +36,11 @@ fun isLegacyHash(stored: String): Boolean = !stored.startsWith(V2_PREFIX)
 
 // ── internal ─────────────────────────────────────────────────────────────────
 
-private fun verifyPbkdf2(input: String, stored: String): Boolean {
+private fun verifyPbkdf2(input: String, stored: String, codec: Base64Codec): Boolean {
     val parts = stored.removePrefix(V2_PREFIX).split(":")
     if (parts.size != 2) return false
-    val salt = runCatching { Base64.decode(parts[0], Base64.NO_WRAP) }.getOrNull() ?: return false
-    val expected = runCatching { Base64.decode(parts[1], Base64.NO_WRAP) }.getOrNull() ?: return false
+    val salt = runCatching { codec.decode(parts[0]) }.getOrNull() ?: return false
+    val expected = runCatching { codec.decode(parts[1]) }.getOrNull() ?: return false
     val actual = deriveKey(input, salt)
     return MessageDigest.isEqual(actual, expected)
 }

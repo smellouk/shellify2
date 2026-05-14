@@ -27,10 +27,12 @@ object ShortcutIconBuilder {
                 if (rendered != null) buildAdaptiveSvg(src.background, rendered)
                 else fallback(context, app)
             }
+
             is IconSource.Path -> {
                 val bmp = loadFile(src.path)
                 if (bmp != null) buildAdaptivePath(bmp) else fallback(context, app)
             }
+
             null -> fallback(context, app)
         }
     }
@@ -69,13 +71,15 @@ object ShortcutIconBuilder {
     }
 
     fun buildFromSlug(context: Context, slug: String, bgColorArgb: Int): Bitmap {
-        val svgBitmap = fetchSvgBitmap(context, slug, SVG_ICON_SIZE) ?: return generateLetterAvatar("?", null)
+        val svgBitmap =
+            fetchSvgBitmap(context, slug, SVG_ICON_SIZE) ?: return generateLetterAvatar("?", null)
         return buildAdaptiveSvg("#%06X".format(0xFFFFFF and bgColorArgb), svgBitmap)
     }
 
     private fun buildSvgIcon(context: Context, src: IconSource.SvgIcon): Bitmap {
         val svgBitmap = fetchSvgBitmap(context, src.slug, SVG_ICON_SIZE)
-        val bgColor = runCatching { Color.parseColor(src.background) }.getOrDefault(0xFF1976D2.toInt())
+        val bgColor =
+            runCatching { Color.parseColor(src.background) }.getOrDefault(0xFF1976D2.toInt())
         val out = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
         canvas.drawColor(bgColor)

@@ -39,11 +39,19 @@ class ThemeManager(private val context: Context) {
     }
 
     val defaultUaMode: Flow<UserAgentMode> = context.themeStore.data.map { prefs ->
-        runCatching { UserAgentMode.valueOf(prefs[keyDefaultUa] ?: "") }.getOrDefault(UserAgentMode.CHROME_MOBILE)
+        runCatching {
+            UserAgentMode.valueOf(
+                prefs[keyDefaultUa] ?: ""
+            )
+        }.getOrDefault(UserAgentMode.CHROME_MOBILE)
     }
 
     val defaultEngineType: Flow<EngineType> = context.themeStore.data.map { prefs ->
-        runCatching { EngineType.valueOf(prefs[keyDefaultEngine] ?: "") }.getOrDefault(EngineType.SYSTEM_WEBVIEW)
+        runCatching {
+            EngineType.valueOf(
+                prefs[keyDefaultEngine] ?: ""
+            )
+        }.getOrDefault(EngineType.SYSTEM_WEBVIEW)
     }
 
     private val keyAccentColor = stringPreferencesKey("accent_color")
@@ -86,11 +94,17 @@ class ThemeManager(private val context: Context) {
     private val keyOnboardingDone = booleanPreferencesKey("onboarding_done")
     private val keyOnboardingPage = intPreferencesKey("onboarding_page")
 
-    val onboardingDone: Flow<Boolean> = context.themeStore.data.map { it[keyOnboardingDone] ?: false }
+    val onboardingDone: Flow<Boolean> =
+        context.themeStore.data.map { it[keyOnboardingDone] ?: false }
     val onboardingPage: Flow<Int> = context.themeStore.data.map { it[keyOnboardingPage] ?: 0 }
 
-    suspend fun setOnboardingDone() { context.themeStore.edit { it[keyOnboardingDone] = true } }
-    suspend fun saveOnboardingPage(p: Int) { context.themeStore.edit { it[keyOnboardingPage] = p } }
+    suspend fun setOnboardingDone() {
+        context.themeStore.edit { it[keyOnboardingDone] = true }
+    }
+
+    suspend fun saveOnboardingPage(p: Int) {
+        context.themeStore.edit { it[keyOnboardingPage] = p }
+    }
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */
     suspend fun reloadFromFile(restoredFile: File) {

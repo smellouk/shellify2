@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.domain.repository.WebAppRepository
+import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +18,7 @@ data class TranslateConfigUiState(
 
 class TranslateConfigViewModel(
     private val appId: Long,
-    private val repo: WebAppRepository,
+    private val getWebAppById: GetWebAppByIdUseCase,
     private val saveWebApp: SaveWebAppUseCase,
 ) : ViewModel() {
 
@@ -27,7 +27,7 @@ class TranslateConfigViewModel(
 
     init {
         viewModelScope.launch {
-            _state.update { it.copy(app = repo.getById(appId), isLoading = false) }
+            _state.update { it.copy(app = getWebAppById(appId), isLoading = false) }
         }
     }
 

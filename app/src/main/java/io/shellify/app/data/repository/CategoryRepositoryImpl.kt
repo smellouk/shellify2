@@ -15,7 +15,9 @@ class CategoryRepositoryImpl(private val dao: CategoryDao) : CategoryRepository 
     override suspend fun save(category: Category): Long {
         val entity = category.toEntity()
         return if (entity.id == 0L) dao.insert(entity)
-        else { dao.update(entity); entity.id }
+        else {
+            dao.update(entity); entity.id
+        }
     }
 
     override suspend fun delete(category: Category) = dao.delete(category.toEntity())

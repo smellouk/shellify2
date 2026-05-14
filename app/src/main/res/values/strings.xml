@@ -338,7 +338,7 @@
 
     <!-- Language -->
     <string name="language_dialog_title">Language</string>
-<string name="language_change_cd">Change language</string>
+    <string name="language_change_cd">Change language</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip_setup">Skip setup</string>

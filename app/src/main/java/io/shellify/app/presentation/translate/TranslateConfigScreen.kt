@@ -48,14 +48,23 @@ fun TranslateConfigScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.translate_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back)) }
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            stringResource(R.string.common_back)
+                        )
+                    }
                 },
             )
         },
     ) { padding ->
         if (app == null) return@Scaffold
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(Dimens.spaceLg),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.spaceLg),
         ) {
             // Language selector
             ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -65,7 +74,9 @@ fun TranslateConfigScreen(
                     readOnly = true,
                     label = { Text(stringResource(R.string.translate_target_language)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable).padding(bottom = Dimens.spaceLg),
+                    modifier = Modifier
+                        .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable)
+                        .padding(bottom = Dimens.spaceLg),
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     TranslateLanguage.entries.forEach { lang ->
@@ -83,7 +94,10 @@ fun TranslateConfigScreen(
                 headlineContent = { Text(stringResource(R.string.translate_auto)) },
                 supportingContent = { Text(stringResource(R.string.translate_auto_desc)) },
                 trailingContent = {
-                    Switch(checked = app.autoTranslateOnLoad, onCheckedChange = viewModel::setAutoTranslate)
+                    Switch(
+                        checked = app.autoTranslateOnLoad,
+                        onCheckedChange = viewModel::setAutoTranslate
+                    )
                 },
             )
         }

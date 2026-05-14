@@ -115,6 +115,7 @@ import io.shellify.app.domain.model.PwaManifest
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.home.AppIcon
+import io.shellify.app.presentation.components.SurfaceCard
 import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.webview.WebViewActivity
 import kotlinx.coroutines.launch
@@ -189,23 +190,30 @@ fun AddScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            stringResource(R.string.common_back)
+                        )
                     }
                 },
                 actions = {
-                    val canRun = state.url.isNotBlank() && state.name.isNotBlank() && !state.isSaving && state.duplicateError == null
+                    val canRun =
+                        state.url.isNotBlank() && state.name.isNotBlank() && !state.isSaving && state.duplicateError == null
                     IconButton(
                         onClick = { viewModel.run() },
                         enabled = canRun,
                     ) {
                         if (state.isSaving && state.launchAppId == null) {
-                            CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeMd), strokeWidth = Dimens.strokeMd)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimens.sizeMd),
+                                strokeWidth = Dimens.strokeMd
+                            )
                         } else {
                             Icon(
                                 Icons.Default.PlayArrow,
                                 contentDescription = stringResource(R.string.add_run_app_cd),
                                 tint = if (canRun) MaterialTheme.colorScheme.primary
-                                       else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                             )
                         }
                     }
@@ -219,9 +227,15 @@ fun AddScreen(
                         enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving && state.duplicateError == null,
                     ) {
                         if (state.isSaving && state.launchAppId != null) {
-                            CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeXs), strokeWidth = Dimens.strokeMd)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimens.sizeXs),
+                                strokeWidth = Dimens.strokeMd
+                            )
                         } else {
-                            Text(stringResource(R.string.common_save), fontWeight = FontWeight.SemiBold)
+                            Text(
+                                stringResource(R.string.common_save),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 },
@@ -238,7 +252,11 @@ fun AddScreen(
         ) {
             // ── Basic Info card ───────────────────────────────────────────────
             SectionCard {
-                Text(stringResource(R.string.add_basic_info), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(R.string.add_basic_info),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
                 Spacer(Modifier.height(Dimens.spaceSm))
 
                 // 1. URL + inline Analyze
@@ -246,12 +264,24 @@ fun AddScreen(
                     value = state.url,
                     onValueChange = viewModel::setUrl,
                     label = { Text(stringResource(R.string.add_url_label)) },
-                    leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Link,
+                            null,
+                            modifier = Modifier.size(Dimens.sizeMd)
+                        )
+                    },
                     placeholder = { Text(stringResource(R.string.add_url_hint)) },
                     isError = state.urlError != null,
                     supportingText = when {
                         state.urlError != null -> ({ Text(state.urlError!!) })
-                        state.analyzeError != null -> ({ Text(state.analyzeError!!, color = MaterialTheme.colorScheme.error) })
+                        state.analyzeError != null -> ({
+                            Text(
+                                state.analyzeError!!,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        })
+
                         else -> null
                     },
                     trailingIcon = {
@@ -260,13 +290,16 @@ fun AddScreen(
                             enabled = state.url.isNotBlank() && !state.isAnalyzing,
                         ) {
                             if (state.isAnalyzing) {
-                                CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeMd), strokeWidth = Dimens.strokeMd)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(Dimens.sizeMd),
+                                    strokeWidth = Dimens.strokeMd
+                                )
                             } else {
                                 Icon(
                                     Icons.Default.TravelExplore,
                                     contentDescription = stringResource(R.string.add_analyze_site_cd),
                                     tint = if (state.url.isNotBlank()) MaterialTheme.colorScheme.primary
-                                           else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                 )
                             }
                         }
@@ -283,7 +316,13 @@ fun AddScreen(
                     value = state.name,
                     onValueChange = viewModel::setName,
                     label = { Text(stringResource(R.string.add_name_label)) },
-                    leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.PhoneAndroid,
+                            null,
+                            modifier = Modifier.size(Dimens.sizeMd)
+                        )
+                    },
                     isError = state.nameError != null || state.duplicateError != null,
                     supportingText = {
                         when {
@@ -311,7 +350,11 @@ fun AddScreen(
                             .size(Dimens.sizeIconPreview)
                             .clip(RoundedCornerShape(Dimens.cornerIcon))
                             .background(MaterialTheme.colorScheme.primaryContainer)
-                            .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(Dimens.cornerIcon)),
+                            .border(
+                                Dimens.borderDefault,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                RoundedCornerShape(Dimens.cornerIcon)
+                            ),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (previewIconPath != null) {
@@ -322,18 +365,24 @@ fun AddScreen(
                                     .build(),
                                 contentDescription = state.name,
                                 contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(Dimens.cornerIcon)),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(Dimens.cornerIcon)),
                             )
                         } else if (state.name.isNotBlank()) {
                             AppIcon(
-                                app = WebApp(name = state.name, url = state.url,
-                                    iconSource = null, themeColor = state.themeColor),
+                                app = WebApp(
+                                    name = state.name, url = state.url,
+                                    iconSource = null, themeColor = state.themeColor
+                                ),
                                 modifier = Modifier.fillMaxSize(),
                             )
                         } else {
-                            Icon(Icons.Default.PhoneAndroid, null,
+                            Icon(
+                                Icons.Default.PhoneAndroid, null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(Dimens.size2xl))
+                                modifier = Modifier.size(Dimens.size2xl)
+                            )
                         }
                     }
 
@@ -349,9 +398,16 @@ fun AddScreen(
                         ),
                     ) {
                         if (state.isFetchingIcon) {
-                            CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeTagIcon), strokeWidth = Dimens.strokeSm)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(Dimens.sizeTagIcon),
+                                strokeWidth = Dimens.strokeSm
+                            )
                         } else {
-                            Icon(Icons.Default.Language, stringResource(R.string.add_fetch_icon_cd), modifier = Modifier.size(Dimens.sizeXs))
+                            Icon(
+                                Icons.Default.Language,
+                                stringResource(R.string.add_fetch_icon_cd),
+                                modifier = Modifier.size(Dimens.sizeXs)
+                            )
                         }
                     }
 
@@ -367,7 +423,11 @@ fun AddScreen(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                     ) {
-                        Icon(Icons.Default.Image, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(Dimens.sizeXs))
+                        Icon(
+                            Icons.Default.Image,
+                            stringResource(R.string.add_choose_image_cd),
+                            modifier = Modifier.size(Dimens.sizeXs)
+                        )
                     }
 
                     if (state.iconPackAvailable) {
@@ -381,7 +441,11 @@ fun AddScreen(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             ),
                         ) {
-                            Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(Dimens.sizeXs))
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                null,
+                                modifier = Modifier.size(Dimens.sizeXs)
+                            )
                         }
                     }
 
@@ -391,7 +455,11 @@ fun AddScreen(
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(Dimens.cornerLg))
-                            .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(Dimens.cornerLg))
+                            .border(
+                                Dimens.borderDefault,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                RoundedCornerShape(Dimens.cornerLg)
+                            )
                             .clickable { showColorPicker = true }
                             .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
                         verticalAlignment = Alignment.CenterVertically,
@@ -409,8 +477,10 @@ fun AddScreen(
                                 ),
                         )
                         Column {
-                            Text(themeColorLabel, style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Medium)
+                            Text(
+                                themeColorLabel, style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium
+                            )
                             Text(
                                 state.themeColor ?: themeColorNotSet,
                                 style = MaterialTheme.typography.labelSmall,
@@ -423,20 +493,34 @@ fun AddScreen(
 
             // ── Feature cards ────────────────────────────────────────────────
 
-            FeatureCard(Icons.Default.Shield, stringResource(R.string.add_feature_adblock), state.adBlockEnabled, viewModel::setAdBlock) {
-                Text(stringResource(R.string.add_feature_adblock_desc),
+            FeatureCard(
+                Icons.Default.Shield,
+                stringResource(R.string.add_feature_adblock),
+                state.adBlockEnabled,
+                viewModel::setAdBlock
+            ) {
+                Text(
+                    stringResource(R.string.add_feature_adblock_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(Modifier.height(Dimens.spaceMd))
-                SubToggleRow(stringResource(R.string.add_adblock_user_toggle),
+                SubToggleRow(
+                    stringResource(R.string.add_adblock_user_toggle),
                     stringResource(R.string.add_adblock_user_toggle_desc),
-                    state.adBlockAllowUserToggle, viewModel::setAdBlockAllowUserToggle)
+                    state.adBlockAllowUserToggle, viewModel::setAdBlockAllowUserToggle
+                )
                 Spacer(Modifier.height(Dimens.spaceMd))
-                Text(stringResource(R.string.add_adblock_custom_rules_label), style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium)
+                Text(
+                    stringResource(R.string.add_adblock_custom_rules_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium
+                )
                 Spacer(Modifier.height(Dimens.spaceSm))
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)
+                ) {
                     OutlinedTextField(
                         value = state.adBlockCustomRuleInput,
                         onValueChange = viewModel::setAdBlockCustomRuleInput,
@@ -445,9 +529,12 @@ fun AddScreen(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(Dimens.cornerMd),
                     )
-                    FilledIconButton(onClick = viewModel::addAdBlockCustomRule, shape = CircleShape,
+                    FilledIconButton(
+                        onClick = viewModel::addAdBlockCustomRule, shape = CircleShape,
                         colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary)) {
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
                         Icon(Icons.Default.Add, stringResource(R.string.add_adblock_add_rule_cd))
                     }
                 }
@@ -455,12 +542,19 @@ fun AddScreen(
                     Spacer(Modifier.height(Dimens.spaceSm))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                         state.adBlockCustomRules.forEach { rule ->
-                            InputChip(selected = false, onClick = {},
+                            InputChip(
+                                selected = false, onClick = {},
                                 label = { Text(rule, style = MaterialTheme.typography.bodySmall) },
                                 trailingIcon = {
-                                    IconButton(onClick = { viewModel.removeAdBlockCustomRule(rule) },
-                                        modifier = Modifier.size(Dimens.sizeSm)) {
-                                        Icon(Icons.Default.Close, stringResource(R.string.common_remove), modifier = Modifier.size(Dimens.space14))
+                                    IconButton(
+                                        onClick = { viewModel.removeAdBlockCustomRule(rule) },
+                                        modifier = Modifier.size(Dimens.sizeSm)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            stringResource(R.string.common_remove),
+                                            modifier = Modifier.size(Dimens.space14)
+                                        )
                                     }
                                 })
                         }
@@ -468,32 +562,58 @@ fun AddScreen(
                 }
             }
 
-            FeatureCard(Icons.Default.GTranslate, stringResource(R.string.add_feature_translate), state.translateEnabled, viewModel::setTranslate) {
-                Text(stringResource(R.string.add_feature_translate_desc),
+            FeatureCard(
+                Icons.Default.GTranslate,
+                stringResource(R.string.add_feature_translate),
+                state.translateEnabled,
+                viewModel::setTranslate
+            ) {
+                Text(
+                    stringResource(R.string.add_feature_translate_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(Modifier.height(Dimens.spaceLg))
-                LangDropdown(stringResource(R.string.add_translate_target_lang), state.translateTarget,
-                    TranslateLanguage.entries, { it.displayName }, viewModel::setTranslateTarget)
+                LangDropdown(
+                    stringResource(R.string.add_translate_target_lang),
+                    state.translateTarget,
+                    TranslateLanguage.entries,
+                    { it.displayName },
+                    viewModel::setTranslateTarget
+                )
                 Spacer(Modifier.height(Dimens.spaceMd))
-                SubToggleRow(stringResource(R.string.add_translate_auto_load),
+                SubToggleRow(
+                    stringResource(R.string.add_translate_auto_load),
                     stringResource(R.string.add_translate_auto_load_desc),
-                    state.autoTranslateOnLoad, viewModel::setAutoTranslateOnLoad)
+                    state.autoTranslateOnLoad, viewModel::setAutoTranslateOnLoad
+                )
             }
 
-            FeatureCard(Icons.Default.Fullscreen, stringResource(R.string.add_feature_fullscreen), state.isFullscreen, viewModel::setFullscreen) {
-                SubToggleRow(stringResource(R.string.add_fullscreen_status_bar),
+            FeatureCard(
+                Icons.Default.Fullscreen,
+                stringResource(R.string.add_feature_fullscreen),
+                state.isFullscreen,
+                viewModel::setFullscreen
+            ) {
+                SubToggleRow(
+                    stringResource(R.string.add_fullscreen_status_bar),
                     stringResource(R.string.add_fullscreen_status_bar_desc),
-                    state.fullscreenShowStatusBar, viewModel::setFullscreenShowStatusBar)
-                SubToggleRow(stringResource(R.string.add_fullscreen_nav_bar),
+                    state.fullscreenShowStatusBar, viewModel::setFullscreenShowStatusBar
+                )
+                SubToggleRow(
+                    stringResource(R.string.add_fullscreen_nav_bar),
                     stringResource(R.string.add_fullscreen_nav_bar_desc),
-                    state.fullscreenShowNavBar, viewModel::setFullscreenShowNavBar)
-                SubToggleRow(stringResource(R.string.add_fullscreen_top_toolbar),
+                    state.fullscreenShowNavBar, viewModel::setFullscreenShowNavBar
+                )
+                SubToggleRow(
+                    stringResource(R.string.add_fullscreen_top_toolbar),
                     stringResource(R.string.add_fullscreen_top_toolbar_desc),
-                    state.fullscreenShowTopToolbar, viewModel::setFullscreenShowTopToolbar)
+                    state.fullscreenShowTopToolbar, viewModel::setFullscreenShowTopToolbar
+                )
             }
 
-            FeatureCard(Icons.Default.Lock, stringResource(R.string.add_feature_applock),
+            FeatureCard(
+                Icons.Default.Lock, stringResource(R.string.add_feature_applock),
                 enabled = state.lockType != io.shellify.app.domain.model.LockType.NONE,
                 onToggle = { on ->
                     viewModel.setLockType(if (on) io.shellify.app.domain.model.LockType.PASSWORD else io.shellify.app.domain.model.LockType.NONE)
@@ -504,7 +624,10 @@ fun AddScreen(
                     io.shellify.app.domain.model.LockType.SYSTEM to lockSystemLabel,
                 ).forEach { (type, label) ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().clickable { viewModel.setLockType(type) }.padding(vertical = Dimens.spaceXxs),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { viewModel.setLockType(type) }
+                            .padding(vertical = Dimens.spaceXxs),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                     ) {
@@ -589,7 +712,11 @@ internal fun SimpleIconPickerSheet(
             stringResource(R.string.add_icon_pack_picker_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+            modifier = Modifier.padding(
+                start = Dimens.spaceLg,
+                end = Dimens.spaceLg,
+                bottom = Dimens.spaceSm
+            ),
         )
         Column(
             modifier = Modifier.padding(horizontal = Dimens.spaceLg),
@@ -599,7 +726,13 @@ internal fun SimpleIconPickerSheet(
                 value = query,
                 onValueChange = onQueryChange,
                 placeholder = { Text(stringResource(R.string.add_icon_pack_search_hint)) },
-                leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        null,
+                        modifier = Modifier.size(Dimens.sizeMd)
+                    )
+                },
                 singleLine = true,
                 shape = RoundedCornerShape(Dimens.cornerMd),
                 colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
@@ -613,11 +746,16 @@ internal fun SimpleIconPickerSheet(
                 shape = RoundedCornerShape(Dimens.cornerXl),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                border = BorderStroke(
+                    Dimens.borderDefault,
+                    MaterialTheme.colorScheme.outlineVariant
+                ),
             ) {
                 if (isLoading) {
                     Box(
-                        modifier = Modifier.fillMaxWidth().height(Dimens.heroHeightSm),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.heroHeightSm),
                         contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
@@ -625,7 +763,9 @@ internal fun SimpleIconPickerSheet(
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(Dimens.sizeEmptyIcon),
-                        modifier = Modifier.fillMaxWidth().padding(Dimens.spaceSm),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(Dimens.spaceSm),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                         verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                     ) {
@@ -692,24 +832,36 @@ private fun PwaAnalysisDialog(
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Default.CheckCircle, null, tint = Color.White,
-                        modifier = Modifier.size(Dimens.sizeMd))
+                    Icon(
+                        Icons.Default.CheckCircle, null, tint = Color.White,
+                        modifier = Modifier.size(Dimens.sizeMd)
+                    )
                 }
                 Spacer(Modifier.width(Dimens.spaceMd))
-                Text(stringResource(R.string.add_pwa_config_detected),
+                Text(
+                    stringResource(R.string.add_pwa_config_detected),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f))
+                    modifier = Modifier.weight(1f)
+                )
                 IconButton(onClick = onDismiss, modifier = Modifier.size(Dimens.size4xl)) {
-                    Icon(Icons.Default.Close, stringResource(R.string.add_dismiss_cd), modifier = Modifier.size(Dimens.sizeSm))
+                    Icon(
+                        Icons.Default.Close,
+                        stringResource(R.string.add_dismiss_cd),
+                        modifier = Modifier.size(Dimens.sizeSm)
+                    )
                 }
             }
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                val source = if (manifest.display != null || manifest.icons.isNotEmpty()) "manifest.json" else "meta tags"
-                Text(stringResource(R.string.add_manifest_source, source), style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val source =
+                    if (manifest.display != null || manifest.icons.isNotEmpty()) "manifest.json" else "meta tags"
+                Text(
+                    stringResource(R.string.add_manifest_source, source),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(Modifier.height(Dimens.spaceSm))
                 HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                 Spacer(Modifier.height(Dimens.spaceSm))
@@ -721,26 +873,52 @@ private fun PwaAnalysisDialog(
                     ManifestRow(stringResource(R.string.add_manifest_icon_label), url, maxLines = 2)
                 }
                 manifest.themeColor?.let { hex ->
-                    Row(verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = Dimens.spaceXxs)) {
-                        Text(stringResource(R.string.add_manifest_color_label), style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = Dimens.spaceXxs)
+                    ) {
+                        Text(
+                            stringResource(R.string.add_manifest_color_label),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
                         Spacer(Modifier.width(Dimens.spaceXs))
                         val parsed = runCatching {
                             Color(android.graphics.Color.parseColor(hex))
                         }.getOrNull()
                         if (parsed != null) {
-                            Box(modifier = Modifier.size(Dimens.sizeSm).clip(RoundedCornerShape(Dimens.cornerXxs))
-                                .background(parsed)
-                                .border(Dimens.borderHair, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(Dimens.cornerXxs)))
+                            Box(
+                                modifier = Modifier
+                                    .size(Dimens.sizeSm)
+                                    .clip(RoundedCornerShape(Dimens.cornerXxs))
+                                    .background(parsed)
+                                    .border(
+                                        Dimens.borderHair,
+                                        MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                                        RoundedCornerShape(Dimens.cornerXxs)
+                                    )
+                            )
                             Spacer(Modifier.width(Dimens.spaceXs))
                         }
-                        Text(hex, style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            hex, style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-                manifest.display?.let { ManifestRow(stringResource(R.string.add_manifest_display_label), it) }
-                manifest.startUrl?.let { ManifestRow(stringResource(R.string.add_manifest_start_url_label), it, maxLines = 2) }
+                manifest.display?.let {
+                    ManifestRow(
+                        stringResource(R.string.add_manifest_display_label),
+                        it
+                    )
+                }
+                manifest.startUrl?.let {
+                    ManifestRow(
+                        stringResource(R.string.add_manifest_start_url_label),
+                        it,
+                        maxLines = 2
+                    )
+                }
             }
         },
         confirmButton = {
@@ -759,12 +937,17 @@ private fun PwaAnalysisDialog(
 
 @Composable
 private fun ManifestRow(label: String, value: String, maxLines: Int = 1) {
-    Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(vertical = Dimens.spaceXxs)) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        modifier = Modifier.padding(vertical = Dimens.spaceXxs)
+    ) {
         Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
         Spacer(Modifier.width(Dimens.spaceXs))
-        Text(value, style = MaterialTheme.typography.bodyMedium,
+        Text(
+            value, style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = maxLines, overflow = TextOverflow.Ellipsis)
+            maxLines = maxLines, overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -786,14 +969,31 @@ internal fun ColorPickerDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceLg)) {
                 // Preview swatch
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)) {
-                    Box(modifier = Modifier.size(Dimens.sizeApp).clip(RoundedCornerShape(Dimens.cornerLg))
-                        .background(runCatching { Color(android.graphics.Color.parseColor(selected)) }
-                            .getOrDefault(MaterialTheme.colorScheme.primary))
-                        .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(Dimens.cornerLg)))
-                    Text(selected, style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(Dimens.sizeApp)
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
+                            .background(runCatching {
+                                Color(
+                                    android.graphics.Color.parseColor(
+                                        selected
+                                    )
+                                )
+                            }
+                                .getOrDefault(MaterialTheme.colorScheme.primary))
+                            .border(
+                                Dimens.borderDefault,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                RoundedCornerShape(Dimens.cornerLg)
+                            ))
+                    Text(
+                        selected, style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
                 // Preset grid
@@ -810,7 +1010,11 @@ internal fun ColorPickerDialog(
                                 .clip(CircleShape)
                                 .background(color)
                                 .border(
-                                    if (selected.equals(hex, ignoreCase = true)) Dimens.borderSelected else Dimens.borderHair,
+                                    if (selected.equals(
+                                            hex,
+                                            ignoreCase = true
+                                        )
+                                    ) Dimens.borderSelected else Dimens.borderHair,
                                     if (selected.equals(hex, ignoreCase = true))
                                         MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
@@ -849,14 +1053,8 @@ internal fun ColorPickerDialog(
 // ── Reusable layout components ────────────────────────────────────────────────
 
 @Composable
-private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant)) {
-        Column(modifier = Modifier.padding(Dimens.spaceLg), content = content)
-    }
-}
+private fun SectionCard(content: @Composable ColumnScope.() -> Unit) =
+    SurfaceCard { Column(modifier = Modifier.padding(Dimens.spaceLg), content = content) }
 
 @Composable
 private fun FeatureCard(
@@ -866,29 +1064,57 @@ private fun FeatureCard(
     onToggle: (Boolean) -> Unit,
     expandedContent: @Composable ColumnScope.() -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
+    Card(
+        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant)) {
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant)
+    ) {
         Column {
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
-                verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(Dimens.sizeCard).clip(RoundedCornerShape(Dimens.cornerMd))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center) {
-                    Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(Dimens.sizeLg))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(Dimens.sizeCard)
+                        .clip(RoundedCornerShape(Dimens.cornerMd))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(Dimens.sizeLg)
+                    )
                 }
                 Spacer(Modifier.width(Dimens.spaceMd))
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium,
-                    modifier = Modifier.weight(1f))
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
+                )
                 Switch(checked = enabled, onCheckedChange = onToggle)
             }
-            AnimatedVisibility(visible = enabled, enter = expandVertically(), exit = shrinkVertically()) {
+            AnimatedVisibility(
+                visible = enabled,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
                 Column {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg), color = MaterialTheme.colorScheme.outlineVariant)
-                    Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
-                        content = expandedContent)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = Dimens.spaceLg),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                    Column(
+                        modifier = Modifier.padding(
+                            horizontal = Dimens.spaceLg,
+                            vertical = Dimens.space14
+                        ),
+                        content = expandedContent
+                    )
                 }
             }
         }
@@ -896,14 +1122,22 @@ private fun FeatureCard(
 }
 
 @Composable
-private fun SubToggleRow(title: String, description: String, checked: Boolean,
-                          onCheckedChange: (Boolean) -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.spaceXs),
-        verticalAlignment = Alignment.CenterVertically) {
+private fun SubToggleRow(
+    title: String, description: String, checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.spaceXs),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-            Text(description, style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                description, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
         Spacer(Modifier.width(Dimens.spaceLg))
         Switch(checked = checked, onCheckedChange = onCheckedChange)
@@ -912,18 +1146,27 @@ private fun SubToggleRow(title: String, description: String, checked: Boolean,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun <T> LangDropdown(label: String, selected: T, options: List<T>,
-                              displayName: (T) -> String, onSelect: (T) -> Unit) {
+private fun <T> LangDropdown(
+    label: String, selected: T, options: List<T>,
+    displayName: (T) -> String, onSelect: (T) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(value = displayName(selected), onValueChange = {}, readOnly = true,
+        OutlinedTextField(
+            value = displayName(selected), onValueChange = {}, readOnly = true,
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
-            shape = RoundedCornerShape(Dimens.cornerLg))
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            shape = RoundedCornerShape(Dimens.cornerLg)
+        )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { DropdownMenuItem(text = { Text(displayName(it)) },
-                onClick = { onSelect(it); expanded = false }) }
+            options.forEach {
+                DropdownMenuItem(
+                    text = { Text(displayName(it)) },
+                    onClick = { onSelect(it); expanded = false })
+            }
         }
     }
 }
@@ -946,30 +1189,46 @@ private fun BrowserEngineCard(
     ) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier.size(Dimens.sizeCard).clip(RoundedCornerShape(Dimens.cornerMd))
+                    modifier = Modifier
+                        .size(Dimens.sizeCard)
+                        .clip(RoundedCornerShape(Dimens.cornerMd))
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Default.Language, null,
+                    Icon(
+                        Icons.Default.Language, null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(Dimens.sizeLg))
+                        modifier = Modifier.size(Dimens.sizeLg)
+                    )
                 }
                 Spacer(Modifier.width(Dimens.spaceMd))
-                Text(stringResource(R.string.add_engine_section), style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.add_engine_section),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
+                )
             }
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg), color = MaterialTheme.colorScheme.outlineVariant)
-            Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = Dimens.spaceLg),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+            Column(
+                modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)
+            ) {
                 EngineType.entries.forEach { engine ->
                     val isGecko = engine == EngineType.GECKOVIEW
                     val enabled = !isGecko || geckoAvailable
                     Row(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .clickable(enabled = enabled) { onSelect(engine) }
                             .padding(vertical = Dimens.spaceXxs),
                         verticalAlignment = Alignment.Top,
@@ -990,20 +1249,31 @@ private fun BrowserEngineCard(
                                 engine.displayName,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (enabled) MaterialTheme.colorScheme.onSurface
-                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                             )
                             if (isGecko && !geckoAvailable) {
                                 val label = when (geckoInstallState) {
-                                    is GeckoInstallState.Downloading -> stringResource(R.string.add_engine_gecko_downloading, (geckoInstallState.progress * 100).toInt())
+                                    is GeckoInstallState.Downloading -> stringResource(
+                                        R.string.add_engine_gecko_downloading,
+                                        (geckoInstallState.progress * 100).toInt()
+                                    )
+
                                     is GeckoInstallState.Installing -> stringResource(R.string.add_engine_gecko_installing)
                                     is GeckoInstallState.Error -> stringResource(R.string.add_engine_gecko_error)
-                                    else -> stringResource(R.string.add_engine_gecko_not_installed, engine.estimatedSizeMb)
+                                    else -> stringResource(
+                                        R.string.add_engine_gecko_not_installed,
+                                        engine.estimatedSizeMb
+                                    )
                                 }
-                                Text(label, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    label, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             } else {
-                                Text(engine.description, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    engine.description, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }

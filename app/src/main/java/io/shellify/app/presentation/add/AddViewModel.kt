@@ -25,8 +25,9 @@ import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.domain.repository.WebAppRepository
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
+import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
+import io.shellify.app.domain.usecase.GetWebAppByNameUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,7 +92,8 @@ data class AddUiState(
 
 class AddViewModel(
     private val appId: Long,
-    private val repo: WebAppRepository,
+    private val getWebAppById: GetWebAppByIdUseCase,
+    private val getWebAppByName: GetWebAppByNameUseCase,
     private val saveWebApp: SaveWebAppUseCase,
     getCategories: GetCategoriesUseCase,
     private val analyzer: PwaAnalyzer,
@@ -104,10 +106,12 @@ class AddViewModel(
     private val prefilledName: String = "",
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(AddUiState(
-        isLoading = appId != 0L,
-        iconPackAvailable = simpleIconsManager.state.value is SimpleIconsState.Imported,
-    ))
+    private val _state = MutableStateFlow(
+        AddUiState(
+            isLoading = appId != 0L,
+            iconPackAvailable = simpleIconsManager.state.value is SimpleIconsState.Imported,
+        )
+    )
     val uiState: StateFlow<AddUiState> = _state
 
     private var originalApp: WebApp? = null
@@ -115,7 +119,7 @@ class AddViewModel(
     init {
         if (appId != 0L) {
             viewModelScope.launch {
-                val app = repo.getById(appId) ?: return@launch
+                val app = getWebAppById(appId) ?: return@launch
                 originalApp = app
                 _state.update {
                     it.copy(
@@ -159,34 +163,51 @@ class AddViewModel(
     }
 
     // Basic info
-    fun setName(v: String) = _state.update { it.copy(name = v, nameError = null, duplicateError = null) }
+    fun setName(v: String) =
+        _state.update { it.copy(name = v, nameError = null, duplicateError = null) }
+
     fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null) }
     fun setThemeColor(v: String?) {
         _state.update { it.copy(themeColor = v) }
         val src = _state.value.iconSource
         if (src is IconSource.SvgIcon && v != null) {
-            val bgColorArgb = runCatching { android.graphics.Color.parseColor(v) }.getOrNull() ?: return
+            val bgColorArgb =
+                runCatching { android.graphics.Color.parseColor(v) }.getOrNull() ?: return
             reRenderSvgIcon(src.slug, bgColorArgb)
         }
     }
-    fun setIconPath(v: String) = _state.update { it.copy(iconPath = v, iconSource = IconSource.Path(v)) }
+
+    fun setIconPath(v: String) =
+        _state.update { it.copy(iconPath = v, iconSource = IconSource.Path(v)) }
 
     // Fullscreen
     fun setFullscreen(v: Boolean) = _state.update { it.copy(isFullscreen = v) }
-    fun setFullscreenShowStatusBar(v: Boolean) = _state.update { it.copy(fullscreenShowStatusBar = v) }
+    fun setFullscreenShowStatusBar(v: Boolean) =
+        _state.update { it.copy(fullscreenShowStatusBar = v) }
+
     fun setFullscreenShowNavBar(v: Boolean) = _state.update { it.copy(fullscreenShowNavBar = v) }
-    fun setFullscreenShowTopToolbar(v: Boolean) = _state.update { it.copy(fullscreenShowTopToolbar = v) }
+    fun setFullscreenShowTopToolbar(v: Boolean) =
+        _state.update { it.copy(fullscreenShowTopToolbar = v) }
 
     // Ad blocking
     fun setAdBlock(v: Boolean) = _state.update { it.copy(adBlockEnabled = v) }
-    fun setAdBlockAllowUserToggle(v: Boolean) = _state.update { it.copy(adBlockAllowUserToggle = v) }
+    fun setAdBlockAllowUserToggle(v: Boolean) =
+        _state.update { it.copy(adBlockAllowUserToggle = v) }
+
     fun setAdBlockCustomRuleInput(v: String) = _state.update { it.copy(adBlockCustomRuleInput = v) }
     fun addAdBlockCustomRule() {
         val rule = _state.value.adBlockCustomRuleInput.trim()
         if (rule.isBlank() || rule in _state.value.adBlockCustomRules) return
-        _state.update { it.copy(adBlockCustomRules = it.adBlockCustomRules + rule, adBlockCustomRuleInput = "") }
+        _state.update {
+            it.copy(
+                adBlockCustomRules = it.adBlockCustomRules + rule,
+                adBlockCustomRuleInput = ""
+            )
+        }
     }
-    fun removeAdBlockCustomRule(rule: String) = _state.update { it.copy(adBlockCustomRules = it.adBlockCustomRules - rule) }
+
+    fun removeAdBlockCustomRule(rule: String) =
+        _state.update { it.copy(adBlockCustomRules = it.adBlockCustomRules - rule) }
 
     // Translation
     fun setTranslate(v: Boolean) = _state.update { it.copy(translateEnabled = v) }
@@ -206,7 +227,9 @@ class AddViewModel(
     /** Fetches only the icon for the current URL without running full PWA analysis. */
     fun fetchIcon() {
         val url = _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
-        if (url.isBlank()) { _state.update { it.copy(urlError = "Enter a URL first") }; return }
+        if (url.isBlank()) {
+            _state.update { it.copy(urlError = "Enter a URL first") }; return
+        }
         _state.update { it.copy(isFetchingIcon = true) }
         viewModelScope.launch {
             val iconUrl = runCatching { analyzer.analyze(url).bestIconUrl(url) }.getOrNull()
@@ -223,17 +246,32 @@ class AddViewModel(
     }
 
     fun analyze() {
-        val rawUrl = _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
-        if (rawUrl.isBlank()) { _state.update { it.copy(urlError = "Please enter a URL") }; return }
+        val rawUrl =
+            _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
+        if (rawUrl.isBlank()) {
+            _state.update { it.copy(urlError = "Please enter a URL") }; return
+        }
         _state.update { it.copy(isAnalyzing = true, analyzeError = null, url = rawUrl) }
         viewModelScope.launch {
             val manifest = runCatching { analyzer.analyze(rawUrl) }.getOrNull()
             val iconUrl = manifest?.bestIconUrl(rawUrl)
             val iconPath = faviconFetcher.fetch(iconUrl, rawUrl, _state.value.isolationId)
             if (manifest != null) {
-                _state.update { it.copy(isAnalyzing = false, pendingManifest = manifest, pendingIconPath = iconPath) }
+                _state.update {
+                    it.copy(
+                        isAnalyzing = false,
+                        pendingManifest = manifest,
+                        pendingIconPath = iconPath
+                    )
+                }
             } else {
-                _state.update { it.copy(isAnalyzing = false, analyzeError = "Could not read site info. You can still save manually.", pendingIconPath = iconPath) }
+                _state.update {
+                    it.copy(
+                        isAnalyzing = false,
+                        analyzeError = "Could not read site info. You can still save manually.",
+                        pendingIconPath = iconPath
+                    )
+                }
             }
         }
     }
@@ -255,7 +293,8 @@ class AddViewModel(
         }
     }
 
-    fun dismissManifest() = _state.update { it.copy(pendingManifest = null, pendingIconPath = null) }
+    fun dismissManifest() =
+        _state.update { it.copy(pendingManifest = null, pendingIconPath = null) }
 
     // ── Validation ────────────────────────────────────────────────────────────
 
@@ -281,7 +320,7 @@ class AddViewModel(
         viewModelScope.launch {
             if (isDuplicate()) return@launch
             val savedId = persistApp(url)
-            val savedApp = repo.getById(savedId) ?: buildApp(url).copy(id = savedId)
+            val savedApp = getWebAppById(savedId) ?: buildApp(url).copy(id = savedId)
             if (appId == 0L) onCreateShortcut?.invoke(savedApp)
             _state.update { it.copy(isSaving = false, saved = true) }
         }
@@ -300,15 +339,20 @@ class AddViewModel(
     private suspend fun isDuplicate(): Boolean {
         if (appId != 0L) return false
         val name = _state.value.name.trim()
-        val existing = repo.getByName(name) ?: return false
-        _state.update { it.copy(isSaving = false, duplicateError = "\"${existing.name}\" already exists") }
+        val existing = getWebAppByName(name) ?: return false
+        _state.update {
+            it.copy(
+                isSaving = false,
+                duplicateError = "\"${existing.name}\" already exists"
+            )
+        }
         return true
     }
 
     fun onLaunched() = _state.update { it.copy(launchAppId = null) }
 
     fun markShortcutCreated(app: WebApp) = viewModelScope.launch {
-        repo.save(app.copy(hasLauncherShortcut = true))
+        saveWebApp(app.copy(hasLauncherShortcut = true))
     }
 
     // ── Icon pack picker ──────────────────────────────────────────────────────
@@ -317,7 +361,13 @@ class AddViewModel(
         viewModelScope.launch {
             val reader = SimpleIconsReader(context)
             val icons = reader.readAll()
-            _state.update { it.copy(showIconPackPicker = true, packIcons = icons, iconPickerQuery = "") }
+            _state.update {
+                it.copy(
+                    showIconPackPicker = true,
+                    packIcons = icons,
+                    iconPickerQuery = ""
+                )
+            }
         }
     }
 
@@ -341,7 +391,11 @@ class AddViewModel(
         viewModelScope.launch { reRenderSvgIconInternal(slug, bgColorArgb, isSelection = false) }
     }
 
-    private suspend fun reRenderSvgIconInternal(slug: String, bgColorArgb: Int, isSelection: Boolean) {
+    private suspend fun reRenderSvgIconInternal(
+        slug: String,
+        bgColorArgb: Int,
+        isSelection: Boolean
+    ) {
         val iconSource = SvgIconRenderer.render(
             context = context,
             slug = slug,

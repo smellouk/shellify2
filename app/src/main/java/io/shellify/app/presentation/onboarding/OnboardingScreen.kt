@@ -136,12 +136,12 @@ import kotlin.math.sin
 private const val PAGE_COUNT = 7
 
 private val SUGGESTION_URLS = mapOf(
-    "proton"     to "mail.proton.me",
-    "bitwarden"  to "vault.bitwarden.com",
-    "element"    to "app.element.io",
+    "proton" to "mail.proton.me",
+    "bitwarden" to "vault.bitwarden.com",
+    "element" to "app.element.io",
     "excalidraw" to "excalidraw.com",
-    "notes"      to "app.standardnotes.com",
-    "mastodon"   to "mastodon.social",
+    "notes" to "app.standardnotes.com",
+    "mastodon" to "mastodon.social",
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -164,19 +164,23 @@ fun OnboardingScreen(
     }
 
     var secPassword by remember { mutableStateOf("") }
-    var secConfirm  by remember { mutableStateOf("") }
+    var secConfirm by remember { mutableStateOf("") }
     val secValid = secPassword.length >= 6 && secPassword == secConfirm
 
     val suggestionNames = mapOf(
-        "proton"     to stringResource(R.string.onboarding_quickpicks_proton),
-        "bitwarden"  to stringResource(R.string.onboarding_quickpicks_bitwarden),
-        "element"    to stringResource(R.string.onboarding_quickpicks_element),
+        "proton" to stringResource(R.string.onboarding_quickpicks_proton),
+        "bitwarden" to stringResource(R.string.onboarding_quickpicks_bitwarden),
+        "element" to stringResource(R.string.onboarding_quickpicks_element),
         "excalidraw" to stringResource(R.string.onboarding_quickpicks_excalidraw),
-        "notes"      to stringResource(R.string.onboarding_quickpicks_notes),
-        "mastodon"   to stringResource(R.string.onboarding_quickpicks_mastodon),
+        "notes" to stringResource(R.string.onboarding_quickpicks_notes),
+        "mastodon" to stringResource(R.string.onboarding_quickpicks_mastodon),
     )
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary.copy(alpha = 0.04f))) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.04f))
+    ) {
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 
         // Progress bars — 6 bars, height 4dp, gap 6dp, horizontal padding 24dp
@@ -202,6 +206,7 @@ fun OnboardingScreen(
                     onThemeMode = viewModel::setThemeMode,
                     onAccentColor = viewModel::setAccentColor,
                 )
+
                 3 -> SecurityPage(
                     passwordSet = state.passwordSet,
                     password = secPassword,
@@ -209,6 +214,7 @@ fun OnboardingScreen(
                     onPasswordChange = { secPassword = it },
                     onConfirmChange = { secConfirm = it },
                 )
+
                 4 -> BackupPage(
                     backupEnabled = state.backupEnabled,
                     directoryUri = state.backupDirectoryUri,
@@ -217,10 +223,12 @@ fun OnboardingScreen(
                     onDirectoryUri = viewModel::setBackupDirectoryUri,
                     onSchedule = viewModel::setBackupSchedule,
                 )
+
                 5 -> QuickPicksPage(
                     picked = state.pickedAppIds,
                     onToggle = viewModel::togglePickedApp,
                 )
+
                 6 -> DonePage()
             }
         }
@@ -274,12 +282,16 @@ private fun ProgressBars(pageCount: Int, currentPage: Int, modifier: Modifier = 
                     // Done: solid primary
                     Box(barModifier.background(primary))
                 }
+
                 i == currentPage -> {
                     // Active: horizontal gradient primary → primaryContainer
-                    Box(barModifier.background(
-                        Brush.horizontalGradient(listOf(primary, primaryContainer))
-                    ))
+                    Box(
+                        barModifier.background(
+                            Brush.horizontalGradient(listOf(primary, primaryContainer))
+                        )
+                    )
                 }
+
                 else -> {
                     // Future: surfaceVariant
                     Box(barModifier.background(surfaceVariant))
@@ -320,6 +332,7 @@ private fun OnboardingFooter(
                 onPrimary = onNext,
                 showPrimaryArrow = true,
             )
+
             1, 2, 4 -> FooterRow(
                 secondaryLabel = null,
                 onSecondary = null,
@@ -327,6 +340,7 @@ private fun OnboardingFooter(
                 onPrimary = onNext,
                 showPrimaryArrow = true,
             )
+
             3 -> if (passwordSet) {
                 FooterRow(
                     secondaryLabel = null,
@@ -352,6 +366,7 @@ private fun OnboardingFooter(
                     showPrimaryArrow = false,
                 )
             }
+
             5 -> when (quickPicksStatus) {
                 QuickPicksStatus.Idle -> if (pickedCount > 0) {
                     FooterRow(
@@ -373,6 +388,7 @@ private fun OnboardingFooter(
                         showPrimaryArrow = false,
                     )
                 }
+
                 is QuickPicksStatus.Adding -> {
                     val status = quickPicksStatus as QuickPicksStatus.Adding
                     Row(
@@ -384,7 +400,9 @@ private fun OnboardingFooter(
                             onClick = onCancelQuickPicks,
                             modifier = Modifier.heightIn(min = Dimens.sizeApp),
                             shape = CircleShape,
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.sizeMd),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                horizontal = Dimens.sizeMd
+                            ),
                         ) {
                             Text(stringResource(R.string.onboarding_skip_for_now))
                         }
@@ -394,7 +412,9 @@ private fun OnboardingFooter(
                             enabled = false,
                             modifier = Modifier.height(Dimens.sizeApp),
                             shape = CircleShape,
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Dimens.spaceXl),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                horizontal = Dimens.spaceXl
+                            ),
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(Dimens.sizeSm),
@@ -406,6 +426,7 @@ private fun OnboardingFooter(
                         }
                     }
                 }
+
                 QuickPicksStatus.Done -> FooterRow(
                     secondaryLabel = null,
                     onSecondary = null,
@@ -414,6 +435,7 @@ private fun OnboardingFooter(
                     showPrimaryArrow = true,
                 )
             }
+
             6 -> FooterRow(
                 secondaryLabel = null,
                 onSecondary = null,
@@ -433,7 +455,9 @@ private fun OnboardingPageLayout(
     content: @Composable () -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
-        if (hero != null) { hero() }
+        if (hero != null) {
+            hero()
+        }
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -586,7 +610,7 @@ private fun WelcomePage(
                                 Icons.Default.Check,
                                 contentDescription = null,
                                 tint = if (isSelected) MaterialTheme.colorScheme.primary
-                                       else androidx.compose.ui.graphics.Color.Transparent,
+                                else androidx.compose.ui.graphics.Color.Transparent,
                                 modifier = Modifier.size(Dimens.sizeXs),
                             )
                         }
@@ -712,10 +736,30 @@ private fun WhatPage() {
     val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val features = listOf(
-        Feature(Icons.Default.Apps,       { primaryContainer },                R.string.onboarding_feature_apps_title,      R.string.onboarding_feature_apps_desc),
-        Feature(Icons.Default.Shield,     { primaryContainer.copy(alpha = 0.5f) }, R.string.onboarding_feature_adblock_title, R.string.onboarding_feature_adblock_desc),
-        Feature(Icons.Default.Layers,     { surfaceVariant },                  R.string.onboarding_feature_isolation_title, R.string.onboarding_feature_isolation_desc),
-        Feature(Icons.Default.GTranslate, { primaryContainer },                R.string.onboarding_feature_translate_title, R.string.onboarding_feature_translate_desc),
+        Feature(
+            Icons.Default.Apps,
+            { primaryContainer },
+            R.string.onboarding_feature_apps_title,
+            R.string.onboarding_feature_apps_desc
+        ),
+        Feature(
+            Icons.Default.Shield,
+            { primaryContainer.copy(alpha = 0.5f) },
+            R.string.onboarding_feature_adblock_title,
+            R.string.onboarding_feature_adblock_desc
+        ),
+        Feature(
+            Icons.Default.Layers,
+            { surfaceVariant },
+            R.string.onboarding_feature_isolation_title,
+            R.string.onboarding_feature_isolation_desc
+        ),
+        Feature(
+            Icons.Default.GTranslate,
+            { primaryContainer },
+            R.string.onboarding_feature_translate_title,
+            R.string.onboarding_feature_translate_desc
+        ),
     )
 
     OnboardingPageLayout(
@@ -758,7 +802,11 @@ private fun WhatPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(Dimens.corner18))
+                        .border(
+                            Dimens.borderDefault,
+                            MaterialTheme.colorScheme.outlineVariant,
+                            RoundedCornerShape(Dimens.corner18)
+                        )
                         .clip(RoundedCornerShape(Dimens.corner18))
                         .background(MaterialTheme.colorScheme.surface)
                         .padding(Dimens.space14),
@@ -867,7 +915,12 @@ private fun AppearancePage(
                         .background(Brush.linearGradient(listOf(primary, secondary))),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("P", color = Color.White, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "P",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 // Tile 1: secondaryContainer bg, "M"
                 Box(
@@ -878,7 +931,12 @@ private fun AppearancePage(
                         .background(secondaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("M", color = onSecondaryContainer, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "M",
+                        color = onSecondaryContainer,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 // Tile 2: primaryContainer 60% bg, "N"
                 Box(
@@ -889,7 +947,12 @@ private fun AppearancePage(
                         .background(primaryContainer.copy(alpha = 0.6f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("N", color = primary, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "N",
+                        color = primary,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
                 // Tile 3: transparent + dashed border, "+"
                 Box(
@@ -897,10 +960,19 @@ private fun AppearancePage(
                         .weight(1f)
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(Dimens.corner14))
-                        .border(Dimens.strokeSm, outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(Dimens.corner14)),
+                        .border(
+                            Dimens.strokeSm,
+                            outlineVariant.copy(alpha = 0.5f),
+                            RoundedCornerShape(Dimens.corner14)
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("+", color = onSurfaceVariant, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "+",
+                        color = onSurfaceVariant,
+                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             }
 
@@ -949,9 +1021,21 @@ private fun AppearancePage(
 
         // Theme mode segmented button
         val modes = listOf(
-            Triple(ThemeMode.SYSTEM, Icons.Default.BrightnessAuto, stringResource(R.string.global_settings_theme_system)),
-            Triple(ThemeMode.LIGHT,  Icons.Default.LightMode,      stringResource(R.string.global_settings_theme_light)),
-            Triple(ThemeMode.DARK,   Icons.Default.DarkMode,        stringResource(R.string.global_settings_theme_dark)),
+            Triple(
+                ThemeMode.SYSTEM,
+                Icons.Default.BrightnessAuto,
+                stringResource(R.string.global_settings_theme_system)
+            ),
+            Triple(
+                ThemeMode.LIGHT,
+                Icons.Default.LightMode,
+                stringResource(R.string.global_settings_theme_light)
+            ),
+            Triple(
+                ThemeMode.DARK,
+                Icons.Default.DarkMode,
+                stringResource(R.string.global_settings_theme_dark)
+            ),
         )
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             modes.forEachIndexed { index, (mode, icon, label) ->
@@ -961,7 +1045,11 @@ private fun AppearancePage(
                     shape = SegmentedButtonDefaults.itemShape(index, modes.size),
                     icon = {
                         SegmentedButtonDefaults.Icon(active = themeMode == mode) {
-                            Icon(icon, null, modifier = Modifier.size(SegmentedButtonDefaults.IconSize))
+                            Icon(
+                                icon,
+                                null,
+                                modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                            )
                         }
                     },
                 ) { Text(label) }
@@ -1020,8 +1108,8 @@ private fun SecurityPage(
     onPasswordChange: (String) -> Unit,
     onConfirmChange: (String) -> Unit,
 ) {
-    var pwVis    by remember { mutableStateOf(false) }
-    var cfVis    by remember { mutableStateOf(false) }
+    var pwVis by remember { mutableStateOf(false) }
+    var cfVis by remember { mutableStateOf(false) }
     var confirmTouched by remember { mutableStateOf(false) }
 
     val mismatch = confirmTouched && confirm.isNotEmpty() && password != confirm
@@ -1040,7 +1128,12 @@ private fun SecurityPage(
                 .background(Brush.linearGradient(listOf(primary, secondary))),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(Dimens.size3xl))
+            Icon(
+                Icons.Default.Lock,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(Dimens.size3xl)
+            )
         }
 
         Spacer(Modifier.height(Dimens.space18))
@@ -1071,7 +1164,10 @@ private fun SecurityPage(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(Dimens.cornerXl),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                border = BorderStroke(
+                    Dimens.borderDefault,
+                    MaterialTheme.colorScheme.outlineVariant
+                ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(modifier = Modifier.padding(Dimens.spaceMd)) {
@@ -1083,7 +1179,10 @@ private fun SecurityPage(
                         visualTransformation = if (pwVis) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             androidx.compose.material3.IconButton(onClick = { pwVis = !pwVis }) {
-                                Icon(if (pwVis) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                                Icon(
+                                    if (pwVis) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    null
+                                )
                             }
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -1107,7 +1206,10 @@ private fun SecurityPage(
                         visualTransformation = if (cfVis) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             androidx.compose.material3.IconButton(onClick = { cfVis = !cfVis }) {
-                                Icon(if (cfVis) Icons.Default.VisibilityOff else Icons.Default.Visibility, null)
+                                Icon(
+                                    if (cfVis) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    null
+                                )
                             }
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -1131,13 +1233,13 @@ private fun StrengthMeter(password: String) {
     val barColor = when {
         strength >= 3 -> MaterialTheme.colorScheme.primary
         strength == 2 -> Color(0xFFFF8A5C)
-        else          -> Color(0xFFE0B341)
+        else -> Color(0xFFE0B341)
     }
     val labels = listOf("", "Weak", "Okay", "Good", "Strong")
     val labelColor = when {
         strength >= 3 -> MaterialTheme.colorScheme.primary
         strength == 2 -> Color(0xFFFF8A5C)
-        else          -> Color(0xFFE0B341)
+        else -> Color(0xFFE0B341)
     }
 
     Row(
@@ -1193,17 +1295,21 @@ private fun BackupPage(
     onSchedule: (BackupSchedule) -> Unit,
 ) {
     val context = LocalContext.current
-    val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri?.let {
-            context.contentResolver.takePersistableUriPermission(
-                it,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            )
-            onDirectoryUri(it.toString())
+    val folderLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            uri?.let {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+                onDirectoryUri(it.toString())
+            }
         }
-    }
     val folderDisplay = directoryUri
-        ?.let { android.net.Uri.decode(it).substringAfterLast(":").ifEmpty { it.substringAfterLast("/") } }
+        ?.let {
+            android.net.Uri.decode(it).substringAfterLast(":")
+                .ifEmpty { it.substringAfterLast("/") }
+        }
         ?: stringResource(R.string.global_settings_backup_folder_not_selected)
 
     val primary = MaterialTheme.colorScheme.primary
@@ -1223,7 +1329,12 @@ private fun BackupPage(
                 .background(Brush.linearGradient(listOf(primary, secondary))),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = Color.White, modifier = Modifier.size(Dimens.size3xl))
+            Icon(
+                Icons.Default.CloudUpload,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(Dimens.size3xl)
+            )
         }
 
         Spacer(Modifier.height(Dimens.space18))
@@ -1249,7 +1360,11 @@ private fun BackupPage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner18))
+                    .border(
+                        Dimens.borderDefault,
+                        outlineVariant,
+                        RoundedCornerShape(Dimens.corner18)
+                    )
                     .clip(RoundedCornerShape(Dimens.corner18))
                     .background(
                         if (backupEnabled) primaryContainer.copy(alpha = 0.4f)
@@ -1266,7 +1381,12 @@ private fun BackupPage(
                         .background(primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Default.Bolt, contentDescription = null, tint = primary, modifier = Modifier.size(Dimens.sizeMd))
+                    Icon(
+                        Icons.Default.Bolt,
+                        contentDescription = null,
+                        tint = primary,
+                        modifier = Modifier.size(Dimens.sizeMd)
+                    )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -1287,7 +1407,11 @@ private fun BackupPage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner18))
+                    .border(
+                        Dimens.borderDefault,
+                        outlineVariant,
+                        RoundedCornerShape(Dimens.corner18)
+                    )
                     .clip(RoundedCornerShape(Dimens.corner18))
                     .background(MaterialTheme.colorScheme.surface)
                     .then(
@@ -1304,7 +1428,13 @@ private fun BackupPage(
                         .size(Dimens.sizeCard)
                         .clip(RoundedCornerShape(Dimens.cornerLg))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .then(if (!backupEnabled) Modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)) else Modifier),
+                        .then(
+                            if (!backupEnabled) Modifier.background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(
+                                    alpha = 0.55f
+                                )
+                            ) else Modifier
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -1326,7 +1456,7 @@ private fun BackupPage(
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         color = if (backupEnabled) MaterialTheme.colorScheme.onSurface
-                                else onSurfaceVariant,
+                        else onSurfaceVariant,
                     )
                 }
                 Icon(
@@ -1342,7 +1472,11 @@ private fun BackupPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(Dimens.borderDefault, outlineVariant, RoundedCornerShape(Dimens.corner18))
+                    .border(
+                        Dimens.borderDefault,
+                        outlineVariant,
+                        RoundedCornerShape(Dimens.corner18)
+                    )
                     .clip(RoundedCornerShape(Dimens.corner18))
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
@@ -1368,8 +1502,8 @@ private fun BackupPage(
                 Spacer(Modifier.height(Dimens.spaceMd))
 
                 val scheduleOptions = listOf(
-                    BackupSchedule.NONE   to stringResource(R.string.onboarding_schedule_manual),
-                    BackupSchedule.WEEKLY  to stringResource(R.string.global_settings_schedule_weekly),
+                    BackupSchedule.NONE to stringResource(R.string.onboarding_schedule_manual),
+                    BackupSchedule.WEEKLY to stringResource(R.string.global_settings_schedule_weekly),
                     BackupSchedule.MONTHLY to stringResource(R.string.global_settings_schedule_monthly),
                 )
 
@@ -1400,7 +1534,7 @@ private fun BackupPage(
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = if (isSelected) FontWeight(600) else FontWeight.Normal,
                                 color = if (isSelected) Color.White
-                                        else onSurfaceVariant.copy(alpha = scheduleAlpha),
+                                else onSurfaceVariant.copy(alpha = scheduleAlpha),
                             )
                         }
                     }
@@ -1434,7 +1568,10 @@ private fun QuickPicksHero() {
             .height(Dimens.heroHeightSm)
             .background(
                 Brush.verticalGradient(
-                    listOf(MaterialTheme.colorScheme.background, primaryContainer.copy(alpha = 0.3f)),
+                    listOf(
+                        MaterialTheme.colorScheme.background,
+                        primaryContainer.copy(alpha = 0.3f)
+                    ),
                 ),
             )
             .clip(RoundedCornerShape(bottomStart = Dimens.corner28, bottomEnd = Dimens.corner28)),
@@ -1460,10 +1597,42 @@ private fun QuickPicksHero() {
         )
 
         val tiles = listOf(
-            FloatingTile((-120).dp, (-30).dp, 50.dp, Icons.Default.Email,       primaryContainer,  primary,          0.0f),
-            FloatingTile(110.dp,    (-45).dp, 48.dp, Icons.Default.Security,    SuggestionVideoBg, CategoryToolsFg,  0.5f),
-            FloatingTile((-85).dp,  45.dp,    46.dp, Icons.Default.ChatBubble,  SuggestionChatBg,  SuggestionChatFg, 1.0f),
-            FloatingTile(105.dp,    35.dp,    52.dp, Icons.Default.Edit,        CategoryReadingBg, CategoryReadingFg,1.5f),
+            FloatingTile(
+                (-120).dp,
+                (-30).dp,
+                50.dp,
+                Icons.Default.Email,
+                primaryContainer,
+                primary,
+                0.0f
+            ),
+            FloatingTile(
+                110.dp,
+                (-45).dp,
+                48.dp,
+                Icons.Default.Security,
+                SuggestionVideoBg,
+                CategoryToolsFg,
+                0.5f
+            ),
+            FloatingTile(
+                (-85).dp,
+                45.dp,
+                46.dp,
+                Icons.Default.ChatBubble,
+                SuggestionChatBg,
+                SuggestionChatFg,
+                1.0f
+            ),
+            FloatingTile(
+                105.dp,
+                35.dp,
+                52.dp,
+                Icons.Default.Edit,
+                CategoryReadingBg,
+                CategoryReadingFg,
+                1.5f
+            ),
         )
 
         tiles.forEach { tile ->
@@ -1507,12 +1676,54 @@ private fun QuickPicksPage(
     )
 
     val suggestions = listOf(
-        Suggestion("proton",     stringResource(R.string.onboarding_quickpicks_proton),     stringResource(R.string.onboarding_quickpicks_proton_host),     Icons.Default.Email,                   primaryContainer,                     primary),
-        Suggestion("bitwarden",  stringResource(R.string.onboarding_quickpicks_bitwarden),  stringResource(R.string.onboarding_quickpicks_bitwarden_host),  Icons.Default.Security,                SuggestionVideoBg,                    CategoryToolsFg),
-        Suggestion("element",    stringResource(R.string.onboarding_quickpicks_element),    stringResource(R.string.onboarding_quickpicks_element_host),    Icons.Default.ChatBubble,              SuggestionChatBg,                     SuggestionChatFg),
-        Suggestion("excalidraw", stringResource(R.string.onboarding_quickpicks_excalidraw), stringResource(R.string.onboarding_quickpicks_excalidraw_host), Icons.Default.Edit,                    CategoryReadingBg,                    CategoryReadingFg),
-        Suggestion("notes",      stringResource(R.string.onboarding_quickpicks_notes),      stringResource(R.string.onboarding_quickpicks_notes_host),      Icons.AutoMirrored.Filled.Article,     primaryContainer.copy(alpha = 0.55f), primary),
-        Suggestion("mastodon",   stringResource(R.string.onboarding_quickpicks_mastodon),   stringResource(R.string.onboarding_quickpicks_mastodon_host),   Icons.Default.Public,                  SuggestionChatBg.copy(alpha = 0.6f),  SuggestionChatFg),
+        Suggestion(
+            "proton",
+            stringResource(R.string.onboarding_quickpicks_proton),
+            stringResource(R.string.onboarding_quickpicks_proton_host),
+            Icons.Default.Email,
+            primaryContainer,
+            primary
+        ),
+        Suggestion(
+            "bitwarden",
+            stringResource(R.string.onboarding_quickpicks_bitwarden),
+            stringResource(R.string.onboarding_quickpicks_bitwarden_host),
+            Icons.Default.Security,
+            SuggestionVideoBg,
+            CategoryToolsFg
+        ),
+        Suggestion(
+            "element",
+            stringResource(R.string.onboarding_quickpicks_element),
+            stringResource(R.string.onboarding_quickpicks_element_host),
+            Icons.Default.ChatBubble,
+            SuggestionChatBg,
+            SuggestionChatFg
+        ),
+        Suggestion(
+            "excalidraw",
+            stringResource(R.string.onboarding_quickpicks_excalidraw),
+            stringResource(R.string.onboarding_quickpicks_excalidraw_host),
+            Icons.Default.Edit,
+            CategoryReadingBg,
+            CategoryReadingFg
+        ),
+        Suggestion(
+            "notes",
+            stringResource(R.string.onboarding_quickpicks_notes),
+            stringResource(R.string.onboarding_quickpicks_notes_host),
+            Icons.AutoMirrored.Filled.Article,
+            primaryContainer.copy(alpha = 0.55f),
+            primary
+        ),
+        Suggestion(
+            "mastodon",
+            stringResource(R.string.onboarding_quickpicks_mastodon),
+            stringResource(R.string.onboarding_quickpicks_mastodon_host),
+            Icons.Default.Public,
+            SuggestionChatBg.copy(alpha = 0.6f),
+            SuggestionChatFg
+        ),
     )
 
     OnboardingPageLayout(
@@ -1735,6 +1946,7 @@ private fun DoneHero(appeared: Boolean, checkScale: Float) {
                         topLeft = androidx.compose.ui.geometry.Offset(x - s / 2f, y - s / 3f),
                         size = androidx.compose.ui.geometry.Size(s, s * 0.6f),
                     )
+
                     else -> drawRoundRect(
                         color,
                         topLeft = androidx.compose.ui.geometry.Offset(x - s / 2f, y - s / 2f),

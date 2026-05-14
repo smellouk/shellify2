@@ -30,8 +30,10 @@ class PasswordManager(private val context: Context) {
     private val keyScreenshotProtection = booleanPreferencesKey("screenshot_protection")
 
     val passwordHash: Flow<String?> = context.passwordStore.data.map { it[keyPasswordHash] }
-    val wipeOnFailedAttempts: Flow<Boolean> = context.passwordStore.data.map { it[keyWipeOnFailedAttempts] ?: false }
-    val screenshotProtection: Flow<Boolean> = context.passwordStore.data.map { it[keyScreenshotProtection] ?: false }
+    val wipeOnFailedAttempts: Flow<Boolean> =
+        context.passwordStore.data.map { it[keyWipeOnFailedAttempts] ?: false }
+    val screenshotProtection: Flow<Boolean> =
+        context.passwordStore.data.map { it[keyScreenshotProtection] ?: false }
 
     suspend fun setPassword(password: String) {
         context.passwordStore.edit { it[keyPasswordHash] = hashPassword(password) }
@@ -64,7 +66,7 @@ class PasswordManager(private val context: Context) {
     suspend fun getFailedAttempts(appId: Long): Int {
         val prefs = context.passwordStore.data.first()
         val count = prefs[attemptsKey(appId)] ?: return 0
-        val time  = prefs[attemptsTimeKey(appId)] ?: 0L
+        val time = prefs[attemptsTimeKey(appId)] ?: 0L
         return if (System.currentTimeMillis() - time > ATTEMPT_EXPIRY_MS) 0 else count
     }
 

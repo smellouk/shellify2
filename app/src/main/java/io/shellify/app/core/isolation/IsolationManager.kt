@@ -20,7 +20,11 @@ import kotlinx.coroutines.launch
  *   1. Call [attachProfile] BEFORE the WebView is added to the view hierarchy (API 33+ requirement).
  *   2. Call [restoreSession] (suspend) BEFORE loadUrl — awaits cookie restore on API < 33.
  */
-class IsolationManager(context: Context, crypto: CryptoManager, private val geckoEngineManager: GeckoEngineManager? = null) {
+class IsolationManager(
+    context: Context,
+    crypto: CryptoManager,
+    private val geckoEngineManager: GeckoEngineManager? = null
+) {
 
     val cookieJarManager = CookieJarManager(context, crypto)
     private val scope = CoroutineScope(Dispatchers.Main)

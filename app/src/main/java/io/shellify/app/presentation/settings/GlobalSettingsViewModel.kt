@@ -21,8 +21,10 @@ import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.core.theme.ThemeMode
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.UserAgentMode
-import io.shellify.app.domain.repository.CategoryRepository
-import io.shellify.app.domain.repository.WebAppRepository
+import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
+import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
+import io.shellify.app.domain.usecase.GetWebAppsUseCase
+import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -70,8 +72,10 @@ data class GlobalSettingsUiState(
 class GlobalSettingsViewModel(
     private val themeManager: ThemeManager,
     private val isolationManager: IsolationManager,
-    private val repo: WebAppRepository,
-    private val categoryRepo: CategoryRepository,
+    private val getWebApps: GetWebAppsUseCase,
+    private val saveWebApp: SaveWebAppUseCase,
+    private val deleteAllAppsUseCase: DeleteAllAppsUseCase,
+    private val deleteAllCategoriesUseCase: DeleteAllCategoriesUseCase,
     private val passwordManager: PasswordManager,
     private val backupSettings: BackupSettings,
     private val backupManager: BackupManager,
@@ -86,22 +90,24 @@ class GlobalSettingsViewModel(
     init {
         // Load all values atomically so the UI renders once with complete data
         viewModelScope.launch {
-            _state.update { it.copy(
-                themeMode           = themeManager.themeMode.first(),
-                dynamicColor        = themeManager.dynamicColor.first(),
-                accentColor         = themeManager.accentColor.first(),
-                defaultUaMode       = themeManager.defaultUaMode.first(),
-                defaultEngineType   = themeManager.defaultEngineType.first(),
-                hasPassword         = passwordManager.passwordHash.first() != null,
-                wipeOnFailedAttempts = passwordManager.wipeOnFailedAttempts.first(),
-                screenshotProtection = passwordManager.screenshotProtection.first(),
-                backupEnabled       = backupSettings.enabled.first(),
-                backupHasPassword   = backupSettings.hasPassword.first(),
-                backupDirectoryUri  = backupSettings.directoryUri.first(),
-                backupSchedule      = backupSettings.schedule.first(),
-                backupLastTime      = backupSettings.lastBackupTime.first(),
-                isLoaded            = true,
-            ) }
+            _state.update {
+                it.copy(
+                    themeMode = themeManager.themeMode.first(),
+                    dynamicColor = themeManager.dynamicColor.first(),
+                    accentColor = themeManager.accentColor.first(),
+                    defaultUaMode = themeManager.defaultUaMode.first(),
+                    defaultEngineType = themeManager.defaultEngineType.first(),
+                    hasPassword = passwordManager.passwordHash.first() != null,
+                    wipeOnFailedAttempts = passwordManager.wipeOnFailedAttempts.first(),
+                    screenshotProtection = passwordManager.screenshotProtection.first(),
+                    backupEnabled = backupSettings.enabled.first(),
+                    backupHasPassword = backupSettings.hasPassword.first(),
+                    backupDirectoryUri = backupSettings.directoryUri.first(),
+                    backupSchedule = backupSettings.schedule.first(),
+                    backupLastTime = backupSettings.lastBackupTime.first(),
+                    isLoaded = true,
+                )
+            }
         }
         // Continue watching for live updates after the initial load
         viewModelScope.launch {
@@ -123,10 +129,22 @@ class GlobalSettingsViewModel(
             passwordManager.passwordHash.collect { h -> _state.update { it.copy(hasPassword = h != null) } }
         }
         viewModelScope.launch {
-            passwordManager.wipeOnFailedAttempts.collect { v -> _state.update { it.copy(wipeOnFailedAttempts = v) } }
+            passwordManager.wipeOnFailedAttempts.collect { v ->
+                _state.update {
+                    it.copy(
+                        wipeOnFailedAttempts = v
+                    )
+                }
+            }
         }
         viewModelScope.launch {
-            passwordManager.screenshotProtection.collect { v -> _state.update { it.copy(screenshotProtection = v) } }
+            passwordManager.screenshotProtection.collect { v ->
+                _state.update {
+                    it.copy(
+                        screenshotProtection = v
+                    )
+                }
+            }
         }
         viewModelScope.launch {
             backupSettings.enabled.collect { v -> _state.update { it.copy(backupEnabled = v) } }
@@ -150,44 +168,72 @@ class GlobalSettingsViewModel(
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { themeManager.setThemeMode(mode) }
     fun setDynamicColor(v: Boolean) = viewModelScope.launch { themeManager.setDynamicColor(v) }
     fun setAccentColor(color: Int?) = viewModelScope.launch { themeManager.setAccentColor(color) }
-    fun setDefaultUaMode(mode: UserAgentMode) = viewModelScope.launch { themeManager.setDefaultUaMode(mode) }
-    fun setDefaultEngineType(engine: EngineType) = viewModelScope.launch { themeManager.setDefaultEngineType(engine) }
+    fun setDefaultUaMode(mode: UserAgentMode) =
+        viewModelScope.launch { themeManager.setDefaultUaMode(mode) }
+
+    fun setDefaultEngineType(engine: EngineType) =
+        viewModelScope.launch { themeManager.setDefaultEngineType(engine) }
 
     // ── App lock password ─────────────────────────────────────────────────────
 
     fun showSetPasswordDialog() =
-        _state.update { it.copy(showPasswordDialog = true, passwordDialogMode = PasswordDialogMode.SET) }
+        _state.update {
+            it.copy(
+                showPasswordDialog = true,
+                passwordDialogMode = PasswordDialogMode.SET
+            )
+        }
+
     fun showChangePasswordDialog() =
-        _state.update { it.copy(showPasswordDialog = true, passwordDialogMode = PasswordDialogMode.CHANGE) }
+        _state.update {
+            it.copy(
+                showPasswordDialog = true,
+                passwordDialogMode = PasswordDialogMode.CHANGE
+            )
+        }
+
     fun showRemovePasswordDialog() =
         _state.update { it.copy(showRemovePasswordWarning = true) }
+
     fun dismissRemovePasswordWarning() =
         _state.update { it.copy(showRemovePasswordWarning = false) }
+
     fun confirmRemovePasswordWarning() =
-        _state.update { it.copy(showRemovePasswordWarning = false, showPasswordDialog = true, passwordDialogMode = PasswordDialogMode.REMOVE) }
+        _state.update {
+            it.copy(
+                showRemovePasswordWarning = false,
+                showPasswordDialog = true,
+                passwordDialogMode = PasswordDialogMode.REMOVE
+            )
+        }
+
     fun dismissPasswordDialog() = _state.update { it.copy(showPasswordDialog = false) }
 
-    fun setWipeOnFailedAttempts(v: Boolean) = viewModelScope.launch { passwordManager.setWipeOnFailedAttempts(v) }
-    fun setScreenshotProtection(v: Boolean) = viewModelScope.launch { passwordManager.setScreenshotProtection(v) }
+    fun setWipeOnFailedAttempts(v: Boolean) =
+        viewModelScope.launch { passwordManager.setWipeOnFailedAttempts(v) }
+
+    fun setScreenshotProtection(v: Boolean) =
+        viewModelScope.launch { passwordManager.setScreenshotProtection(v) }
 
     fun setPassword(password: String) = viewModelScope.launch {
         passwordManager.setPassword(password)
         _state.update { it.copy(showPasswordDialog = false) }
     }
 
-    fun removePassword(currentPassword: String, onWrongPassword: () -> Unit) = viewModelScope.launch {
-        val hash = passwordManager.passwordHash.first()
-        if (hash != null && verifyPassword(currentPassword, hash)) {
-            repo.getAll().first()
-                .filter { it.lockType == LockType.PASSWORD }
-                .forEach { app ->
-                    isolationManager.clearData(app.isolationId)
-                    repo.save(app.copy(lockType = LockType.NONE))
-                }
-            passwordManager.clearPassword()
-            _state.update { it.copy(showPasswordDialog = false) }
-        } else onWrongPassword()
-    }
+    fun removePassword(currentPassword: String, onWrongPassword: () -> Unit) =
+        viewModelScope.launch {
+            val hash = passwordManager.passwordHash.first()
+            if (hash != null && verifyPassword(currentPassword, hash)) {
+                getWebApps().first()
+                    .filter { it.lockType == LockType.PASSWORD }
+                    .forEach { app ->
+                        isolationManager.clearData(app.isolationId)
+                        saveWebApp(app.copy(lockType = LockType.NONE))
+                    }
+                passwordManager.clearPassword()
+                _state.update { it.copy(showPasswordDialog = false) }
+            } else onWrongPassword()
+        }
 
     fun changePassword(currentPassword: String, newPassword: String, onWrongPassword: () -> Unit) =
         viewModelScope.launch {
@@ -204,41 +250,49 @@ class GlobalSettingsViewModel(
     fun dismissClearAllDialog() = _state.update { it.copy(showClearAllDialog = false) }
 
     fun clearAll() = viewModelScope.launch {
-        repo.getAll().first().forEach { app -> isolationManager.clearData(app.isolationId) }
+        getWebApps().first().forEach { app -> isolationManager.clearData(app.isolationId) }
         _state.update { it.copy(showClearAllDialog = false) }
     }
 
     fun showDeleteAllAppsDialog() = _state.update { it.copy(showDeleteAllAppsDialog = true) }
     fun dismissDeleteAllAppsDialog() = _state.update { it.copy(showDeleteAllAppsDialog = false) }
     fun deleteAllApps() = viewModelScope.launch {
-        val apps = repo.getAll().first()
+        val apps = getWebApps().first()
         apps.forEach { app ->
             isolationManager.clearData(app.isolationId)
             PwaShortcutManager.removeShortcut(context, app)
         }
-        repo.deleteAll()
+        deleteAllAppsUseCase()
         _state.update { it.copy(showDeleteAllAppsDialog = false) }
     }
 
-    fun showDeleteAllCategoriesDialog() = _state.update { it.copy(showDeleteAllCategoriesDialog = true) }
-    fun dismissDeleteAllCategoriesDialog() = _state.update { it.copy(showDeleteAllCategoriesDialog = false) }
+    fun showDeleteAllCategoriesDialog() =
+        _state.update { it.copy(showDeleteAllCategoriesDialog = true) }
+
+    fun dismissDeleteAllCategoriesDialog() =
+        _state.update { it.copy(showDeleteAllCategoriesDialog = false) }
+
     fun deleteAllCategories() = viewModelScope.launch {
-        categoryRepo.deleteAll()
+        deleteAllCategoriesUseCase()
         _state.update { it.copy(showDeleteAllCategoriesDialog = false) }
     }
 
-    fun showDeleteAllShortcutsDialog() = _state.update { it.copy(showDeleteAllShortcutsDialog = true) }
-    fun dismissDeleteAllShortcutsDialog() = _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
+    fun showDeleteAllShortcutsDialog() =
+        _state.update { it.copy(showDeleteAllShortcutsDialog = true) }
+
+    fun dismissDeleteAllShortcutsDialog() =
+        _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
+
     fun deleteAllShortcuts() = viewModelScope.launch {
-        repo.getAll().first().forEach { app ->
+        getWebApps().first().forEach { app ->
             PwaShortcutManager.removeShortcut(context, app)
-            repo.save(app.copy(hasLauncherShortcut = false))
+            saveWebApp(app.copy(hasLauncherShortcut = false))
         }
         _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
     }
 
     fun repinShortcutsAfterRestore() = viewModelScope.launch {
-        repo.getAll().first()
+        getWebApps().first()
             .filter { it.hasLauncherShortcut }
             .forEach { app -> PwaShortcutManager.createShortcut(context, app) }
     }
@@ -260,7 +314,7 @@ class GlobalSettingsViewModel(
         context.contentResolver.takePersistableUriPermission(
             uri,
             android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
-            android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                    android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
         )
     }
 
@@ -279,10 +333,20 @@ class GlobalSettingsViewModel(
         backupManager.backup(password, Uri.parse(uriStr)).fold(
             onSuccess = { name ->
                 backupSettings.setLastBackupTime(System.currentTimeMillis())
-                _state.update { it.copy(backupRunning = false, backupResultMessage = "Backed up: $name") }
+                _state.update {
+                    it.copy(
+                        backupRunning = false,
+                        backupResultMessage = "Backed up: $name"
+                    )
+                }
             },
             onFailure = { e ->
-                _state.update { it.copy(backupRunning = false, backupResultMessage = "Backup failed: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        backupRunning = false,
+                        backupResultMessage = "Backup failed: ${e.message}"
+                    )
+                }
             },
         )
     }
@@ -307,7 +371,12 @@ class GlobalSettingsViewModel(
                 _state.update { it.copy(backupRunning = false, restoreComplete = true) }
             },
             onFailure = { e ->
-                _state.update { it.copy(backupRunning = false, backupResultMessage = "Restore failed: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        backupRunning = false,
+                        backupResultMessage = "Restore failed: ${e.message}"
+                    )
+                }
             },
         )
     }
@@ -325,7 +394,9 @@ class GlobalSettingsViewModel(
         if (ok) (context.applicationContext as ShellifyApplication).injectAndLoadGeckoView()
     }
 
-    fun cancelGeckoInstall() { geckoEngineManager.cancelDownload() }
+    fun cancelGeckoInstall() {
+        geckoEngineManager.cancelDownload()
+    }
 
     fun uninstallGeckoEngine() {
         if (_state.value.defaultEngineType == EngineType.GECKOVIEW) {

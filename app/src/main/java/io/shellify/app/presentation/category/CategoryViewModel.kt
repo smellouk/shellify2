@@ -3,7 +3,7 @@ package io.shellify.app.presentation.category
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.shellify.app.domain.model.Category
-import io.shellify.app.domain.repository.CategoryRepository
+import io.shellify.app.domain.usecase.DeleteCategoryUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +23,7 @@ data class CategoryUiState(
 class CategoryViewModel(
     getCategories: GetCategoriesUseCase,
     private val saveCategory: SaveCategoryUseCase,
-    private val repo: CategoryRepository,
+    private val deleteCategory: DeleteCategoryUseCase,
 ) : ViewModel() {
 
     val categories: kotlinx.coroutines.flow.StateFlow<List<Category>?> = getCategories()
@@ -55,7 +55,13 @@ class CategoryViewModel(
     }
 
     fun dismissDialog() = _state.update {
-        it.copy(showAddDialog = false, editingId = null, newName = "", selectedIcon = "folder", selectedColor = "#6D28D9")
+        it.copy(
+            showAddDialog = false,
+            editingId = null,
+            newName = "",
+            selectedIcon = "folder",
+            selectedColor = "#6D28D9"
+        )
     }
 
     fun setNewName(name: String) = _state.update { it.copy(newName = name) }
@@ -73,5 +79,5 @@ class CategoryViewModel(
         }
     }
 
-    fun delete(category: Category) = viewModelScope.launch { repo.delete(category) }
+    fun delete(category: Category) = viewModelScope.launch { deleteCategory(category) }
 }

@@ -26,7 +26,8 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     adBlockAllowUserToggle = adBlockAllowUserToggle,
     adBlockCustomRules = adBlockCustomRules.split("\n").filter { it.isNotBlank() },
     translateEnabled = translateEnabled,
-    translateTarget = TranslateLanguage.entries.find { it.code == translateTarget } ?: TranslateLanguage.ENGLISH,
+    translateTarget = TranslateLanguage.entries.find { it.code == translateTarget }
+        ?: TranslateLanguage.ENGLISH,
     autoTranslateOnLoad = autoTranslateOnLoad,
     uaMode = runCatching { UserAgentMode.valueOf(uaMode) }.getOrDefault(UserAgentMode.CHROME_MOBILE),
     engineType = runCatching { EngineType.valueOf(engineType) }.getOrDefault(EngineType.SYSTEM_WEBVIEW),

@@ -3,7 +3,8 @@ package io.shellify.app.presentation.settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
+import io.shellify.app.presentation.components.ConfirmDialog
+import io.shellify.app.presentation.components.SurfaceCard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,8 +50,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -156,12 +155,18 @@ fun AppSettingsScreen(
                 title = { Text(app?.name ?: stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            stringResource(R.string.common_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showShareSheet = true }) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share_button))
+                        Icon(
+                            Icons.Default.Share,
+                            contentDescription = stringResource(R.string.share_button)
+                        )
                     }
                 },
             )
@@ -179,7 +184,7 @@ fun AppSettingsScreen(
         ) {
             // ── App Info ──────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_app_info))
-            SettingsCard {
+            SurfaceCard {
                 Column(
                     modifier = Modifier.padding(Dimens.spaceMd),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
@@ -188,7 +193,13 @@ fun AppSettingsScreen(
                         value = app.url,
                         onValueChange = viewModel::setUrl,
                         label = { Text(stringResource(R.string.add_url_label)) },
-                        leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Link,
+                                null,
+                                modifier = Modifier.size(Dimens.sizeMd)
+                            )
+                        },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(Dimens.cornerLg),
@@ -197,7 +208,13 @@ fun AppSettingsScreen(
                         value = app.name,
                         onValueChange = viewModel::setName,
                         label = { Text(stringResource(R.string.add_name_label)) },
-                        leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.PhoneAndroid,
+                                null,
+                                modifier = Modifier.size(Dimens.sizeMd)
+                            )
+                        },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(Dimens.cornerLg),
@@ -215,7 +232,11 @@ fun AppSettingsScreen(
                                 .size(Dimens.sizeIconPreview)
                                 .clip(RoundedCornerShape(Dimens.cornerIcon))
                                 .background(MaterialTheme.colorScheme.primaryContainer)
-                                .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(Dimens.cornerIcon)),
+                                .border(
+                                    Dimens.borderDefault,
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                    RoundedCornerShape(Dimens.cornerIcon)
+                                ),
                             contentAlignment = Alignment.Center,
                         ) {
                             if (previewIconPath != null) {
@@ -226,7 +247,9 @@ fun AppSettingsScreen(
                                         .build(),
                                     contentDescription = app.name,
                                     contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(Dimens.cornerIcon)),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(Dimens.cornerIcon)),
                                 )
                             } else {
                                 AppIcon(app = app, modifier = Modifier.fillMaxSize())
@@ -244,9 +267,16 @@ fun AppSettingsScreen(
                             ),
                         ) {
                             if (state.isFetchingIcon) {
-                                CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeTagIcon), strokeWidth = Dimens.strokeSm)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(Dimens.sizeTagIcon),
+                                    strokeWidth = Dimens.strokeSm
+                                )
                             } else {
-                                Icon(Icons.Default.Language, stringResource(R.string.add_fetch_icon_cd), modifier = Modifier.size(Dimens.sizeXs))
+                                Icon(
+                                    Icons.Default.Language,
+                                    stringResource(R.string.add_fetch_icon_cd),
+                                    modifier = Modifier.size(Dimens.sizeXs)
+                                )
                             }
                         }
 
@@ -261,7 +291,11 @@ fun AppSettingsScreen(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             ),
                         ) {
-                            Icon(Icons.Default.Image, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(Dimens.sizeXs))
+                            Icon(
+                                Icons.Default.Image,
+                                stringResource(R.string.add_choose_image_cd),
+                                modifier = Modifier.size(Dimens.sizeXs)
+                            )
                         }
 
                         if (state.iconPackAvailable) {
@@ -273,7 +307,11 @@ fun AppSettingsScreen(
                                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 ),
                             ) {
-                                Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(Dimens.sizeXs))
+                                Icon(
+                                    Icons.Default.AutoAwesome,
+                                    null,
+                                    modifier = Modifier.size(Dimens.sizeXs)
+                                )
                             }
                         }
 
@@ -282,7 +320,11 @@ fun AppSettingsScreen(
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(Dimens.cornerLg))
-                                .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(Dimens.cornerLg))
+                                .border(
+                                    Dimens.borderDefault,
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                    RoundedCornerShape(Dimens.cornerLg)
+                                )
                                 .clickable { showColorPicker = true }
                                 .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
                             verticalAlignment = Alignment.CenterVertically,
@@ -294,13 +336,23 @@ fun AppSettingsScreen(
                                     .clip(RoundedCornerShape(Dimens.cornerXs))
                                     .background(
                                         if (app.themeColor != null)
-                                            runCatching { Color(android.graphics.Color.parseColor(app.themeColor)) }
+                                            runCatching {
+                                                Color(
+                                                    android.graphics.Color.parseColor(
+                                                        app.themeColor
+                                                    )
+                                                )
+                                            }
                                                 .getOrDefault(MaterialTheme.colorScheme.primaryContainer)
                                         else MaterialTheme.colorScheme.primaryContainer
                                     ),
                             )
                             Column {
-                                Text(themeColorLabel, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Medium)
+                                Text(
+                                    themeColorLabel,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Medium
+                                )
                                 Text(
                                     app.themeColor ?: themeColorNotSet,
                                     style = MaterialTheme.typography.labelSmall,
@@ -314,7 +366,7 @@ fun AppSettingsScreen(
 
             // ── Features ─────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_features))
-            SettingsCard {
+            SurfaceCard {
                 ToggleListItem(
                     label = stringResource(R.string.settings_fullscreen),
                     checked = app.isFullscreen,
@@ -341,7 +393,9 @@ fun AppSettingsScreen(
                         Text(
                             stringResource(R.string.settings_translate_lang),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (app.translateEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                            color = if (app.translateEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.38f
+                            ),
                         )
                     },
                     trailingContent = {
@@ -350,18 +404,28 @@ fun AppSettingsScreen(
                                 onClick = { if (app.translateEnabled) showLangMenu = true },
                                 enabled = app.translateEnabled,
                             ) {
-                                Icon(Icons.Default.GTranslate, null, modifier = Modifier.size(Dimens.sizeSm))
+                                Icon(
+                                    Icons.Default.GTranslate,
+                                    null,
+                                    modifier = Modifier.size(Dimens.sizeSm)
+                                )
                                 Text(
                                     " ${app.translateTarget.displayName}",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (app.translateEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                    color = if (app.translateEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.38f
+                                    ),
                                 )
                             }
-                            DropdownMenu(expanded = showLangMenu, onDismissRequest = { showLangMenu = false }) {
+                            DropdownMenu(
+                                expanded = showLangMenu,
+                                onDismissRequest = { showLangMenu = false }) {
                                 TranslateLanguage.entries.forEach { lang ->
                                     DropdownMenuItem(
                                         text = { Text(lang.displayName) },
-                                        onClick = { viewModel.setTranslateTarget(lang); showLangMenu = false },
+                                        onClick = {
+                                            viewModel.setTranslateTarget(lang); showLangMenu = false
+                                        },
                                     )
                                 }
                             }
@@ -380,16 +444,24 @@ fun AppSettingsScreen(
 
             // ── Shortcut ──────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_shortcut))
-            SettingsCard {
+            SurfaceCard {
                 ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_create_shortcut), style = MaterialTheme.typography.bodyMedium) },
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_create_shortcut),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
                     supportingContent = { Text(stringResource(R.string.settings_create_shortcut_desc)) },
                     trailingContent = {
                         IconButton(onClick = {
                             PwaShortcutManager.createShortcut(context, app)
                             viewModel.markShortcutCreated(app)
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.settings_create_shortcut_cd))
+                            Icon(
+                                Icons.AutoMirrored.Filled.Shortcut,
+                                stringResource(R.string.settings_create_shortcut_cd)
+                            )
                         }
                     },
                 )
@@ -397,12 +469,20 @@ fun AppSettingsScreen(
 
             // ── Security ──────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_security))
-            SettingsCard {
+            SurfaceCard {
                 ListItem(
                     leadingContent = {
-                        Icon(if (app.lockType != LockType.NONE) Icons.Default.Lock else Icons.Default.LockOpen, null)
+                        Icon(
+                            if (app.lockType != LockType.NONE) Icons.Default.Lock else Icons.Default.LockOpen,
+                            null
+                        )
                     },
-                    headlineContent = { Text(stringResource(R.string.settings_applock), style = MaterialTheme.typography.bodyMedium) },
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_applock),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
                     trailingContent = {
                         Switch(
                             checked = app.lockType != LockType.NONE,
@@ -422,7 +502,10 @@ fun AppSettingsScreen(
                 )
                 if (app.lockType != LockType.NONE) {
                     CardDivider()
-                    listOf(LockType.PASSWORD to lockPasswordLabel, LockType.SYSTEM to lockSystemLabel).forEach { (type, label) ->
+                    listOf(
+                        LockType.PASSWORD to lockPasswordLabel,
+                        LockType.SYSTEM to lockSystemLabel
+                    ).forEach { (type, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -471,36 +554,25 @@ fun AppSettingsScreen(
         }
 
         if (showClearDataDialog) {
-            AlertDialog(
-                onDismissRequest = { showClearDataDialog = false },
-                icon = { Icon(Icons.Default.DeleteSweep, null) },
-                title = { Text(stringResource(R.string.home_clear_data_title)) },
-                text = { Text(stringResource(R.string.home_clear_data_body, app?.name.orEmpty())) },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showClearDataDialog = false; viewModel.clearData() },
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                    ) { Text(stringResource(R.string.home_clear_data_button)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showClearDataDialog = false }) { Text(stringResource(R.string.common_cancel)) }
-                },
+            ConfirmDialog(
+                title = stringResource(R.string.home_clear_data_title),
+                body = stringResource(R.string.home_clear_data_body, app?.name.orEmpty()),
+                confirmLabel = stringResource(R.string.home_clear_data_button),
+                onConfirm = { showClearDataDialog = false; viewModel.clearData() },
+                onDismiss = { showClearDataDialog = false },
+                icon = Icons.Default.DeleteSweep,
+                isDestructive = true,
             )
         }
 
         if (state.showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = viewModel::dismissDeleteDialog,
-                title = { Text(stringResource(R.string.settings_delete_confirm, app.name)) },
-                text = { Text(stringResource(R.string.settings_delete_confirm_body)) },
-                confirmButton = {
-                    TextButton(onClick = viewModel::deleteApp) {
-                        Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = viewModel::dismissDeleteDialog) { Text(stringResource(R.string.common_cancel)) }
-                },
+            ConfirmDialog(
+                title = stringResource(R.string.settings_delete_confirm, app.name),
+                body = stringResource(R.string.settings_delete_confirm_body),
+                confirmLabel = stringResource(R.string.common_delete),
+                onConfirm = viewModel::deleteApp,
+                onDismiss = viewModel::dismissDeleteDialog,
+                isDestructive = true,
             )
         }
 
@@ -522,7 +594,12 @@ fun AppSettingsScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             isError = state.disableLockError,
                             supportingText = if (state.disableLockError) {
-                                { Text(stringResource(R.string.common_wrong_password), color = MaterialTheme.colorScheme.error) }
+                                {
+                                    Text(
+                                        stringResource(R.string.common_wrong_password),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             } else null,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(Dimens.cornerLg),
@@ -536,7 +613,13 @@ fun AppSettingsScreen(
                     ) { Text(stringResource(R.string.settings_disable_lock_title)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = viewModel::dismissDisableLockDialog) { Text(stringResource(R.string.common_cancel)) }
+                    TextButton(onClick = viewModel::dismissDisableLockDialog) {
+                        Text(
+                            stringResource(
+                                R.string.common_cancel
+                            )
+                        )
+                    }
                 },
             )
         }
@@ -562,7 +645,7 @@ fun AppSettingsScreen(
             )
         }
 
-        if (showShareSheet && app != null) {
+        if (showShareSheet) {
             AppShareSheet(
                 appName = app.name,
                 appUrl = app.url,
@@ -581,7 +664,7 @@ private fun AppEngineCard(
     val geckoAvailable = geckoInstallState is GeckoInstallState.Installed
     val geckoMissing = selected == EngineType.GECKOVIEW && !geckoAvailable
 
-    SettingsCard {
+    SurfaceCard {
         Column {
             if (geckoMissing) {
                 Row(
@@ -635,20 +718,31 @@ private fun AppEngineCard(
                                 engine.displayName,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (enabled) MaterialTheme.colorScheme.onSurface
-                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                             )
                             if (isGecko && !geckoAvailable) {
                                 val label = when (geckoInstallState) {
-                                    is GeckoInstallState.Downloading -> stringResource(R.string.add_engine_gecko_downloading, (geckoInstallState.progress * 100).toInt())
+                                    is GeckoInstallState.Downloading -> stringResource(
+                                        R.string.add_engine_gecko_downloading,
+                                        (geckoInstallState.progress * 100).toInt()
+                                    )
+
                                     is GeckoInstallState.Installing -> stringResource(R.string.add_engine_gecko_installing)
                                     is GeckoInstallState.Error -> stringResource(R.string.add_engine_gecko_error)
-                                    else -> stringResource(R.string.add_engine_gecko_not_installed, engine.estimatedSizeMb)
+                                    else -> stringResource(
+                                        R.string.add_engine_gecko_not_installed,
+                                        engine.estimatedSizeMb
+                                    )
                                 }
-                                Text(label, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    label, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             } else {
-                                Text(engine.description, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    engine.description, style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -670,16 +764,6 @@ private fun SectionLabel(text: String) =
 @Composable
 private fun CardDivider() =
     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
-
-@Composable
-private fun SettingsCard(content: @Composable () -> Unit) =
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(Dimens.cornerXl),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
-    ) { content() }
 
 @Composable
 private fun ToggleListItem(

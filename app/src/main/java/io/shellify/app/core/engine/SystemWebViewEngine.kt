@@ -25,7 +25,10 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
                 if (app.adBlockEnabled) adBlocker.shouldBlock(request) else null
 
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView,
+                request: WebResourceRequest
+            ): Boolean {
                 val url = request.url.toString()
                 if (!url.startsWith("http://") && !url.startsWith("https://")) {
                     callback.onExternalLink(url)
@@ -63,14 +66,27 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
 
     fun getWebView(): WebView? = webView
 
-    override fun loadUrl(url: String) { webView?.loadUrl(url) }
+    override fun loadUrl(url: String) {
+        webView?.loadUrl(url)
+    }
+
     override fun evaluateJavascript(script: String, resultCallback: ((String?) -> Unit)?) {
         webView?.evaluateJavascript(script, resultCallback)
     }
+
     override fun canGoBack() = webView?.canGoBack() ?: false
-    override fun goBack() { webView?.goBack() }
-    override fun reload() { webView?.reload() }
-    override fun stopLoading() { webView?.stopLoading() }
+    override fun goBack() {
+        webView?.goBack()
+    }
+
+    override fun reload() {
+        webView?.reload()
+    }
+
+    override fun stopLoading() {
+        webView?.stopLoading()
+    }
+
     override fun getCurrentUrl() = webView?.url
     override fun getView(): View? = webView
 

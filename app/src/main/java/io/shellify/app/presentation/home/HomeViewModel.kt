@@ -58,7 +58,12 @@ class HomeViewModel(
     ) { apps, categories, (selectedCategory, query), quickAdd ->
         val filtered = apps
             .filter { if (selectedCategory != null) it.categoryId == selectedCategory else true }
-            .filter { if (query.isBlank()) true else it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true) }
+            .filter {
+                if (query.isBlank()) true else it.name.contains(
+                    query,
+                    ignoreCase = true
+                ) || it.url.contains(query, ignoreCase = true)
+            }
         HomeUiState(
             apps = filtered,
             hasAnyApps = apps.isNotEmpty(),
@@ -89,7 +94,9 @@ class HomeViewModel(
                         ?: manifest?.shortName?.takeIf { it.isNotBlank() }
                         ?: name,
                     url = fullUrl,
-                    iconSource = io.shellify.app.domain.model.IconSource.fromLegacyPath(fetchedIconPath),
+                    iconSource = io.shellify.app.domain.model.IconSource.fromLegacyPath(
+                        fetchedIconPath
+                    ),
                     themeColor = manifest?.themeColor,
                     backgroundColor = manifest?.backgroundColor,
                     description = manifest?.description,

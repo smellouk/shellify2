@@ -1,7 +1,8 @@
 package io.shellify.app.presentation.shortcuts
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
+import io.shellify.app.presentation.components.ConfirmDialog
+import io.shellify.app.presentation.components.EmptyStateIllustration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -34,7 +34,7 @@ import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -55,7 +55,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -85,8 +84,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -148,7 +145,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                             modifier = Modifier.size(32.dp),
                         ) {
                             Icon(
-                                if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
+                                if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
                                 contentDescription = null,
                             )
                         }
@@ -164,21 +161,30 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.shortcuts_add_button))
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.shortcuts_add_button)
+                    )
                 }
             }
         },
     ) { padding ->
         when {
             state.isLoading -> {
-                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Box(Modifier
+                    .fillMaxSize()
+                    .padding(padding), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
+
             state.items.isEmpty() -> EmptyState(
                 onAddShortcut = viewModel::showAddSheet.takeIf { state.addableApps.isNotEmpty() },
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
             )
+
             else -> {
                 if (isGridView) {
                     LazyVerticalGrid(
@@ -208,7 +214,10 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(Dimens.cornerXl),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                                border = BorderStroke(
+                                    Dimens.borderDefault,
+                                    MaterialTheme.colorScheme.outlineVariant
+                                ),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                             ) {
                                 ShortcutRow(
@@ -231,7 +240,11 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 stringResource(R.string.shortcuts_add_button),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+                modifier = Modifier.padding(
+                    start = Dimens.spaceLg,
+                    end = Dimens.spaceLg,
+                    bottom = Dimens.spaceSm
+                ),
             )
             LazyColumn {
                 items(state.addableApps) { app ->
@@ -241,7 +254,11 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                                 modifier = Modifier
                                     .size(Dimens.sizeCard)
                                     .clip(RoundedCornerShape(Dimens.cornerLg))
-                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                                    .background(
+                                        MaterialTheme.colorScheme.primaryContainer.copy(
+                                            alpha = 0.5f
+                                        )
+                                    ),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 AppIcon(app = app, modifier = Modifier.size(Dimens.sizeApp))
@@ -281,13 +298,13 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
 
         val sourceIcon = when (refreshState) {
             IconRefreshState.Success -> Icons.Default.CheckCircle
-            IconRefreshState.Error   -> Icons.Default.Warning
-            else                     -> Icons.Default.Sync
+            IconRefreshState.Error -> Icons.Default.Warning
+            else -> Icons.Default.Sync
         }
         val sourceTint = when (refreshState) {
             IconRefreshState.Success -> Color(0xFF22C55E)
-            IconRefreshState.Error   -> MaterialTheme.colorScheme.error
-            else                     -> MaterialTheme.colorScheme.primary
+            IconRefreshState.Error -> MaterialTheme.colorScheme.error
+            else -> MaterialTheme.colorScheme.primary
         }
 
         ModalBottomSheet(onDismissRequest = viewModel::dismissIconSheet) {
@@ -295,7 +312,11 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 stringResource(R.string.shortcuts_change_icon_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceMd),
+                modifier = Modifier.padding(
+                    start = Dimens.spaceLg,
+                    end = Dimens.spaceLg,
+                    bottom = Dimens.spaceMd
+                ),
             )
             Row(
                 modifier = Modifier
@@ -306,7 +327,9 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 IconOptionCard(
                     icon = sourceIcon,
                     iconTint = sourceTint,
-                    iconModifier = if (isRefreshing) Modifier.graphicsLayer { rotationZ = rotation } else Modifier,
+                    iconModifier = if (isRefreshing) Modifier.graphicsLayer {
+                        rotationZ = rotation
+                    } else Modifier,
                     label = stringResource(R.string.shortcuts_icon_from_source),
                     enabled = !isRefreshing,
                     modifier = Modifier.weight(1f),
@@ -371,22 +394,14 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     }
 
     if (state.removeTarget != null) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissRemove,
-            icon = { Icon(Icons.Default.Delete, null) },
-            title = { Text(stringResource(R.string.shortcuts_remove_dialog_title)) },
-            text = {
-                Text(stringResource(R.string.shortcuts_remove_body, state.removeTarget!!.label))
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = viewModel::confirmRemove,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) { Text(stringResource(R.string.shortcuts_disable_button)) }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::dismissRemove) { Text(stringResource(R.string.common_cancel)) }
-            },
+        ConfirmDialog(
+            title = stringResource(R.string.shortcuts_remove_dialog_title),
+            body = stringResource(R.string.shortcuts_remove_body, state.removeTarget!!.label),
+            confirmLabel = stringResource(R.string.shortcuts_disable_button),
+            onConfirm = viewModel::confirmRemove,
+            onDismiss = viewModel::dismissRemove,
+            icon = Icons.Default.Delete,
+            isDestructive = true,
         )
     }
 }
@@ -426,7 +441,10 @@ private fun ShortcutRow(
         trailingContent = {
             Box {
                 IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.shortcuts_options_cd))
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.shortcuts_options_cd)
+                    )
                 }
                 DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                     DropdownMenuItem(
@@ -442,7 +460,13 @@ private fun ShortcutRow(
 
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.shortcuts_menu_remove)) },
-                        leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Delete,
+                                null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
                         onClick = { showMenu = false; onRemove() },
                     )
                 }
@@ -487,10 +511,19 @@ private fun ShortcutGridCard(
                             modifier = Modifier.weight(1f),
                         )
                         Box {
-                            IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
-                                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.shortcuts_options_cd), modifier = Modifier.size(Dimens.sizeXs))
+                            IconButton(
+                                onClick = { showMenu = true },
+                                modifier = Modifier.size(Dimens.sizeXl)
+                            ) {
+                                Icon(
+                                    Icons.Default.MoreVert,
+                                    contentDescription = stringResource(R.string.shortcuts_options_cd),
+                                    modifier = Modifier.size(Dimens.sizeXs)
+                                )
                             }
-                            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.shortcuts_menu_rename)) },
                                     leadingIcon = { Icon(Icons.Default.Edit, null) },
@@ -503,7 +536,13 @@ private fun ShortcutGridCard(
                                 )
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.shortcuts_menu_remove)) },
-                                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            null,
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    },
                                     onClick = { showMenu = false; onRemove() },
                                 )
                             }
@@ -517,52 +556,13 @@ private fun ShortcutGridCard(
 
 @Composable
 private fun EmptyState(onAddShortcut: (() -> Unit)?, modifier: Modifier = Modifier) {
-    val p97  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
-    val p95  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-    val p90  = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
-    val p40  = MaterialTheme.colorScheme.primary
-    val surfDim = MaterialTheme.colorScheme.outlineVariant
-
     Column(
         modifier = modifier.padding(horizontal = Dimens.size4xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd))
 
-        // 160×160 illustration — 3 filled rings + single dashed orbit
-        Box(modifier = Modifier.size(Dimens.illustrationSize), contentAlignment = Alignment.Center) {
-            Box(modifier = Modifier.size(Dimens.illustrationSize).background(p97, CircleShape))
-            Box(modifier = Modifier.size(Dimens.illustrationSizeMid).background(p95, CircleShape))
-            Box(modifier = Modifier.size(Dimens.illustrationSizeInner).background(p90, CircleShape))
-            Canvas(modifier = Modifier.size(Dimens.illustrationSize)) {
-                drawCircle(
-                    color = p40.copy(alpha = 0.35f),
-                    radius = 70.dp.toPx(),
-                    style = Stroke(
-                        width = 1.2.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(3.dp.toPx(), 7.dp.toPx()), 0f),
-                    ),
-                )
-            }
-            Box(
-                modifier = Modifier.size(Dimens.sizeIllustrationTile).background(p40, RoundedCornerShape(Dimens.corner20)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Shortcut, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
-            }
-            Box(modifier = Modifier.size(Dimens.size2xl).offset(x = (-49).dp, y = (-57).dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
-                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-            Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = 57.dp, y = (-45).dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
-                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-            Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = (-61).dp, y = 51.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
-                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-            Box(modifier = Modifier.size(Dimens.size2xl).offset(x = 41.dp, y = 59.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
-                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-        }
+        EmptyStateIllustration(centerIcon = Icons.AutoMirrored.Filled.Shortcut)
 
         Spacer(Modifier.height(Dimens.space14))
         Text(
@@ -591,7 +591,11 @@ private fun EmptyState(onAddShortcut: (() -> Unit)?, modifier: Modifier = Modifi
             ) {
                 Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
                 Spacer(Modifier.size(Dimens.spaceSm))
-                Text(stringResource(R.string.shortcuts_add_button), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(R.string.shortcuts_add_button),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
         Spacer(Modifier.weight(1f))
@@ -639,7 +643,9 @@ private fun IconOptionCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconTint,
-                    modifier = Modifier.size(Dimens.sizeMd).then(iconModifier),
+                    modifier = Modifier
+                        .size(Dimens.sizeMd)
+                        .then(iconModifier),
                 )
             }
             Text(

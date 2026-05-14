@@ -30,21 +30,21 @@ private val CairoFamily = FontFamily(
 
 private fun arabicTypography() = Typography().run {
     copy(
-        displayLarge    = displayLarge.copy(fontFamily    = CairoFamily),
-        displayMedium   = displayMedium.copy(fontFamily   = CairoFamily),
-        displaySmall    = displaySmall.copy(fontFamily    = CairoFamily),
-        headlineLarge   = headlineLarge.copy(fontFamily   = CairoFamily),
-        headlineMedium  = headlineMedium.copy(fontFamily  = CairoFamily),
-        headlineSmall   = headlineSmall.copy(fontFamily   = CairoFamily),
-        titleLarge      = titleLarge.copy(fontFamily      = CairoFamily),
-        titleMedium     = titleMedium.copy(fontFamily     = CairoFamily),
-        titleSmall      = titleSmall.copy(fontFamily      = CairoFamily),
-        bodyLarge       = bodyLarge.copy(fontFamily       = CairoFamily),
-        bodyMedium      = bodyMedium.copy(fontFamily      = CairoFamily),
-        bodySmall       = bodySmall.copy(fontFamily       = CairoFamily),
-        labelLarge      = labelLarge.copy(fontFamily      = CairoFamily),
-        labelMedium     = labelMedium.copy(fontFamily     = CairoFamily),
-        labelSmall      = labelSmall.copy(fontFamily      = CairoFamily),
+        displayLarge = displayLarge.copy(fontFamily = CairoFamily),
+        displayMedium = displayMedium.copy(fontFamily = CairoFamily),
+        displaySmall = displaySmall.copy(fontFamily = CairoFamily),
+        headlineLarge = headlineLarge.copy(fontFamily = CairoFamily),
+        headlineMedium = headlineMedium.copy(fontFamily = CairoFamily),
+        headlineSmall = headlineSmall.copy(fontFamily = CairoFamily),
+        titleLarge = titleLarge.copy(fontFamily = CairoFamily),
+        titleMedium = titleMedium.copy(fontFamily = CairoFamily),
+        titleSmall = titleSmall.copy(fontFamily = CairoFamily),
+        bodyLarge = bodyLarge.copy(fontFamily = CairoFamily),
+        bodyMedium = bodyMedium.copy(fontFamily = CairoFamily),
+        bodySmall = bodySmall.copy(fontFamily = CairoFamily),
+        labelLarge = labelLarge.copy(fontFamily = CairoFamily),
+        labelMedium = labelMedium.copy(fontFamily = CairoFamily),
+        labelSmall = labelSmall.copy(fontFamily = CairoFamily),
     )
 }
 
@@ -82,6 +82,7 @@ fun ShellifyTheme(
             val ctx = LocalContext.current
             if (useDark) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
         }
+
         useDark -> DarkColors
         else -> LightColors
     }
@@ -93,13 +94,13 @@ fun ShellifyTheme(
         // container = accent at low opacity over the scheme's surface for a gentle tonal fill
         val container = accent.copy(alpha = 0.15f)
         colorScheme.copy(
-            primary              = accent,
-            onPrimary            = onAccent,
-            primaryContainer     = container,
-            onPrimaryContainer   = accent,
-            secondary            = accent,
-            onSecondary          = onAccent,
-            secondaryContainer   = container,
+            primary = accent,
+            onPrimary = onAccent,
+            primaryContainer = container,
+            onPrimaryContainer = accent,
+            secondary = accent,
+            onSecondary = onAccent,
+            secondaryContainer = container,
             onSecondaryContainer = accent,
         )
     } else colorScheme
@@ -113,7 +114,8 @@ fun ShellifyTheme(
             if (window != null) {
                 @Suppress("DEPRECATION")
                 window.statusBarColor = finalColorScheme.surface.toArgb()
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDark
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
+                    !useDark
             }
         }
     }

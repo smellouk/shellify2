@@ -20,8 +20,8 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.domain.repository.WebAppRepository
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
+import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,7 +46,7 @@ data class AppSettingsUiState(
 
 class AppSettingsViewModel(
     private val appId: Long,
-    private val repo: WebAppRepository,
+    private val getWebAppById: GetWebAppByIdUseCase,
     private val saveWebApp: SaveWebAppUseCase,
     private val deleteWebApp: DeleteWebAppUseCase,
     private val isolationManager: IsolationManager,
@@ -58,14 +58,16 @@ class AppSettingsViewModel(
     val geckoEngineManager: GeckoEngineManager,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(AppSettingsUiState(
-        iconPackAvailable = simpleIconsManager.state.value is SimpleIconsState.Imported,
-    ))
+    private val _state = MutableStateFlow(
+        AppSettingsUiState(
+            iconPackAvailable = simpleIconsManager.state.value is SimpleIconsState.Imported,
+        )
+    )
     val uiState: StateFlow<AppSettingsUiState> = _state
 
     init {
         viewModelScope.launch {
-            val app = repo.getById(appId)
+            val app = getWebAppById(appId)
             _state.update { it.copy(app = app, isLoading = false) }
         }
     }
@@ -84,7 +86,8 @@ class AppSettingsViewModel(
         val app = _state.value.app ?: return
         val src = app.iconSource
         if (src is IconSource.SvgIcon && color != null) {
-            val bgColorArgb = runCatching { android.graphics.Color.parseColor(color) }.getOrNull() ?: return
+            val bgColorArgb =
+                runCatching { android.graphics.Color.parseColor(color) }.getOrNull() ?: return
             reRenderSvgIcon(src.slug, bgColorArgb)
         }
     }
@@ -108,11 +111,16 @@ class AppSettingsViewModel(
     fun toggleFullscreen() = update { it.copy(isFullscreen = !it.isFullscreen) }
     fun toggleAdBlock() = update { it.copy(adBlockEnabled = !it.adBlockEnabled) }
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
-    fun setTranslateTarget(lang: io.shellify.app.domain.model.TranslateLanguage) = update { it.copy(translateTarget = lang) }
+    fun setTranslateTarget(lang: io.shellify.app.domain.model.TranslateLanguage) =
+        update { it.copy(translateTarget = lang) }
+
     fun setLockType(v: LockType) = update { it.copy(lockType = v) }
 
-    fun requestDisableLock() = _state.update { it.copy(showDisableLockDialog = true, disableLockError = false) }
-    fun dismissDisableLockDialog() = _state.update { it.copy(showDisableLockDialog = false, disableLockError = false) }
+    fun requestDisableLock() =
+        _state.update { it.copy(showDisableLockDialog = true, disableLockError = false) }
+
+    fun dismissDisableLockDialog() =
+        _state.update { it.copy(showDisableLockDialog = false, disableLockError = false) }
 
     fun confirmDisableLock(password: String) {
         viewModelScope.launch {
@@ -154,7 +162,13 @@ class AppSettingsViewModel(
     fun openIconPackPicker() {
         viewModelScope.launch {
             val icons = SimpleIconsReader(context).readAll()
-            _state.update { it.copy(showIconPackPicker = true, packIcons = icons, iconPickerQuery = "") }
+            _state.update {
+                it.copy(
+                    showIconPackPicker = true,
+                    packIcons = icons,
+                    iconPickerQuery = ""
+                )
+            }
         }
     }
 

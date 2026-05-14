@@ -81,7 +81,8 @@ class SimpleIconsManager(private val context: Context) {
                         out.write(buf, 0, n)
                         read += n
                         if (total > 0)
-                            _state.value = SimpleIconsState.Downloading(read.toFloat() / total * 0.9f)
+                            _state.value =
+                                SimpleIconsState.Downloading(read.toFloat() / total * 0.9f)
                     }
                 }
             }

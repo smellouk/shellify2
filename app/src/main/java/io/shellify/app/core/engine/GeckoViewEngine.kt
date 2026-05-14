@@ -136,7 +136,10 @@ class GeckoViewEngine(
                 return GeckoResult.fromValue(AllowOrDeny.ALLOW)
             }
 
-            override fun onNewSession(session: GeckoSession, uri: String): GeckoResult<GeckoSession>? {
+            override fun onNewSession(
+                session: GeckoSession,
+                uri: String
+            ): GeckoResult<GeckoSession>? {
                 loadUrl(uri)
                 return null
             }
@@ -164,7 +167,10 @@ class GeckoViewEngine(
         val cb = callback ?: return
         val urlToRestore = currentUrl
         try {
-            try { session?.close() } catch (_: Exception) {}
+            try {
+                session?.close()
+            } catch (_: Exception) {
+            }
             session = null
 
             val newSession = buildSession(lastUaMode, lastUaOverride, cb)
@@ -181,7 +187,9 @@ class GeckoViewEngine(
         }
     }
 
-    override fun loadUrl(url: String) { session?.loadUri(url) }
+    override fun loadUrl(url: String) {
+        session?.loadUri(url)
+    }
 
     override fun evaluateJavascript(script: String, resultCallback: ((String?) -> Unit)?) {
         val s = session ?: run { resultCallback?.invoke(null); return }
@@ -198,14 +206,27 @@ class GeckoViewEngine(
     }
 
     override fun canGoBack() = canGoBackFlag
-    override fun goBack() { session?.goBack() }
-    override fun reload() { session?.reload() }
-    override fun stopLoading() { session?.stop() }
+    override fun goBack() {
+        session?.goBack()
+    }
+
+    override fun reload() {
+        session?.reload()
+    }
+
+    override fun stopLoading() {
+        session?.stop()
+    }
+
     override fun getCurrentUrl() = currentUrl
     override fun getView(): View? = geckoView
 
     override fun destroy() {
-        try { session?.close() } catch (e: Exception) { Log.e(TAG, "Error closing session", e) }
+        try {
+            session?.close()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error closing session", e)
+        }
         session = null
         geckoView = null
         callback = null

@@ -41,7 +41,8 @@ fun AppShareSheet(
 ) {
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val customLink = remember(appUrl, appName) { DeepLinkHandler.buildCustomScheme(appUrl, appName) }
+    val customLink =
+        remember(appUrl, appName) { DeepLinkHandler.buildCustomScheme(appUrl, appName) }
     val httpsLink = remember(appUrl, appName) { DeepLinkHandler.buildHttps(appUrl, appName) }
     val qrBitmap = remember(customLink) { QrCodeGenerator.generate(customLink) }
 
@@ -54,7 +55,11 @@ fun AppShareSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
         ) {
-            Text(appName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                appName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
             Image(
                 bitmap = qrBitmap.asImageBitmap(),
                 contentDescription = null,
@@ -64,8 +69,16 @@ fun AppShareSheet(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
             ) {
-                Text(customLink, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(httpsLink, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    customLink,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    httpsLink,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)) {
                 OutlinedButton(onClick = {

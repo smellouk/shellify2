@@ -55,14 +55,20 @@ class MainActivity : AppCompatActivity() {
             val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
             val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
             val accentColor by app.themeManager.accentColor.collectAsState(null)
-            val screenshotProtection by app.passwordManager.screenshotProtection.collectAsState(false)
+            val screenshotProtection by app.passwordManager.screenshotProtection.collectAsState(
+                false
+            )
 
             LaunchedEffect(screenshotProtection) {
                 if (screenshotProtection) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
 
-            ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, accentColor = accentColor) {
+            ShellifyTheme(
+                themeMode = themeMode,
+                dynamicColor = dynamicColor,
+                accentColor = accentColor
+            ) {
                 CompositionLocalProvider(LocalThemeRevealState provides themeRevealState) {
                     Box(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
                         val navController = rememberNavController()

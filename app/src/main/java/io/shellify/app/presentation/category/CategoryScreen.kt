@@ -1,7 +1,6 @@
 package io.shellify.app.presentation.category
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -99,6 +98,7 @@ import io.shellify.app.presentation.theme.CategoryReadingFg
 import io.shellify.app.presentation.theme.CategoryReadingBg
 import io.shellify.app.presentation.theme.CategoryToolsFg
 import io.shellify.app.presentation.theme.CategoryToolsBg
+import io.shellify.app.presentation.components.EmptyStateIllustration
 import io.shellify.app.presentation.theme.Dimens
 
 val CATEGORY_ICON_KEYS = listOf(
@@ -170,69 +170,37 @@ fun CategoryScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     elevation = FloatingActionButtonDefaults.elevation(Dimens.spaceXs),
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.categories_add_fab_cd))
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.categories_add_fab_cd)
+                    )
                 }
             }
         },
     ) { padding ->
         if (categories == null) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            Box(Modifier
+                .fillMaxSize()
+                .padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
             return@Scaffold
         }
         if (categories!!.isEmpty()) {
-            val p97 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
-            val p95 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-            val p90 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
             val p40 = MaterialTheme.colorScheme.primary
+            val p90 = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)
             val surfDim = MaterialTheme.colorScheme.outlineVariant
-            val surf = MaterialTheme.colorScheme.surface
 
             Column(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Dimens.size4xl),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = Dimens.size4xl),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(Modifier.height(Dimens.spaceXl + Dimens.spaceMd))
 
-                // 160×160 illustration — 3 filled rings + single dashed orbit
-                Box(
-                    modifier = Modifier.size(Dimens.illustrationSize),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Box(modifier = Modifier.size(Dimens.illustrationSize).background(p97, CircleShape))
-                    Box(modifier = Modifier.size(Dimens.illustrationSizeMid).background(p95, CircleShape))
-                    Box(modifier = Modifier.size(Dimens.illustrationSizeInner).background(p90, CircleShape))
-                    Canvas(modifier = Modifier.size(Dimens.illustrationSize)) {
-                        drawCircle(
-                            color = p40.copy(alpha = 0.35f),
-                            radius = Dimens.illustrationRadius.toPx(),
-                            style = Stroke(
-                                width = 1.2.dp.toPx(),
-                                pathEffect = PathEffect.dashPathEffect(
-                                    floatArrayOf(3.dp.toPx(), 7.dp.toPx()), 0f,
-                                ),
-                            ),
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(Dimens.sizeIllustrationTile)
-                            .background(p40, RoundedCornerShape(Dimens.corner20)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(Icons.Default.Layers, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
-                    }
-                    // Ghost tiles — same positions as apps screen
-                    Box(modifier = Modifier.size(Dimens.size2xl).offset(x = (-49).dp, y = (-57).dp)
-                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-                    Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = 57.dp, y = (-45).dp)
-                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-                    Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = (-61).dp, y = 51.dp)
-                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-                    Box(modifier = Modifier.size(Dimens.size2xl).offset(x = 41.dp, y = 59.dp)
-                        .background(surf, RoundedCornerShape(Dimens.cornerSm)).border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
-                }
+                EmptyStateIllustration(centerIcon = Icons.Default.Layers)
 
                 Spacer(Modifier.height(Dimens.space14))
                 Text(
@@ -260,7 +228,11 @@ fun CategoryScreen(
                 ) {
                     Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
                     Spacer(Modifier.size(Dimens.spaceSm))
-                    Text(stringResource(R.string.categories_add), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        stringResource(R.string.categories_add),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
                 Spacer(Modifier.height(Dimens.sizeMd))
 
@@ -273,11 +245,40 @@ fun CategoryScreen(
                     val iconKey: String,
                     val hexColor: String,
                 )
+
                 val chipData = listOf(
-                    ChipSuggestion(stringResource(R.string.categories_suggestion_media),   Icons.Default.Bolt,     CategoryMediaFg,   CategoryMediaBg,   "movie",      "#CA8A04"),
-                    ChipSuggestion(stringResource(R.string.categories_suggestion_work),    Icons.Default.Apps,     p40,               p90,               "work",       "#4338CA"),
-                    ChipSuggestion(stringResource(R.string.categories_suggestion_reading), Icons.Default.Home,     CategoryReadingFg, CategoryReadingBg, "menu_book",  "#DB2777"),
-                    ChipSuggestion(stringResource(R.string.categories_suggestion_tools),   Icons.Default.GridView, CategoryToolsFg,   CategoryToolsBg,   "lightbulb",  "#0D9488"),
+                    ChipSuggestion(
+                        stringResource(R.string.categories_suggestion_media),
+                        Icons.Default.Bolt,
+                        CategoryMediaFg,
+                        CategoryMediaBg,
+                        "movie",
+                        "#CA8A04"
+                    ),
+                    ChipSuggestion(
+                        stringResource(R.string.categories_suggestion_work),
+                        Icons.Default.Apps,
+                        p40,
+                        p90,
+                        "work",
+                        "#4338CA"
+                    ),
+                    ChipSuggestion(
+                        stringResource(R.string.categories_suggestion_reading),
+                        Icons.Default.Home,
+                        CategoryReadingFg,
+                        CategoryReadingBg,
+                        "menu_book",
+                        "#DB2777"
+                    ),
+                    ChipSuggestion(
+                        stringResource(R.string.categories_suggestion_tools),
+                        Icons.Default.GridView,
+                        CategoryToolsFg,
+                        CategoryToolsBg,
+                        "lightbulb",
+                        "#0D9488"
+                    ),
                 )
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -297,19 +298,47 @@ fun CategoryScreen(
                                                 style = Stroke(
                                                     width = Dimens.borderDefault.toPx(),
                                                     pathEffect = PathEffect.dashPathEffect(
-                                                        floatArrayOf(Dimens.spaceXxs.toPx(), Dimens.spaceXxs.toPx()), 0f,
+                                                        floatArrayOf(
+                                                            Dimens.spaceXxs.toPx(),
+                                                            Dimens.spaceXxs.toPx()
+                                                        ),
+                                                        0f,
                                                     ),
                                                 ),
                                             )
                                         }
-                                        .clickable { viewModel.showDialogWithPreset(chip.label, chip.iconKey, chip.hexColor) }
-                                        .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
+                                        .clickable {
+                                            viewModel.showDialogWithPreset(
+                                                chip.label,
+                                                chip.iconKey,
+                                                chip.hexColor
+                                            )
+                                        }
+                                        .padding(
+                                            horizontal = Dimens.spaceMd,
+                                            vertical = Dimens.spaceSm
+                                        ),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                                 ) {
-                                    Icon(chip.displayIcon, null, modifier = Modifier.size(Dimens.sizeTagIcon), tint = chip.fg)
-                                    Text(chip.label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = chip.fg)
-                                    Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXxs), tint = chip.fg)
+                                    Icon(
+                                        chip.displayIcon,
+                                        null,
+                                        modifier = Modifier.size(Dimens.sizeTagIcon),
+                                        tint = chip.fg
+                                    )
+                                    Text(
+                                        chip.label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = chip.fg
+                                    )
+                                    Icon(
+                                        Icons.Default.Add,
+                                        null,
+                                        modifier = Modifier.size(Dimens.sizeXxs),
+                                        tint = chip.fg
+                                    )
                                 }
                             }
                         }
@@ -327,14 +356,18 @@ fun CategoryScreen(
                 verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
             ) {
                 items(categories!!, key = { it.id }) { cat ->
-                    val catColor = runCatching { Color(android.graphics.Color.parseColor(cat.color)) }
-                        .getOrDefault(MaterialTheme.colorScheme.primary)
+                    val catColor =
+                        runCatching { Color(android.graphics.Color.parseColor(cat.color)) }
+                            .getOrDefault(MaterialTheme.colorScheme.primary)
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(Dimens.corner20),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                        border = BorderStroke(
+                            Dimens.borderDefault,
+                            MaterialTheme.colorScheme.outlineVariant
+                        ),
                     ) {
                         Column(
                             modifier = Modifier.padding(Dimens.space14),
@@ -440,7 +473,10 @@ private fun AddCategoryDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Text(stringResource(R.string.categories_icon_label), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    stringResource(R.string.categories_icon_label),
+                    style = MaterialTheme.typography.labelLarge
+                )
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                     CATEGORY_ICON_KEYS.chunked(6).forEach { rowKeys ->
                         Row(
@@ -469,7 +505,7 @@ private fun AddCategoryDialog(
                                         contentDescription = key,
                                         modifier = Modifier.size(Dimens.sizeLg),
                                         tint = if (isSelected) MaterialTheme.colorScheme.primary
-                                               else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
@@ -478,13 +514,17 @@ private fun AddCategoryDialog(
                 }
 
                 Spacer(Modifier.height(0.dp))
-                Text(stringResource(R.string.categories_color_label), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    stringResource(R.string.categories_color_label),
+                    style = MaterialTheme.typography.labelLarge
+                )
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                     CATEGORY_COLORS.chunked(8).forEach { rowColors ->
                         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                             rowColors.forEach { hex ->
-                                val color = runCatching { Color(android.graphics.Color.parseColor(hex)) }
-                                    .getOrDefault(MaterialTheme.colorScheme.primary)
+                                val color =
+                                    runCatching { Color(android.graphics.Color.parseColor(hex)) }
+                                        .getOrDefault(MaterialTheme.colorScheme.primary)
                                 val isSelected = hex == state.selectedColor
                                 Box(
                                     modifier = Modifier
@@ -492,7 +532,11 @@ private fun AddCategoryDialog(
                                         .clip(CircleShape)
                                         .background(color)
                                         .then(
-                                            if (isSelected) Modifier.border(Dimens.borderSelected, Color.White, CircleShape)
+                                            if (isSelected) Modifier.border(
+                                                Dimens.borderSelected,
+                                                Color.White,
+                                                CircleShape
+                                            )
                                             else Modifier
                                         )
                                         .clickable { onColorSelect(hex) },
