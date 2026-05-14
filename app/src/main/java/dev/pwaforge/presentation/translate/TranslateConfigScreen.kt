@@ -91,20 +91,6 @@ fun TranslateConfigScreen(
                 },
             )
 
-            HorizontalDivider()
-
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.translate_api_key)) },
-                supportingContent = {
-                    OutlinedTextField(
-                        value = app.libreTranslateApiKey,
-                        onValueChange = viewModel::setApiKey,
-                        singleLine = true,
-                        placeholder = { Text(stringResource(R.string.translate_api_key_hint)) },
-                        modifier = Modifier.padding(top = Dimens.spaceXs),
-                    )
-                },
-            )
 
             HorizontalDivider()
 

@@ -320,8 +320,6 @@
     <string name="translate_title">Translation settings</string>
     <string name="translate_target_language">Target language</string>
     <string name="translate_instance_url">LibreTranslate instance URL</string>
-    <string name="translate_api_key">API key</string>
-    <string name="translate_api_key_hint">Optional — required by libretranslate.com</string>
     <string name="translate_auto">Auto-translate on page load</string>
     <string name="translate_auto_desc">Translate automatically after each page loads</string>
 

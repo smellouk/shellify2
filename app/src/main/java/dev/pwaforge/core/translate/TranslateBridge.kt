@@ -5,7 +5,6 @@ object TranslateBridge {
     fun buildScript(
         targetLang: String,
         instanceUrl: String,
-        apiKey: String,
         autoTranslate: Boolean,
     ): String = """
 (function() {
@@ -14,9 +13,7 @@ object TranslateBridge {
 
   const TARGET = '${targetLang.replace("'", "\\'")}';
   const INSTANCE = '${instanceUrl.trimEnd('/').replace("'", "\\'")}';
-  const API_KEY = '${apiKey.replace("'", "\\'")}';
-
-  console.log('[PWATranslate] instance=' + INSTANCE + ' target=' + TARGET + ' hasKey=' + !!API_KEY);
+  console.log('[PWATranslate] instance=' + INSTANCE + ' target=' + TARGET);
 
   async function translateBatch(texts) {
     console.log('[PWATranslate] POST /translate texts=' + texts.length);
@@ -24,7 +21,7 @@ object TranslateBridge {
       const res = await fetch(INSTANCE + '/translate', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(Object.assign({q: texts, source: 'auto', target: TARGET, format: 'text'}, API_KEY ? {api_key: API_KEY} : {})),
+        body: JSON.stringify({q: texts, source: 'auto', target: TARGET, format: 'text'}),
       });
       console.log('[PWATranslate] response status=' + res.status);
       const json = await res.json();

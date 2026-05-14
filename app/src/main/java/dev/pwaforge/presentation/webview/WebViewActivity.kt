@@ -384,7 +384,6 @@ class WebViewActivity : FragmentActivity() {
                                                 val script = TranslateBridge.buildScript(
                                                     targetLang = updated.translateTarget.code,
                                                     instanceUrl = updated.libreTranslateUrl,
-                                                    apiKey = updated.libreTranslateApiKey,
                                                     autoTranslate = true,
                                                 )
                                                 engine.evaluateJavascript(script, null)
@@ -479,7 +478,6 @@ class WebViewActivity : FragmentActivity() {
                     val script = TranslateBridge.buildScript(
                         targetLang = app.translateTarget.code,
                         instanceUrl = app.libreTranslateUrl,
-                        apiKey = app.libreTranslateApiKey,
                         autoTranslate = true,
                     )
                     engine.evaluateJavascript(script, null)
