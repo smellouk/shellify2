@@ -104,8 +104,7 @@ import io.shellify.app.presentation.theme.GeckoWarning
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.core.deeplink.DeepLinkHandler
-import io.shellify.app.core.deeplink.QrCodeGenerator
+import io.shellify.app.presentation.share.AppShareSheet
 import io.shellify.app.presentation.add.SimpleIconPickerSheet
 import io.shellify.app.presentation.home.AppIcon
 import io.shellify.app.presentation.theme.Dimens
@@ -564,45 +563,11 @@ fun AppSettingsScreen(
         }
 
         if (showShareSheet && app != null) {
-            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            val customLink = DeepLinkHandler.buildCustomScheme(app.url, app.name)
-            val httpsLink = DeepLinkHandler.buildHttps(app.url, app.name)
-            val qrBitmap: Bitmap = remember(customLink) { QrCodeGenerator.generate(customLink) }
-
-            ModalBottomSheet(
-                onDismissRequest = { showShareSheet = false },
-                sheetState = sheetState,
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(Dimens.spaceLg).padding(bottom = Dimens.spaceLg),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
-                ) {
-                    Text(app.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    Image(
-                        bitmap = qrBitmap.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier.size(200.dp),
-                    )
-                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
-                        Text(customLink, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(httpsLink, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)) {
-                        OutlinedButton(onClick = {
-                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            clipboard.setPrimaryClip(ClipData.newPlainText("Shellify link", customLink))
-                        }) { Text(stringResource(R.string.share_copy_link)) }
-                        Button(onClick = {
-                            val intent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "$customLink\n\n$httpsLink")
-                            }
-                            context.startActivity(Intent.createChooser(intent, app.name))
-                        }) { Text(stringResource(R.string.share_button)) }
-                    }
-                }
-            }
+            AppShareSheet(
+                appName = app.name,
+                appUrl = app.url,
+                onDismiss = { showShareSheet = false },
+            )
         }
     }
 }

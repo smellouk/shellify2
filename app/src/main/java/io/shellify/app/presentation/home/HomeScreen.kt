@@ -62,6 +62,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.HorizontalDivider
@@ -121,6 +122,7 @@ import io.shellify.app.presentation.theme.TagFullscreen
 import io.shellify.app.presentation.theme.TagLockPassword
 import io.shellify.app.presentation.theme.TagLockSystem
 import io.shellify.app.presentation.theme.TagTranslate
+import io.shellify.app.presentation.share.AppShareSheet
 import io.shellify.app.presentation.webview.WebViewActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -667,6 +669,7 @@ private fun EmptyState(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppCard(
     app: WebApp,
@@ -682,6 +685,7 @@ private fun AppCard(
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showClearDataDialog by remember { mutableStateOf(false) }
+    var showShareSheet by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -741,6 +745,11 @@ private fun AppCard(
                             text = { Text(stringResource(R.string.home_menu_assign_category)) },
                             leadingIcon = { Icon(Icons.Default.Category, null) },
                             onClick = { showMenu = false; showCategoryPicker = true },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.share_button)) },
+                            leadingIcon = { Icon(Icons.Default.Share, null) },
+                            onClick = { showMenu = false; showShareSheet = true },
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.home_menu_clear_data)) },
@@ -817,6 +826,14 @@ private fun AppCard(
             dismissButton = {
                 TextButton(onClick = { showClearDataDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             },
+        )
+    }
+
+    if (showShareSheet) {
+        AppShareSheet(
+            appName = app.name,
+            appUrl = app.url,
+            onDismiss = { showShareSheet = false },
         )
     }
 
