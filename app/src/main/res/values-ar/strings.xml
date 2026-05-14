@@ -280,7 +280,7 @@
     <string name="consent_legal_3">فقدان البيانات أو الحوادث الأمنية أو انقطاعات الخدمة</string>
     <string name="consent_legal_4">الأضرار الناجمة عن استخدام مواقع أو خدمات الأطراف الثالثة</string>
     <string name="consent_section_privacy_title">الخصوصية</string>
-    <string name="consent_privacy_desc">لا يجمع شيليفاي بيانات التصفّح عن قصد. تُعالَج أنشطة التصفّح محلياً على الجهاز. يُرجى مراجعة سياسة الخصوصية وشروط الخدمة للاطلاع على التفاصيل الكاملة.</string>
+    <string name="consent_privacy_desc">لا يجمع شيليفاي نشاط تصفّحك عن قصد ولا يخزّنه ولا يُرسله. تُعالَج أنشطة التصفّح محلياً على الجهاز. يُرجى مراجعة سياسة الخصوصية وشروط الخدمة للاطلاع على التفاصيل الكاملة.</string>
     <string name="consent_read_privacy">اقرأ سياسة الخصوصية الكاملة</string>
     <string name="consent_read_tos">اقرأ شروط الخدمة</string>
     <string name="consent_checkbox_label">لقد قرأتُ الشروط وسياسة الخصوصية وأوافق عليهما</string>

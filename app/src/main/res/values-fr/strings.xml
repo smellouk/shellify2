@@ -280,7 +280,7 @@
     <string name="consent_legal_3">La perte de données, incidents de sécurité ou interruptions de service</string>
     <string name="consent_legal_4">Les dommages découlant de l\'utilisation de sites ou services tiers</string>
     <string name="consent_section_privacy_title">Confidentialité</string>
-    <string name="consent_privacy_desc">Shellify ne collecte pas intentionnellement de données de navigation. L\'activité de navigation est traitée localement sur l\'appareil. Veuillez consulter notre Politique de confidentialité et nos Conditions d\'utilisation pour plus de détails.</string>
+    <string name="consent_privacy_desc">Shellify ne collecte, ne stocke ni ne transmet intentionnellement votre activité de navigation. L\'activité de navigation est traitée localement sur l\'appareil. Veuillez consulter notre Politique de confidentialité et nos Conditions d\'utilisation pour plus de détails.</string>
     <string name="consent_read_privacy">Lire notre politique de confidentialité complète</string>
     <string name="consent_read_tos">Lire nos Conditions d\'utilisation</string>
     <string name="consent_checkbox_label">J\'ai lu et j\'accepte les Conditions et la Politique de confidentialité</string>
