@@ -82,7 +82,21 @@ fun ConsentScreen(onAccepted: () -> Unit) {
                     stringResource(R.string.consent_not_1),
                     stringResource(R.string.consent_not_2),
                     stringResource(R.string.consent_not_3),
+                    stringResource(R.string.consent_not_4),
                 ),
+            )
+
+            ConsentSection(
+                title = stringResource(R.string.consent_section_acceptable_title),
+                intro = stringResource(R.string.consent_acceptable_intro),
+                items = listOf(
+                    stringResource(R.string.consent_acceptable_1),
+                    stringResource(R.string.consent_acceptable_2),
+                    stringResource(R.string.consent_acceptable_3),
+                    stringResource(R.string.consent_acceptable_4),
+                    stringResource(R.string.consent_acceptable_5),
+                ),
+                footer = stringResource(R.string.consent_acceptable_reserve),
             )
 
             ConsentSection(
@@ -96,18 +110,28 @@ fun ConsentScreen(onAccepted: () -> Unit) {
 
             ConsentSection(
                 title = stringResource(R.string.consent_section_legal_title),
+                intro = stringResource(R.string.consent_legal_intro),
                 items = listOf(
                     stringResource(R.string.consent_legal_1),
                     stringResource(R.string.consent_legal_2),
                     stringResource(R.string.consent_legal_3),
+                    stringResource(R.string.consent_legal_4),
                 ),
             )
 
-            TextButton(
-                onClick = { uriHandler.openUri("https://shellify.app/privacy") },
-                modifier = Modifier.padding(top = Dimens.spaceXxs),
-            ) {
-                Text(stringResource(R.string.consent_read_privacy))
+            ConsentSection(
+                title = stringResource(R.string.consent_section_privacy_title),
+                intro = stringResource(R.string.consent_privacy_desc),
+                items = emptyList(),
+            )
+
+            Column(modifier = Modifier.padding(top = Dimens.spaceXxs)) {
+                TextButton(onClick = { uriHandler.openUri("https://shellify.app/privacy") }) {
+                    Text(stringResource(R.string.consent_read_privacy))
+                }
+                TextButton(onClick = { uriHandler.openUri("https://shellify.app/terms") }) {
+                    Text(stringResource(R.string.consent_read_tos))
+                }
             }
         }
 
@@ -153,7 +177,12 @@ fun ConsentScreen(onAccepted: () -> Unit) {
 }
 
 @Composable
-private fun ConsentSection(title: String, items: List<String>) {
+private fun ConsentSection(
+    title: String,
+    items: List<String>,
+    intro: String? = null,
+    footer: String? = null,
+) {
     Surface(
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -165,19 +194,37 @@ private fun ConsentSection(title: String, items: List<String>) {
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
             )
-            Spacer(Modifier.height(Dimens.spaceXxs))
-            items.forEach { item ->
-                Row(
-                    modifier = Modifier.padding(vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
-                ) {
-                    Text(
-                        "•",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(item, style = MaterialTheme.typography.bodyMedium)
+            if (intro != null) {
+                Spacer(Modifier.height(Dimens.spaceXxs))
+                Text(
+                    intro,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (items.isNotEmpty()) {
+                Spacer(Modifier.height(Dimens.spaceXxs))
+                items.forEach { item ->
+                    Row(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                    ) {
+                        Text(
+                            "•",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(item, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
+            }
+            if (footer != null) {
+                Spacer(Modifier.height(Dimens.spaceXxs))
+                Text(
+                    footer,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
