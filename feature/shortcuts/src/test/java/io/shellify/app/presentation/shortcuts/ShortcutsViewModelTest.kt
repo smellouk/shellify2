@@ -1,0 +1,159 @@
+package io.shellify.app.presentation.shortcuts
+
+import android.content.Context
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import io.shellify.app.core.pwa.FaviconFetcher
+import io.shellify.app.core.pwa.PwaAnalyzer
+import io.shellify.app.core.shortcut.PwaShortcutManager
+import io.shellify.app.domain.model.WebApp
+import io.shellify.app.domain.usecase.GetWebAppsUseCase
+import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class ShortcutsViewModelTest {
+
+    private val dispatcher = UnconfinedTestDispatcher()
+    private val context = mockk<Context>(relaxed = true)
+    private val getWebApps = mockk<GetWebAppsUseCase>()
+    private val saveWebApp = mockk<SaveWebAppUseCase>()
+    private val analyzer = mockk<PwaAnalyzer>(relaxed = true)
+    private val faviconFetcher = mockk<FaviconFetcher>(relaxed = true)
+
+    private val testApp = WebApp(id = 1L, name = "Gmail", url = "https://gmail.com", isolationId = "iso-gmail")
+    private val testItem = ShortcutItem(app = testApp, shortcutId = "pwa_iso-gmail", label = "Gmail")
+
+    private lateinit var viewModel: ShortcutsViewModel
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(dispatcher)
+        mockkObject(PwaShortcutManager)
+        every { getWebApps() } returns flowOf(listOf(testApp))
+        // getPinnedShortcuts is called on Dispatchers.IO; mock it so no Android framework crash
+        every { PwaShortcutManager.getPinnedShortcuts(any()) } returns emptyList()
+        every { PwaShortcutManager.removeShortcut(any(), any()) } returns Unit
+        every { PwaShortcutManager.createShortcut(any(), any()) } returns true
+        every { PwaShortcutManager.rename(any(), any(), any()) } returns true
+        coEvery { saveWebApp(any()) } returns 1L
+        viewModel = ShortcutsViewModel(context, getWebApps, saveWebApp, analyzer, faviconFetcher)
+    }
+
+    @After
+    fun tearDown() {
+        unmockkObject(PwaShortcutManager)
+        Dispatchers.resetMain()
+    }
+
+    // ── Rename ────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `startRename sets renameTarget and renameText`() {
+        viewModel.startRename(testItem)
+        val state = viewModel.uiState.value
+        assertEquals(testItem, state.renameTarget)
+        assertEquals("Gmail", state.renameText)
+    }
+
+    @Test
+    fun `setRenameText updates renameText`() {
+        viewModel.startRename(testItem)
+        viewModel.setRenameText("My Gmail")
+        assertEquals("My Gmail", viewModel.uiState.value.renameText)
+    }
+
+    @Test
+    fun `dismissRename clears rename state`() {
+        viewModel.startRename(testItem)
+        viewModel.dismissRename()
+        assertNull(viewModel.uiState.value.renameTarget)
+        assertEquals("", viewModel.uiState.value.renameText)
+    }
+
+    // ── Icon sheet ────────────────────────────────────────────────────────────
+
+    @Test
+    fun `showIconSheet sets iconSheetTarget`() {
+        viewModel.showIconSheet(testItem)
+        assertEquals(testItem, viewModel.uiState.value.iconSheetTarget)
+        assertEquals(IconRefreshState.Idle, viewModel.uiState.value.iconRefreshState)
+    }
+
+    @Test
+    fun `dismissIconSheet clears iconSheetTarget`() {
+        viewModel.showIconSheet(testItem)
+        viewModel.dismissIconSheet()
+        assertNull(viewModel.uiState.value.iconSheetTarget)
+    }
+
+    // ── Remove ────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `showRemove sets removeTarget`() {
+        viewModel.showRemove(testItem)
+        assertEquals(testItem, viewModel.uiState.value.removeTarget)
+    }
+
+    @Test
+    fun `dismissRemove clears removeTarget`() {
+        viewModel.showRemove(testItem)
+        viewModel.dismissRemove()
+        assertNull(viewModel.uiState.value.removeTarget)
+    }
+
+    @Test
+    fun `confirmRemove clears removeTarget`() = runTest {
+        viewModel.showRemove(testItem)
+        viewModel.confirmRemove()
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.removeTarget)
+    }
+
+    // ── Add sheet ─────────────────────────────────────────────────────────────
+
+    @Test
+    fun `showAddSheet sets showAddSheet true`() {
+        viewModel.showAddSheet()
+        assertTrue(viewModel.uiState.value.showAddSheet)
+    }
+
+    @Test
+    fun `dismissAddSheet sets showAddSheet false`() {
+        viewModel.showAddSheet()
+        viewModel.dismissAddSheet()
+        assertFalse(viewModel.uiState.value.showAddSheet)
+    }
+
+    // ── Icon picker ───────────────────────────────────────────────────────────
+
+    @Test
+    fun `setIconPickerQuery updates query`() {
+        viewModel.setIconPickerQuery("slack")
+        assertEquals("slack", viewModel.uiState.value.iconPickerQuery)
+    }
+
+    @Test
+    fun `closeIconPackPicker clears picker state`() {
+        viewModel.closeIconPackPicker()
+        assertFalse(viewModel.uiState.value.showIconPackPicker)
+        assertTrue(viewModel.uiState.value.packIcons.isEmpty())
+    }
+}

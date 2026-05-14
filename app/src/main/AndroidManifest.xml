@@ -69,26 +69,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Full-screen WebView container — each PWA runs in its own task (document) -->
-        <activity
-            android:name=".presentation.webview.WebViewActivity"
-            android:exported="false"
-            android:hardwareAccelerated="true"
-            android:documentLaunchMode="intoExisting"
-            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.Shellify.WebView" />
-
-        <!-- Transparent trampoline for home-screen shortcuts.
-             Shortcuts target this activity by explicit component name — no intent-filter needed.
-             exported=true is required so the launcher can fire the shortcut PendingIntent. -->
-        <activity
-            android:name=".presentation.shortcut.ShortcutActivity"
-            android:exported="true"
-            android:noHistory="true"
-            android:excludeFromRecents="true"
-            android:taskAffinity=""
-            android:theme="@style/Theme.Shellify.Transparent" />
+        <!-- WebViewActivity and ShortcutActivity are declared in their respective feature module manifests -->
 
         <!-- FileProvider for sharing icons -->
         <provider

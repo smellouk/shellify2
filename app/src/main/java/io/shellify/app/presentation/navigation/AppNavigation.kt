@@ -3,6 +3,7 @@ package io.shellify.app.presentation.navigation
 import android.app.Activity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -14,47 +15,37 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Shortcut
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import io.shellify.app.R
-import io.shellify.app.core.locale.LocaleHelper
-import io.shellify.app.presentation.onboarding.OnboardingScreen
-import io.shellify.app.presentation.onboarding.OnboardingViewModel
-import kotlinx.coroutines.launch
-import androidx.compose.material.icons.automirrored.filled.Shortcut
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -63,21 +54,26 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import io.shellify.app.ShellifyApplication
 import io.shellify.app.core.engine.GeckoInstallState
+import io.shellify.app.core.locale.LocaleHelper
 import io.shellify.app.presentation.add.AddScreen
 import io.shellify.app.presentation.add.AddViewModel
 import io.shellify.app.presentation.category.CategoryScreen
 import io.shellify.app.presentation.category.CategoryViewModel
 import io.shellify.app.presentation.home.HomeScreen
 import io.shellify.app.presentation.home.HomeViewModel
+import io.shellify.app.presentation.onboarding.OnboardingScreen
+import io.shellify.app.presentation.onboarding.OnboardingViewModel
 import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
 import io.shellify.app.presentation.shortcuts.ShortcutsScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsViewModel
-import io.shellify.app.presentation.translate.TranslateConfigScreen
-import io.shellify.app.presentation.translate.TranslateConfigViewModel
 import io.shellify.app.presentation.theme.Dimens
+import io.shellify.core.ui.R
+import kotlinx.coroutines.launch
+
+private const val NAV_ANIM_DURATION = 200
 
 private val topLevelRoutes = setOf(
     Screen.Home.route,
@@ -86,6 +82,7 @@ private val topLevelRoutes = setOf(
     Screen.GlobalSettings.route,
 )
 
+@Suppress("CognitiveComplexMethod")
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -94,14 +91,13 @@ fun AppNavigation(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val geckoInstallState by app.geckoEngineManager.installState.collectAsState()
-    val geckoInstalled = geckoInstallState is GeckoInstallState.Installed
-            || geckoInstallState is GeckoInstallState.Downloading
-            || geckoInstallState is GeckoInstallState.Installing
+    val geckoInstalled = geckoInstallState is GeckoInstallState.Installed ||
+        geckoInstallState is GeckoInstallState.Downloading ||
+        geckoInstallState is GeckoInstallState.Installing
     val context = LocalContext.current
     val currentLanguage = remember { LocaleHelper.getLanguageCode(context) }
     val coroutineScope = rememberCoroutineScope()
 
-    // null = not yet loaded, false = show onboarding, true = show home
     val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
     if (onboardingDone == null) return
 
@@ -124,9 +120,7 @@ fun AppNavigation(
                 ) {
                     Column(modifier = Modifier.navigationBarsPadding()) {
                         HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(
-                                alpha = 0.4f
-                            )
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                         )
                         Row(
                             modifier = Modifier
@@ -140,26 +134,10 @@ fun AppNavigation(
                                 val label: String
                             )
                             listOf(
-                                NavItem(
-                                    Screen.Home.route,
-                                    Icons.Default.PhoneAndroid,
-                                    stringResource(R.string.nav_apps)
-                                ),
-                                NavItem(
-                                    Screen.Categories.route,
-                                    Icons.Default.Layers,
-                                    stringResource(R.string.nav_categories)
-                                ),
-                                NavItem(
-                                    Screen.Shortcuts.route,
-                                    Icons.AutoMirrored.Filled.Shortcut,
-                                    stringResource(R.string.nav_shortcuts)
-                                ),
-                                NavItem(
-                                    Screen.GlobalSettings.route,
-                                    Icons.Default.Settings,
-                                    stringResource(R.string.nav_settings)
-                                ),
+                                NavItem(Screen.Home.route, Icons.Default.PhoneAndroid, stringResource(R.string.nav_apps)),
+                                NavItem(Screen.Categories.route, Icons.Default.Layers, stringResource(R.string.nav_categories)),
+                                NavItem(Screen.Shortcuts.route, Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.nav_shortcuts)),
+                                NavItem(Screen.GlobalSettings.route, Icons.Default.Settings, stringResource(R.string.nav_settings)),
                             ).forEach { item ->
                                 val active = currentRoute == item.route
                                 Column(
@@ -179,7 +157,8 @@ fun AppNavigation(
                                                 height = Dimens.size4xl
                                             )
                                             .background(
-                                                if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                                if (active) MaterialTheme.colorScheme.primaryContainer
+                                                else Color.Transparent,
                                                 RoundedCornerShape(Dimens.cornerXl),
                                             ),
                                         contentAlignment = Alignment.Center,
@@ -188,14 +167,16 @@ fun AppNavigation(
                                             item.icon,
                                             null,
                                             modifier = Modifier.size(Dimens.sizeLg),
-                                            tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            tint = if (active) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                     Text(
                                         item.label,
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
-                                        color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        color = if (active) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
@@ -211,10 +192,10 @@ fun AppNavigation(
             modifier = Modifier
                 .padding(padding)
                 .consumeWindowInsets(padding),
-            enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-            exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) },
-            popEnterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) },
-            popExitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) },
+            enterTransition = { fadeIn(animationSpec = tween(NAV_ANIM_DURATION)) },
+            exitTransition = { fadeOut(animationSpec = tween(NAV_ANIM_DURATION)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(NAV_ANIM_DURATION)) },
+            popExitTransition = { fadeOut(animationSpec = tween(NAV_ANIM_DURATION)) },
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
@@ -301,10 +282,7 @@ fun AppNavigation(
                     },
                     onBack = { navController.popBackStack() },
                     onDeleted = {
-                        navController.popBackStack(
-                            Screen.Home.route,
-                            inclusive = false
-                        )
+                        navController.popBackStack(Screen.Home.route, inclusive = false)
                     },
                 )
             }
@@ -344,6 +322,7 @@ fun AppNavigation(
                             app.deleteAllApps, app.deleteAllCategories,
                             app.passwordManager, app.backupSettings, app.backupManager, app,
                             app.geckoEngineManager, app.simpleIconsManager,
+                            onGeckoInstalled = { app.injectAndLoadGeckoView() },
                         )
                     },
                 )

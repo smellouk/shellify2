@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -21,4 +22,34 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Shellify"
+
 include(":app")
+
+// Core modules
+include(":core:domain")
+include(":core:crypto")
+include(":core:security")
+include(":core:locale")
+include(":core:ui")
+include(":core:database")
+include(":core:engine")
+include(":core:isolation")
+include(":core:iconpack")
+include(":core:pwa")
+include(":core:shortcut")
+include(":core:deeplink")
+include(":core:translate")
+include(":core:theme")
+include(":core:backup")
+
+// Feature modules
+include(":feature:home")
+include(":feature:add")
+include(":feature:category")
+include(":feature:settings")
+include(":feature:onboarding")
+include(":feature:shortcuts")
+include(":feature:translate")
+include(":feature:webview")
+include(":feature:share")
+include(":feature:shortcut")

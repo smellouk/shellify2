@@ -1,21 +1,19 @@
 package io.shellify.app
 
 import android.app.Application
-import android.os.Build
 import io.shellify.app.core.adblock.AdBlocker
-import io.shellify.app.core.engine.GeckoNativeLoader
-import io.shellify.app.core.shortcut.PwaShortcutManager
-import io.shellify.app.presentation.shortcut.ShortcutActivity
-import io.shellify.app.core.crypto.CryptoManager
-import io.shellify.app.core.engine.GeckoEngineManager
-import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.backup.BackupManager
 import io.shellify.app.core.backup.BackupSettings
-import io.shellify.app.core.security.PasswordManager
-import io.shellify.app.core.theme.ThemeManager
+import io.shellify.app.core.crypto.CryptoManager
+import io.shellify.app.core.engine.GeckoEngineManager
+import io.shellify.app.core.engine.GeckoNativeLoader
 import io.shellify.app.core.iconpack.SimpleIconsManager
+import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
+import io.shellify.app.core.security.PasswordManager
+import io.shellify.app.core.shortcut.PwaShortcutManager
+import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.data.local.AppDatabase
 import io.shellify.app.data.repository.CategoryRepositoryImpl
 import io.shellify.app.data.repository.WebAppRepositoryImpl
@@ -29,9 +27,11 @@ import io.shellify.app.domain.usecase.GetWebAppByNameUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import io.shellify.app.presentation.shortcut.ShortcutActivity
+import io.shellify.app.presentation.webview.WebViewServiceProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class ShellifyApplication : Application() {
+class ShellifyApplication : Application(), WebViewServiceProvider {
     val pendingDeepLink = MutableSharedFlow<Pair<String, String>>(replay = 1)
 
     // Crypto first — everything else depends on it
@@ -43,18 +43,18 @@ class ShellifyApplication : Application() {
     val categoryRepository by lazy { CategoryRepositoryImpl(database.categoryDao()) }
 
     val getWebApps by lazy { GetWebAppsUseCase(webAppRepository) }
-    val saveWebApp by lazy { SaveWebAppUseCase(webAppRepository) }
+    override val saveWebApp by lazy { SaveWebAppUseCase(webAppRepository) }
     val deleteWebApp by lazy { DeleteWebAppUseCase(webAppRepository) }
     val deleteAllApps by lazy { DeleteAllAppsUseCase(webAppRepository) }
-    val getWebAppById by lazy { GetWebAppByIdUseCase(webAppRepository) }
+    override val getWebAppById by lazy { GetWebAppByIdUseCase(webAppRepository) }
     val getWebAppByName by lazy { GetWebAppByNameUseCase(webAppRepository) }
     val getCategories by lazy { GetCategoriesUseCase(categoryRepository) }
     val saveCategory by lazy { SaveCategoryUseCase(categoryRepository) }
     val deleteCategory by lazy { DeleteCategoryUseCase(categoryRepository) }
     val deleteAllCategories by lazy { DeleteAllCategoriesUseCase(categoryRepository) }
 
-    val themeManager by lazy { ThemeManager(this) }
-    val passwordManager by lazy { PasswordManager(this) }
+    override val themeManager by lazy { ThemeManager(this) }
+    override val passwordManager by lazy { PasswordManager(this) }
     val backupSettings by lazy { BackupSettings(this, cryptoManager) }
     val backupManager by lazy {
         BackupManager(
@@ -68,12 +68,12 @@ class ShellifyApplication : Application() {
         )
     }
 
-    val geckoEngineManager by lazy { GeckoEngineManager(this) }
+    override val geckoEngineManager by lazy { GeckoEngineManager(this) }
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
     val faviconFetcher by lazy { FaviconFetcher(this, themeManager) }
-    val adBlocker by lazy { AdBlocker() }
+    override val adBlocker by lazy { AdBlocker() }
     val simpleIconsManager by lazy { SimpleIconsManager(this) }
-    val isolationManager by lazy { IsolationManager(this, cryptoManager, geckoEngineManager) }
+    override val isolationManager by lazy { IsolationManager(this, cryptoManager, geckoEngineManager) }
 
     override fun onCreate() {
         super.onCreate()

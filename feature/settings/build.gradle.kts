@@ -1,0 +1,33 @@
+plugins {
+    id("shellify.android.library")
+    id("shellify.compose")
+}
+android { namespace = "io.shellify.feature.settings" }
+dependencies {
+    implementation(project(":core:domain"))
+    implementation(project(":core:engine"))
+    implementation(project(":core:iconpack"))
+    implementation(project(":core:isolation"))
+    implementation(project(":core:pwa"))
+    implementation(project(":core:security"))
+    implementation(project(":core:shortcut"))
+    implementation(project(":core:theme"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:backup"))
+    implementation(project(":feature:add"))
+    implementation(project(":feature:share"))
+    val composeBom = platform(libs.compose.bom)
+    implementation(composeBom)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.extended)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.datastore.preferences)
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+}

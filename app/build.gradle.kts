@@ -1,7 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("shellify.android.application")
+    id("shellify.compose")
     alias(libs.plugins.ksp)
     alias(libs.plugins.detekt)
 }
@@ -20,12 +19,9 @@ detekt {
 
 android {
     namespace = "io.shellify.app"
-    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.shellify.app"
-        minSdk = 23
-        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
@@ -44,15 +40,6 @@ android {
             )
         }
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions { jvmTarget = "17" }
-
-    buildFeatures { compose = true }
 
     testOptions {
         unitTests {
@@ -76,7 +63,6 @@ android {
             excludes += "/META-INF/LICENSE-notice.md"
         }
         jniLibs {
-            // GeckoView native libs are downloaded at runtime — exclude from APK to keep it small
             excludes += "**/libxul.so"
             excludes += "**/libmozglue.so"
             excludes += "**/liblgpllibs.so"
@@ -85,6 +71,35 @@ android {
 }
 
 dependencies {
+    // Core modules
+    implementation(project(":core:domain"))
+    implementation(project(":core:crypto"))
+    implementation(project(":core:security"))
+    implementation(project(":core:locale"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:database"))
+    implementation(project(":core:engine"))
+    implementation(project(":core:isolation"))
+    implementation(project(":core:iconpack"))
+    implementation(project(":core:pwa"))
+    implementation(project(":core:shortcut"))
+    implementation(project(":core:deeplink"))
+    implementation(project(":core:translate"))
+    implementation(project(":core:theme"))
+    implementation(project(":core:backup"))
+
+    // Feature modules
+    implementation(project(":feature:home"))
+    implementation(project(":feature:add"))
+    implementation(project(":feature:category"))
+    implementation(project(":feature:settings"))
+    implementation(project(":feature:onboarding"))
+    implementation(project(":feature:shortcuts"))
+    implementation(project(":feature:translate"))
+    implementation(project(":feature:webview"))
+    implementation(project(":feature:share"))
+    implementation(project(":feature:shortcut"))
+
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
 
@@ -99,21 +114,6 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
 
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    // SQLCipher — encrypted SQLite database
-    implementation(libs.sqlcipher) { isTransitive = true }
-    implementation(libs.androidx.sqlite.ktx)
-
-    // WebKit — WebView profiles (API 33+) and other compat APIs
-    implementation(libs.androidx.webkit)
-
-    // Network
-    implementation(libs.okhttp)
-
     // Image loading
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
@@ -121,29 +121,14 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
-    // JSON
-    implementation(libs.gson)
-
     // DataStore (global app preferences)
     implementation(libs.androidx.datastore.preferences)
 
+    // Room runtime (needed to access AppDatabase supertype from :core:database)
+    implementation(libs.androidx.room.runtime)
+
     // AppCompat (required for BiometricPrompt → FragmentActivity)
     implementation(libs.androidx.appcompat)
-
-    // Biometric — system lock / fingerprint prompt
-    implementation(libs.androidx.biometric)
-
-    // WorkManager — scheduled backups
-    implementation(libs.androidx.work.runtime.ktx)
-
-    // DocumentFile — SAF-based file writing for backups
-    implementation(libs.androidx.documentfile)
-
-    // QR code generation
-    implementation(libs.zxing.core)
-
-    // GeckoView — Java/Kotlin API only; .so files excluded from APK (see packagingOptions) and downloaded at runtime
-    implementation(libs.geckoview)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

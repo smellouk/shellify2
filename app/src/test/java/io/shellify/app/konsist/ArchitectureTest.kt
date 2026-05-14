@@ -21,14 +21,17 @@ import org.junit.Test
  */
 class ArchitectureTest {
 
-    // Production source files only — excludes test files from analysis
+    // Production source files only — excludes test files and .claude worktree artifacts
     private val mainScope = Konsist.scopeFromProduction()
+    private val projectFiles = mainScope.files.filter { !it.path.contains("/.claude/") }
+    private val projectClasses = mainScope.classes().filter { !it.containingFile.path.contains("/.claude/") }
+    private val projectInterfaces = mainScope.interfaces().filter { !it.containingFile.path.contains("/.claude/") }
 
     // ── Layer isolation ───────────────────────────────────────────────────────
 
     @Test
     fun `domain layer does not import from data layer`() {
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.domain..")
             .assertFalse(additionalMessage = "Domain must not depend on data") { file ->
                 file.imports.any { it.name.startsWith("io.shellify.app.data") }
@@ -37,7 +40,7 @@ class ArchitectureTest {
 
     @Test
     fun `domain layer does not import from presentation layer`() {
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.domain..")
             .assertFalse(additionalMessage = "Domain must not depend on presentation") { file ->
                 file.imports.any { it.name.startsWith("io.shellify.app.presentation") }
@@ -46,7 +49,7 @@ class ArchitectureTest {
 
     @Test
     fun `data layer does not import from presentation layer`() {
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.data..")
             .assertFalse(additionalMessage = "Data must not depend on presentation") { file ->
                 file.imports.any { it.name.startsWith("io.shellify.app.presentation") }
@@ -55,7 +58,7 @@ class ArchitectureTest {
 
     @Test
     fun `core layer does not import from presentation layer`() {
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.core..")
             .assertFalse(additionalMessage = "Core must not depend on presentation") { file ->
                 file.imports.any { it.name.startsWith("io.shellify.app.presentation") }
@@ -65,7 +68,7 @@ class ArchitectureTest {
     @Test
     fun `core layer does not import from data layer`() {
         // BackupManager is intentionally excluded: it accesses AppDatabase directly to dump SQL
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.core..")
             .assertFalse(additionalMessage = "Core must not depend on data (except BackupManager)") { file ->
                 file.name != "BackupManager" &&
@@ -77,7 +80,7 @@ class ArchitectureTest {
 
     @Test
     fun `use cases must only depend on the domain layer`() {
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.domain.usecase")
             .assertFalse(
                 additionalMessage = "Use cases must only import from domain — never core, data, or presentation"
@@ -94,7 +97,7 @@ class ArchitectureTest {
 
     @Test
     fun `ViewModels must not import domain repository interfaces directly`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("ViewModel")
             .assertFalse(
                 additionalMessage = "ViewModels must access data through use cases, not repositories directly"
@@ -107,7 +110,7 @@ class ArchitectureTest {
 
     @Test
     fun `presentation layer must not import domain repository interfaces directly`() {
-        mainScope.files
+        projectFiles
             .withPackage("io.shellify.app.presentation..")
             .assertFalse(
                 additionalMessage = "Presentation must access data through use cases, not repositories directly"
@@ -120,7 +123,7 @@ class ArchitectureTest {
 
     @Test
     fun `all ViewModels reside in the presentation package`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("ViewModel")
             .assertTrue(additionalMessage = "All *ViewModel classes must be in io.shellify.app.presentation..") { cls ->
                 cls.resideInPackage("io.shellify.app.presentation..")
@@ -130,7 +133,7 @@ class ArchitectureTest {
     @Test
     fun `all ViewModels import and extend androidx ViewModel`() {
         // Konsist cannot resolve external library parent classes, so we verify via imports + text
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("ViewModel")
             .assertTrue(additionalMessage = "All *ViewModel classes must extend androidx.lifecycle.ViewModel") { cls ->
                 cls.containingFile.imports.any { it.name.contains("androidx.lifecycle.ViewModel") } &&
@@ -142,7 +145,7 @@ class ArchitectureTest {
 
     @Test
     fun `UI state classes must be data classes`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("UiState")
             .assertTrue(additionalMessage = "*UiState classes must be data classes to enforce immutability") { cls ->
                 cls.hasDataModifier
@@ -151,7 +154,7 @@ class ArchitectureTest {
 
     @Test
     fun `UI state classes must reside in the presentation package`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("UiState")
             .assertTrue(additionalMessage = "*UiState classes must be in io.shellify.app.presentation..") { cls ->
                 cls.resideInPackage("io.shellify.app.presentation..")
@@ -162,7 +165,7 @@ class ArchitectureTest {
 
     @Test
     fun `all use cases reside in the domain usecase package`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("UseCase")
             .assertTrue(additionalMessage = "All *UseCase classes must be in io.shellify.app.domain.usecase") { cls ->
                 cls.resideInPackage("io.shellify.app.domain.usecase")
@@ -171,7 +174,7 @@ class ArchitectureTest {
 
     @Test
     fun `all use cases expose logic via an invoke operator function`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("UseCase")
             .assertTrue(additionalMessage = "Each UseCase must have exactly one operator fun invoke()") { cls ->
                 cls.functions(includeNested = false, includeLocal = false)
@@ -184,7 +187,7 @@ class ArchitectureTest {
 
     @Test
     fun `repository interfaces reside in the domain repository package`() {
-        mainScope.interfaces()
+        projectInterfaces
             .withNameEndingWith("Repository")
             .assertTrue(additionalMessage = "Repository interfaces must be in io.shellify.app.domain.repository") { iface ->
                 iface.resideInPackage("io.shellify.app.domain.repository")
@@ -193,7 +196,7 @@ class ArchitectureTest {
 
     @Test
     fun `repository implementations reside in the data repository package`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("RepositoryImpl")
             .assertTrue(additionalMessage = "Repository implementations must be in io.shellify.app.data.repository") { cls ->
                 cls.resideInPackage("io.shellify.app.data.repository")
@@ -202,7 +205,7 @@ class ArchitectureTest {
 
     @Test
     fun `repository implementations implement a domain repository interface`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("RepositoryImpl")
             .assertTrue(additionalMessage = "Each *RepositoryImpl must implement the corresponding *Repository interface") { cls ->
                 cls.hasParentInterface { parent ->
@@ -215,7 +218,7 @@ class ArchitectureTest {
 
     @Test
     fun `mapper classes reside in the data mapper package`() {
-        mainScope.classes()
+        projectClasses
             .withNameEndingWith("Mapper")
             .assertTrue(additionalMessage = "*Mapper classes must be in io.shellify.app.data.mapper") { cls ->
                 cls.resideInPackage("io.shellify.app.data.mapper")
@@ -226,7 +229,7 @@ class ArchitectureTest {
 
     @Test
     fun `all Room entities reside in the data local entity package`() {
-        mainScope.classes()
+        projectClasses
             .withAllAnnotationsOf(androidx.room.Entity::class)
             .assertTrue(additionalMessage = "@Entity classes must be in io.shellify.app.data.local.entity") { cls ->
                 cls.resideInPackage("io.shellify.app.data.local.entity")
@@ -235,10 +238,23 @@ class ArchitectureTest {
 
     @Test
     fun `Room entity class names end with Entity`() {
-        mainScope.classes()
+        projectClasses
             .withAllAnnotationsOf(androidx.room.Entity::class)
             .assertTrue(additionalMessage = "@Entity classes must be named *Entity") { cls ->
                 cls.name.endsWith("Entity")
+            }
+    }
+
+    // ── Feature module isolation ──────────────────────────────────────────────
+
+    @Test
+    fun `feature modules must not import from app module`() {
+        // Exclude navigation and main entry points which legitimately wire ShellifyApplication
+        projectFiles
+            .withPackage("io.shellify.app.presentation..")
+            .assertFalse(additionalMessage = "Feature module files must not import ShellifyApplication") { file ->
+                file.name !in setOf("AppNavigation", "MainActivity") &&
+                    file.imports.any { it.name.startsWith("io.shellify.app.ShellifyApplication") }
             }
     }
 
@@ -246,7 +262,7 @@ class ArchitectureTest {
 
     @Test
     fun `no production file uses System dot out`() {
-        mainScope.files
+        projectFiles
             .assertFalse(additionalMessage = "Use Logcat instead of System.out.print*") { file ->
                 file.text.contains("System.out")
             }
@@ -254,7 +270,7 @@ class ArchitectureTest {
 
     @Test
     fun `no production file uses printStackTrace`() {
-        mainScope.files
+        projectFiles
             .assertFalse(additionalMessage = "Use Logcat instead of .printStackTrace()") { file ->
                 file.text.contains(".printStackTrace()")
             }
@@ -262,7 +278,8 @@ class ArchitectureTest {
 
     @Test
     fun `all source files have a package declaration`() {
-        mainScope.files
+        projectFiles
+            .filter { !it.path.contains("build-logic") }
             .assertFalse(additionalMessage = "Every Kotlin file must declare a package") { file ->
                 file.packagee == null
             }

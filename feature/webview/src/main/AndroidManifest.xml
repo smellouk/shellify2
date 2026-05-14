@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name="io.shellify.app.presentation.webview.WebViewActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:documentLaunchMode="intoExisting"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Shellify.WebView" />
+    </application>
+</manifest>

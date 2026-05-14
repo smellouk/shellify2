@@ -457,7 +457,7 @@ style:
     active: false
   ForbiddenComment:
     active: true
-    values:
+    comments:
       - reason: 'Use a proper issue tracker instead of TODO comments with assignees.'
         value: 'FIXME:'
       - reason: 'Use a proper issue tracker instead of HACK comments.'
@@ -638,8 +638,6 @@ style:
     active: true
   UseSumOfInsteadOfFlatMapSize:
     active: true
-  UseThrowsAnnotation:
-    active: false
   UselessCallOnNotNull:
     active: true
   UtilityClassWithPublicConstructor:
