@@ -255,6 +255,7 @@
     <string name="consent_what_1">Permet aux utilisateurs de créer des conteneurs d\'applications web isolés sur leur propre appareil</string>
     <string name="consent_what_2">Fonctionne comme un outil de navigation web qui charge les sites choisis par l\'utilisateur</string>
     <string name="consent_what_3">Toutes les données restent stockées localement sur l\'appareil, sauf interaction directe avec un site tiers</string>
+    <string name="consent_what_4">Shellify peut permettre aux utilisateurs de partager localement des liens de sites ou des configurations d\'applications via les fonctions de partage standard du système d\'exploitation, sans transmettre ces données via l\'infrastructure de Shellify</string>
     <string name="consent_section_not_title">Ce que Shellify ne fait pas</string>
     <string name="consent_not_1">Nous ne possédons, hébergeons, contrôlons, surveillons, modifions ni n\'approuvons les sites ou services tiers</string>
     <string name="consent_not_2">Nous ne collectons ni ne stockons votre activité de navigation ou le contenu consulté via des sites tiers</string>

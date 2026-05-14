@@ -259,6 +259,7 @@
     <string name="consent_what_1">Allows users to create isolated web-based app containers on their own device</string>
     <string name="consent_what_2">Functions as a web-viewing tool that loads websites selected by the user</string>
     <string name="consent_what_3">All browsing data and app data remain stored locally on the user\'s device unless the user interacts directly with a third-party website or service</string>
+    <string name="consent_what_4">Shellify may allow users to locally share user-selected website links or app configurations using standard operating-system sharing features without transmitting that data through Shellify infrastructure</string>
     <string name="consent_section_not_title">What Shellify does not do</string>
     <string name="consent_not_1">We do not own, host, control, monitor, modify, or endorse third-party websites or services</string>
     <string name="consent_not_2">We do not collect or store your browsing activity or the content you access through third-party websites</string>
