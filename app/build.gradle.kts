@@ -3,6 +3,7 @@ plugins {
     id("shellify.compose")
     alias(libs.plugins.ksp)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.aboutlibraries)
 }
 
 ksp {

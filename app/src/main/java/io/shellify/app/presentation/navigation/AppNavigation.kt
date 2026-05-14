@@ -67,6 +67,7 @@ import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
+import io.shellify.app.presentation.settings.LicensesScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsViewModel
 import io.shellify.app.presentation.theme.Dimens
@@ -325,7 +326,18 @@ fun AppNavigation(
                             onGeckoInstalled = { app.injectAndLoadGeckoView() },
                         )
                     },
+                    onLicenses = { navController.navigate(Screen.Licenses.route) },
                 )
+            }
+
+            composable(
+                route = Screen.Licenses.route,
+                enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
+            ) {
+                LicensesScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Screen.Onboarding.route) {

@@ -244,6 +244,7 @@
     <string name="global_settings_delete_all_shortcuts_desc">إزالة جميع اختصارات مشغِّل التطبيقات من الشاشة الرئيسية</string>
     <string name="global_settings_section_about">حول</string>
     <string name="global_settings_version_headline">الإصدار</string>
+    <string name="licenses_title">تراخيص المصدر المفتوح</string>
     <string name="global_settings_ua_dialog_title">عميل المستخدم الافتراضي</string>
     <string name="global_settings_schedule_dialog_title">جدول النسخ الاحتياطي التلقائي</string>
     <string name="global_settings_remove_password_title">إزالة كلمة مرور التطبيق؟</string>
