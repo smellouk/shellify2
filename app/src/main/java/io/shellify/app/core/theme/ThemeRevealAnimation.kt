@@ -1,0 +1,187 @@
+package io.shellify.app.core.theme
+
+import android.graphics.Bitmap
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.view.PixelCopy
+import android.view.View
+import android.view.Window
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.clipPath
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.math.hypot
+import kotlin.math.max
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+class ThemeRevealState {
+    var isAnimating by mutableStateOf(false)
+        internal set
+
+    var snapshot: ImageBitmap? by mutableStateOf(null)
+        internal set
+
+    val animationProgress = Animatable(0f)
+
+    var revealCenter by mutableStateOf(Offset.Zero)
+        internal set
+
+    var toDark by mutableStateOf(false)
+        internal set
+
+    var maxRadius by mutableFloatStateOf(0f)
+        internal set
+
+    internal var currentAnimationJob: Job? = null
+
+    var revealGeneration by mutableIntStateOf(0)
+        internal set
+
+    fun triggerReveal(
+        center: Offset,
+        switchToDark: Boolean,
+        view: View,
+        window: Window?,
+        onCaptureDone: () -> Unit,
+    ) {
+        currentAnimationJob?.cancel()
+        currentAnimationJob = null
+
+        revealCenter = center
+        toDark = switchToDark
+
+        val w = view.width.toFloat()
+        val h = view.height.toFloat()
+        maxRadius = max(
+            max(hypot(center.x, center.y), hypot(w - center.x, center.y)),
+            max(hypot(center.x, h - center.y), hypot(w - center.x, h - center.y)),
+        )
+
+        revealGeneration++
+
+        captureScreen(view, window) { bitmap ->
+            snapshot = bitmap.asImageBitmap()
+            isAnimating = true
+            onCaptureDone()
+        }
+    }
+
+    private fun captureScreen(view: View, window: Window?, onCaptured: (Bitmap) -> Unit) {
+        val width = view.width
+        val height = view.height
+        if (width <= 0 || height <= 0) {
+            onCaptured(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && window != null) {
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            try {
+                PixelCopy.request(
+                    window,
+                    android.graphics.Rect(0, 0, width, height),
+                    bitmap,
+                    { result ->
+                        if (result == PixelCopy.SUCCESS) onCaptured(bitmap)
+                        else fallbackCapture(view, onCaptured)
+                    },
+                    Handler(Looper.getMainLooper()),
+                )
+            } catch (e: Exception) {
+                fallbackCapture(view, onCaptured)
+            }
+        } else {
+            fallbackCapture(view, onCaptured)
+        }
+    }
+
+    private fun fallbackCapture(view: View, onCaptured: (Bitmap) -> Unit) {
+        try {
+            val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            view.draw(canvas)
+            onCaptured(bitmap)
+        } catch (e: Exception) {
+            onCaptured(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+        }
+    }
+
+    internal fun cleanup() {
+        isAnimating = false
+        snapshot = null
+        currentAnimationJob = null
+    }
+}
+
+@Composable
+fun rememberThemeRevealState(): ThemeRevealState = remember { ThemeRevealState() }
+
+val LocalThemeRevealState = staticCompositionLocalOf<ThemeRevealState?> { null }
+
+// ── Overlay ───────────────────────────────────────────────────────────────────
+
+@Composable
+fun CircularRevealOverlay(
+    revealState: ThemeRevealState,
+    durationMs: Int = 600,
+) {
+    if (!revealState.isAnimating) return
+    val snap = revealState.snapshot ?: return
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(revealState.revealGeneration) {
+        revealState.animationProgress.snapTo(0f)
+        val job = coroutineScope.launch {
+            revealState.animationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = durationMs, easing = FastOutSlowInEasing),
+            )
+            revealState.cleanup()
+        }
+        revealState.currentAnimationJob = job
+        job.join()
+    }
+
+    val progress = revealState.animationProgress.value
+    val center = revealState.revealCenter
+    val currentRadius = revealState.maxRadius * progress
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val circlePath = Path().apply {
+            addOval(
+                Rect(
+                    center.x - currentRadius,
+                    center.y - currentRadius,
+                    center.x + currentRadius,
+                    center.y + currentRadius,
+                )
+            )
+        }
+        clipPath(circlePath, clipOp = ClipOp.Difference) {
+            drawImage(snap)
+        }
+    }
+}

@@ -1,0 +1,43 @@
+package io.shellify.app.presentation.translate
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import io.shellify.app.domain.model.TranslateLanguage
+import io.shellify.app.domain.model.WebApp
+import io.shellify.app.domain.repository.WebAppRepository
+import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+data class TranslateConfigUiState(
+    val app: WebApp? = null,
+    val isLoading: Boolean = true,
+)
+
+class TranslateConfigViewModel(
+    private val appId: Long,
+    private val repo: WebAppRepository,
+    private val saveWebApp: SaveWebAppUseCase,
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(TranslateConfigUiState())
+    val uiState: StateFlow<TranslateConfigUiState> = _state
+
+    init {
+        viewModelScope.launch {
+            _state.update { it.copy(app = repo.getById(appId), isLoading = false) }
+        }
+    }
+
+    private fun update(transform: (WebApp) -> WebApp) {
+        val app = _state.value.app ?: return
+        val updated = transform(app)
+        _state.update { it.copy(app = updated) }
+        viewModelScope.launch { saveWebApp(updated) }
+    }
+
+    fun setLanguage(lang: TranslateLanguage) = update { it.copy(translateTarget = lang) }
+    fun setAutoTranslate(v: Boolean) = update { it.copy(autoTranslateOnLoad = v) }
+}

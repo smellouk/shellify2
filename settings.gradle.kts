@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PWAForge"
+rootProject.name = "Shellify"
 include(":app")

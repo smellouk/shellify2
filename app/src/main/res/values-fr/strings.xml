@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PWAForge</string>
+    <string name="app_name">Shellify</string>
 
     <!-- Common actions -->
     <string name="common_cancel">Annuler</string>
@@ -27,7 +27,7 @@
     <string name="common_wrong_password">Mot de passe incorrect</string>
 
     <!-- Home -->
-    <string name="home_title">PWAForge</string>
+    <string name="home_title">Shellify</string>
     <string name="home_search_hint">Rechercher des applications…</string>
     <string name="home_show_details_cd">Afficher les détails</string>
     <string name="home_hide_details_cd">Masquer les détails</string>
@@ -37,7 +37,7 @@
     <string name="home_quick_suggestions">SUGGESTIONS RAPIDES</string>
     <string name="home_all_categories">Tout</string>
     <string name="home_empty_title">Forgez votre première app</string>
-    <string name="home_empty_subtitle">Entrez une URL et PWAForge la transforme en une tuile privée et isolée sur votre écran d\'accueil.</string>
+    <string name="home_empty_subtitle">Entrez une URL et Shellify la transforme en une tuile privée et isolée sur votre écran d\'accueil.</string>
     <string name="home_empty_subtitle_action">Ajouter un site</string>
     <string name="home_empty_filtered_category">Aucune application dans \"%s\"</string>
     <string name="home_empty_filtered_subtitle">Les applications assignées à cette catégorie apparaîtront ici</string>
@@ -340,7 +340,7 @@
     <string name="onboarding_welcome_tagline">Un lanceur privé pour le web. Transformez n\'importe quel site en application isolée et sans publicité.</string>
     <string name="onboarding_language_label">Langue</string>
     <string name="onboarding_what_eyebrow">Quatre fonctions</string>
-    <string name="onboarding_what_title">Ce que vous obtenez avec PWAForge</string>
+    <string name="onboarding_what_title">Ce que vous obtenez avec Shellify</string>
     <string name="onboarding_what_desc">Ajoutez n\'importe quel site comme application autonome avec contrôle total de la confidentialité, isolation par application et blocage des publicités intégré.</string>
     <string name="onboarding_feature_apps_title">Tout site, une appli</string>
     <string name="onboarding_feature_apps_desc">Épinglez des sites en fenêtres autonomes et sans distractions.</string>
@@ -354,7 +354,7 @@
     <string name="onboarding_appearance_subtitle">Choisissez l\'apparence. Vous pouvez la modifier à tout moment dans les Paramètres.</string>
     <string name="onboarding_appearance_preview_label">Aperçu</string>
     <string name="onboarding_security_title">Verrouiller le lanceur</string>
-    <string name="onboarding_security_subtitle">Un mot de passe principal protège toutes les applications dans PWAForge. Facultatif — vous pouvez le configurer plus tard.</string>
+    <string name="onboarding_security_subtitle">Un mot de passe principal protège toutes les applications dans Shellify. Facultatif — vous pouvez le configurer plus tard.</string>
     <string name="onboarding_security_set">Définir le mot de passe</string>
     <string name="onboarding_security_set_done">Mot de passe défini</string>
     <string name="onboarding_strength">Force du mot de passe</string>
@@ -370,7 +370,7 @@
     <string name="onboarding_schedule_manual">Manuel</string>
     <string name="onboarding_get_started">Commencer à ajouter des applications</string>
     <string name="onboarding_all_set">Tout est prêt.</string>
-    <string name="onboarding_ready">Ajoutons votre premier site. Saisissez une URL sur l\'écran suivant et PWAForge en fera une application isolée.</string>
+    <string name="onboarding_ready">Ajoutons votre premier site. Saisissez une URL sur l\'écran suivant et Shellify en fera une application isolée.</string>
     <string name="onboarding_done_tip_title">Astuce — appui long sur une tuile</string>
     <string name="onboarding_done_tip_body">Pour configurer le blocage des publicités, l\'isolation et les permissions par application.</string>
 

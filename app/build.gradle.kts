@@ -10,11 +10,11 @@ ksp {
 }
 
 android {
-    namespace = "dev.pwaforge"
+    namespace = "io.shellify.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "dev.pwaforge"
+        applicationId = "io.shellify.app"
         minSdk = 23
         targetSdk = 36
         versionCode = 1

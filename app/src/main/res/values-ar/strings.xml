@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PWAForge</string>
+    <string name="app_name">Shellify</string>
 
     <!-- Common actions -->
     <string name="common_cancel">إلغاء</string>
@@ -27,7 +27,7 @@
     <string name="common_wrong_password">كلمة مرور خاطئة</string>
 
     <!-- Home -->
-    <string name="home_title">PWAForge</string>
+    <string name="home_title">Shellify</string>
     <string name="home_search_hint">ابحث عن التطبيقات…</string>
     <string name="home_show_details_cd">عرض التفاصيل</string>
     <string name="home_hide_details_cd">إخفاء التفاصيل</string>
@@ -37,7 +37,7 @@
     <string name="home_quick_suggestions">اقتراحات سريعة</string>
     <string name="home_all_categories">الكل</string>
     <string name="home_empty_title">أنشئ تطبيقك الأول</string>
-    <string name="home_empty_subtitle">أدخل رابطاً وسيحوّله PWAForge إلى بلاطة خاصة ومعزولة على شاشتك الرئيسية.</string>
+    <string name="home_empty_subtitle">أدخل رابطاً وسيحوّله Shellify إلى بلاطة خاصة ومعزولة على شاشتك الرئيسية.</string>
     <string name="home_empty_subtitle_action">إضافة موقع</string>
     <string name="home_empty_filtered_category">لا توجد تطبيقات في \"%s\"</string>
     <string name="home_empty_filtered_subtitle">ستظهر التطبيقات المخصصة لهذه الفئة هنا</string>
@@ -340,7 +340,7 @@
     <string name="onboarding_welcome_tagline">مشغّل خاص للويب. حوّل أي موقع إلى تطبيق معزول وخالٍ من الإعلانات على شاشتك الرئيسية.</string>
     <string name="onboarding_language_label">اللغة</string>
     <string name="onboarding_what_eyebrow">أربع ميزات</string>
-    <string name="onboarding_what_title">ما تحصل عليه مع PWAForge</string>
+    <string name="onboarding_what_title">ما تحصل عليه مع Shellify</string>
     <string name="onboarding_what_desc">أضف أي موقع كتطبيق مستقل مع التحكم الكامل في الخصوصية وعزل التطبيقات وحجب الإعلانات المدمج.</string>
     <string name="onboarding_feature_apps_title">أي موقع، تطبيق</string>
     <string name="onboarding_feature_apps_desc">ثبّت المواقع كنوافذ مستقلة وخالية من التشتيت.</string>
@@ -354,7 +354,7 @@
     <string name="onboarding_appearance_subtitle">اختر كيف يبدو التطبيق. يمكنك تغيير ذلك في الإعدادات.</string>
     <string name="onboarding_appearance_preview_label">معاينة</string>
     <string name="onboarding_security_title">قفل المشغّل</string>
-    <string name="onboarding_security_subtitle">تحمي كلمة المرور الرئيسية جميع التطبيقات داخل PWAForge. اختياري — يمكنك إعدادها لاحقاً.</string>
+    <string name="onboarding_security_subtitle">تحمي كلمة المرور الرئيسية جميع التطبيقات داخل Shellify. اختياري — يمكنك إعدادها لاحقاً.</string>
     <string name="onboarding_security_set">تعيين كلمة المرور</string>
     <string name="onboarding_security_set_done">تم تعيين كلمة المرور</string>
     <string name="onboarding_strength">قوة كلمة المرور</string>
@@ -370,7 +370,7 @@
     <string name="onboarding_schedule_manual">يدوي</string>
     <string name="onboarding_get_started">ابدأ بإضافة التطبيقات</string>
     <string name="onboarding_all_set">لقد اكتملت الإعداد.</string>
-    <string name="onboarding_ready">لنضف موقعك الأول. أدخل رابطاً في الشاشة التالية وسيحوله PWAForge إلى تطبيق معزول.</string>
+    <string name="onboarding_ready">لنضف موقعك الأول. أدخل رابطاً في الشاشة التالية وسيحوله Shellify إلى تطبيق معزول.</string>
     <string name="onboarding_done_tip_title">نصيحة — اضغط مطولاً على أي بلاطة</string>
     <string name="onboarding_done_tip_body">لضبط حظر الإعلانات والعزل والأذونات لكل تطبيق.</string>
 

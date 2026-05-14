@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PWAForge" parent="Theme.AppCompat.DayNight.NoActionBar" />
+    <style name="Theme.Shellify" parent="Theme.AppCompat.DayNight.NoActionBar" />
 
-    <style name="Theme.PWAForge.WebView" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.Shellify.WebView" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 
-    <style name="Theme.PWAForge.Transparent" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.Shellify.Transparent" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@null</item>
