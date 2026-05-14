@@ -119,32 +119,18 @@ fun AppNavigation(
     }
 
     if (pendingDeepLinkUrl != null) {
-        val host = remember(pendingDeepLinkUrl) {
-            runCatching { android.net.Uri.parse(pendingDeepLinkUrl).host }.getOrNull()
-                ?: pendingDeepLinkUrl
-        }
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = { pendingDeepLinkUrl = null; pendingDeepLinkName = null },
-            title = { androidx.compose.material3.Text(stringResource(R.string.deeplink_confirm_title)) },
-            text = {
-                androidx.compose.material3.Text(
-                    "${stringResource(R.string.deeplink_confirm_body)}\n\n$host"
+        DeepLinkConfirmDialog(
+            url = pendingDeepLinkUrl!!,
+            onConfirm = {
+                navController.navigate(
+                    Screen.Add.createRoute(url = pendingDeepLinkUrl!!, name = pendingDeepLinkName ?: "")
                 )
+                pendingDeepLinkUrl = null
+                pendingDeepLinkName = null
             },
-            confirmButton = {
-                androidx.compose.material3.Button(onClick = {
-                    navController.navigate(
-                        Screen.Add.createRoute(url = pendingDeepLinkUrl!!, name = pendingDeepLinkName ?: "")
-                    )
-                    pendingDeepLinkUrl = null
-                    pendingDeepLinkName = null
-                }) { androidx.compose.material3.Text(stringResource(R.string.deeplink_confirm_add)) }
-            },
-            dismissButton = {
-                androidx.compose.material3.TextButton(onClick = {
-                    pendingDeepLinkUrl = null
-                    pendingDeepLinkName = null
-                }) { androidx.compose.material3.Text(stringResource(R.string.common_cancel)) }
+            onDismiss = {
+                pendingDeepLinkUrl = null
+                pendingDeepLinkName = null
             },
         )
     }
@@ -416,6 +402,32 @@ fun AppNavigation(
             }
         }
     }
+}
+
+@Composable
+internal fun DeepLinkConfirmDialog(url: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    val host = remember(url) {
+        runCatching { android.net.Uri.parse(url).host }.getOrNull()?.takeIf { it.isNotBlank() } ?: url
+    }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { androidx.compose.material3.Text(stringResource(R.string.deeplink_confirm_title)) },
+        text = {
+            androidx.compose.material3.Text(
+                "${stringResource(R.string.deeplink_confirm_body)}\n\n$host"
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.Button(onClick = onConfirm) {
+                androidx.compose.material3.Text(stringResource(R.string.deeplink_confirm_add))
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                androidx.compose.material3.Text(stringResource(R.string.common_cancel))
+            }
+        },
+    )
 }
 
 internal fun resolveStartDestination(consentGiven: Boolean, onboardingDone: Boolean): String =
