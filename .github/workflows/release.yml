@@ -26,7 +26,7 @@ jobs:
         run: echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
       - name: Update CHANGELOG.md
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: --verbose
@@ -35,7 +35,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Generate release notes for this tag
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: --latest --strip all
