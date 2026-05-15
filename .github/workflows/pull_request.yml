@@ -35,7 +35,6 @@ jobs:
             build
             revert
           requireScope: false
-          disallowScopes: []
           subjectPattern: ^.+$
           subjectPatternError: |
             PR title must have a non-empty description after the type/scope.
