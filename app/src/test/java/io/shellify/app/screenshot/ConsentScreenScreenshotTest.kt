@@ -33,6 +33,6 @@ class ConsentScreenScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

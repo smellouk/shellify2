@@ -1,0 +1,78 @@
+name: Run Instrumentation Tests
+description: Run Android instrumentation tests on an emulator with KVM acceleration and AVD caching
+
+inputs:
+  gradle-task:
+    description: Gradle task to run (e.g. :app:connectedDebugAndroidTest)
+    required: true
+  signing-store-file:
+    description: Path to keystore file (required for release builds)
+    required: false
+    default: ''
+  signing-store-password:
+    description: Keystore password
+    required: false
+    default: ''
+  signing-key-alias:
+    description: Key alias
+    required: false
+    default: ''
+  signing-key-password:
+    description: Key password
+    required: false
+    default: ''
+  upload-results:
+    description: Upload test result artifacts after the run
+    required: false
+    default: 'false'
+  api-level:
+    description: Android API level for the emulator
+    required: false
+    default: '29'
+  artifact-name:
+    description: Name for the uploaded artifact (used when upload-results is true)
+    required: false
+    default: 'instrumentation-test-results'
+
+runs:
+  using: composite
+  steps:
+    - name: Enable KVM
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Run instrumentation tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ inputs.api-level }}
+        arch: x86_64
+        target: default
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-load -no-snapshot-save
+        disable-animations: true
+        script: ./gradlew ${{ inputs.gradle-task }} --stacktrace --continue
+      env:
+        SIGNING_STORE_FILE: ${{ inputs.signing-store-file }}
+        SIGNING_STORE_PASSWORD: ${{ inputs.signing-store-password }}
+        SIGNING_KEY_ALIAS: ${{ inputs.signing-key-alias }}
+        SIGNING_KEY_PASSWORD: ${{ inputs.signing-key-password }}
+
+    - name: Report test results
+      if: always()
+      uses: mikepenz/action-junit-report@v5
+      with:
+        report_paths: '**/build/outputs/androidTest-results/connected/**/*.xml'
+        include_passed: true
+        summary: true
+
+    - name: Upload test results
+      if: ${{ always() && inputs.upload-results == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: '**/build/reports/androidTests/connected/**'
+        retention-days: 7
+        if-no-files-found: ignore

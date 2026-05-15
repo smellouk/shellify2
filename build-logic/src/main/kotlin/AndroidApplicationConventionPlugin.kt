@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.TestLoggerExtension
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -12,6 +14,14 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("com.android.application")
                 apply("org.jetbrains.kotlin.android")
+                apply("com.adarshr.test-logger")
+            }
+            extensions.configure<TestLoggerExtension> {
+                theme = ThemeType.MOCHA
+                slowThreshold = 1000
+                showStandardStreams = true
+                showPassedStandardStreams = false
+                showSkippedStandardStreams = false
             }
             extensions.configure<BaseAppModuleExtension> {
                 compileSdk = 36

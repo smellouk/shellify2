@@ -8,4 +8,5 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.aboutlibraries) apply false
     alias(libs.plugins.roborazzi) apply false
+    alias(libs.plugins.test.logger) apply false
 }

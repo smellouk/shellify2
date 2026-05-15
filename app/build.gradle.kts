@@ -52,7 +52,7 @@ android {
             fun prop(key: String) = props.getProperty(key) ?: System.getenv(key)
 
             val storeFilePath = prop("SIGNING_STORE_FILE")
-            if (storeFilePath != null) {
+            if (!storeFilePath.isNullOrEmpty()) {
                 storeFile = rootProject.file(storeFilePath)
                 storePassword = prop("SIGNING_STORE_PASSWORD")
                 keyAlias = prop("SIGNING_KEY_ALIAS")
@@ -88,6 +88,7 @@ android {
         warningsAsErrors = false
         htmlReport = true
         xmlReport = true
+        sarifReport = true
     }
 
     packaging {
@@ -165,7 +166,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
 
     debugImplementation(libs.compose.ui.tooling)
-    debugImplementation(libs.compose.ui.test.manifest)
 
     // Unit testing
     testImplementation(libs.junit)
@@ -181,19 +181,38 @@ dependencies {
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.robolectric)
     testImplementation(platform(libs.compose.bom))
-    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation(libs.compose.ui.test.junit4)
 
     // Detekt formatting rules (ktlint-based)
     detektPlugins(libs.detekt.formatting)
 
-
     // Instrumented tests
     androidTestImplementation(composeBom)
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test:runner:1.6.1")
-    androidTestImplementation("androidx.test:rules:1.6.1")
-    androidTestImplementation("io.mockk:mockk-android:1.13.14")
-    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.kotlinx.coroutines.test)
+}
+
+// espresso-core:3.7.0 requires concurrent-futures:1.2.0, but the Compose BOM strictly pins 1.1.0.
+// Force 1.2.0 only for androidTest so the InputManager.getInstance fix works on API 35+.
+roborazzi {
+    outputDir.set(file("src/test/snapshots/images"))
+}
+
+configurations.configureEach {
+    if (name.contains("AndroidTest", ignoreCase = true)) {
+        resolutionStrategy.force("androidx.concurrent:concurrent-futures:1.2.0")
+    }
+}
+
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        sarif.required.set(true)
+    }
 }

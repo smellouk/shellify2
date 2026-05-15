@@ -1,0 +1,13 @@
+name: Setup Android
+description: Configure Java 17 and set up Gradle (run actions/checkout before this action)
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 17
+    - uses: gradle/actions/setup-gradle@v4
+      with:
+        cache-disabled: true

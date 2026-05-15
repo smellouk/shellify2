@@ -37,7 +37,7 @@ class CategoryScreenScreenshotTest {
         composeTestRule.setContent {
             ShellifyTheme { CategoryScreen(viewModel = buildVm(emptyList())) }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -55,7 +55,7 @@ class CategoryScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -63,7 +63,7 @@ class CategoryScreenScreenshotTest {
         composeTestRule.setContent {
             ShellifyTheme { CategoryScreen(viewModel = buildVm(emptyList(), CategoryUiState(showAddDialog = true))) }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -76,6 +76,6 @@ class CategoryScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

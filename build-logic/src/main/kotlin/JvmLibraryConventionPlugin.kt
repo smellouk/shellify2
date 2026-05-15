@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.TestLoggerExtension
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -10,6 +12,14 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("org.jetbrains.kotlin.jvm")
+                apply("com.adarshr.test-logger")
+            }
+            extensions.configure<TestLoggerExtension> {
+                theme = ThemeType.MOCHA
+                slowThreshold = 1000
+                showStandardStreams = true
+                showPassedStandardStreams = false
+                showSkippedStandardStreams = false
             }
             extensions.configure<JavaPluginExtension> {
                 sourceCompatibility = JavaVersion.VERSION_17

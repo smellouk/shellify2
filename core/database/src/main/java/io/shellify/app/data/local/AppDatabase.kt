@@ -11,7 +11,7 @@ import io.shellify.app.data.local.dao.CategoryDao
 import io.shellify.app.data.local.dao.WebAppDao
 import io.shellify.app.data.local.entity.CategoryEntity
 import io.shellify.app.data.local.entity.WebAppEntity
-import net.sqlcipher.database.SupportFactory
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
@@ -34,9 +34,9 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context, crypto: CryptoManager): AppDatabase {
             // Passphrase is a random 32-byte secret encrypted at rest in SharedPreferences.
-            // Decrypted here via Android Keystore, passed directly to SupportFactory, then zeroed.
+            // Decrypted here via Android Keystore, passed directly to SupportOpenHelperFactory, then zeroed.
             val passphrase = crypto.databasePassphrase()
-            val factory = SupportFactory(passphrase)
+            val factory = SupportOpenHelperFactory(passphrase)
             return Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,

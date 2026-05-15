@@ -2,8 +2,8 @@
 
 **Created:** 2026-05-15
 **Milestone:** v2 — Privacy-First Feature Parity
-**Phases:** 4 (coarse granularity)
-**Requirements:** 43 v1 requirements, 100% mapped
+**Phases:** 5 (coarse granularity)
+**Requirements:** 43 v1 requirements + 5 test migration requirements, 100% mapped
 
 ---
 
@@ -15,6 +15,7 @@
 | 2 | Privacy & Tor | Maximum per-app isolation and anonymity | PRIV-01–05, TOR-01–05 (10) | 5 |
 | 3 | Productivity & Insights | Power-user tooling and on-device usage awareness | PROD-01–05, ANLT-01–07 (12) | 5 |
 | 4 | Platform & Discovery | Shellify as a full Android citizen | PLAT-01–06, DISC-01–03, NOTF-01–04 (13) | 5 |
+| 5 | E2E Test Migration | Replace Espresso E2E tests with Maestro | TEST-01–05 (5) | 4 |
 
 ---
 
@@ -115,6 +116,31 @@
 
 ---
 
+## Phase 5: E2E Test Migration
+
+**Goal:** Replace all Espresso-based E2E instrumentation tests with Maestro flows — eliminating JVM/device flakiness, enabling plain-YAML test authoring, and unblocking faster CI iteration.
+
+**Requirements:** TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
+
+**Plans:**
+1. Audit & inventory — catalogue every existing Espresso E2E test class; map each to a user flow; mark unit/integration tests that stay as-is (out of scope)
+2. Maestro setup — add `maestro` CLI to CI toolchain; create `.maestro/` directory at repo root; update `run-instrumentation-tests` composite action to execute `maestro test` instead of `connectedDebugAndroidTest`
+3. Flow migration — rewrite each inventoried Espresso flow as a `.yaml` Maestro flow file (one file per user journey: add app, open app, lock/unlock, backup/restore, settings)
+4. Remove Espresso E2E code — delete migrated test classes from `app/src/androidTest/`; keep any non-E2E instrumentation tests (e.g. Room migration tests) untouched
+5. CI wiring — update `pull-request.yml`, `main.yml`, and `build_apk.yml` instrumentation-test jobs to run Maestro flows against an emulator; upload Maestro test reports as artifacts
+
+**Success Criteria:**
+1. All previously covered E2E user journeys have an equivalent Maestro `.yaml` flow and pass on CI
+2. No Espresso E2E test classes remain in `app/src/androidTest/` (Room migration tests exempted)
+3. `pull-request.yml` instrumentation-test job runs Maestro flows and fails the PR on regression
+4. Maestro test report artifact is uploaded on every CI run
+
+**Dependencies:**
+- Maestro requires a running Android emulator or physical device on CI — verify emulator AVD setup in `run-instrumentation-tests` action
+- Room migration tests in `app/src/androidTest/` must be identified and excluded from deletion
+
+---
+
 ## Deferred (v2)
 
 | Feature | Reason |
@@ -128,4 +154,4 @@
 ---
 
 *Roadmap created: 2026-05-15*
-*Last updated: 2026-05-15 after initialization*
+*Last updated: 2026-05-16 — added Phase 5: E2E Test Migration (Espresso → Maestro)*

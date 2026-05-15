@@ -61,7 +61,7 @@ class HomeScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -88,7 +88,7 @@ class HomeScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -123,7 +123,7 @@ class HomeScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -153,6 +153,6 @@ class HomeScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

@@ -55,7 +55,7 @@ class AppSettingsScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -68,7 +68,7 @@ class AppSettingsScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -83,6 +83,6 @@ class AppSettingsScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

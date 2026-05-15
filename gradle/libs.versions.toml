@@ -1,15 +1,15 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.0.21"
-ksp = "2.0.21-1.0.28"
+agp = "8.9.1"
+kotlin = "2.1.21"
+ksp = "2.1.21-2.0.2"
 detekt = "1.23.7"
-compose-bom = "2024.12.01"
+compose-bom = "2025.05.01"
 core-ktx = "1.15.0"
 lifecycle = "2.8.7"
 activity-compose = "1.9.3"
 navigation-compose = "2.8.5"
-room = "2.6.1"
-sqlcipher = "4.5.4"
+room = "2.8.4"
+sqlcipher = "4.16.0"
 sqlite-ktx = "2.4.0"
 webkit = "1.12.1"
 okhttp = "4.12.0"
@@ -22,14 +22,18 @@ biometric = "1.1.0"
 work = "2.9.1"
 documentfile = "1.0.1"
 zxing = "3.5.3"
-geckoview = "128.0.20240704121409"
+geckoview = "140.0.20250707120347"
 junit = "4.13.2"
-mockk = "1.13.12"
+mockk = "1.14.3"
+androidx-test-ext = "1.2.1"
+androidx-test = "1.6.1"
+espresso = "3.7.0"
 json = "20240303"
 konsist = "0.16.1"
 aboutlibraries = "11.2.3"
 roborazzi = "1.60.0"
 robolectric = "4.16.1"
+testlogger = "4.0.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -38,6 +42,13 @@ compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -55,7 +66,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
+sqlcipher = { group = "net.zetetic", name = "sqlcipher-android", version.ref = "sqlcipher" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
@@ -79,6 +90,7 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-compiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
+testlogger-gradlePlugin = { group = "com.adarshr", name = "gradle-test-logger-plugin", version.ref = "testlogger" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -90,3 +102,4 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
+test-logger = { id = "com.adarshr.test-logger", version.ref = "testlogger" }

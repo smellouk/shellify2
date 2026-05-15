@@ -74,7 +74,7 @@ Tests run on the `debug` build type only in CI.
 
 ## CI Integration
 
-CI config: `.github/workflows/pull_request.yml`
+CI config: `.github/workflows/pull-request.yml`
 
 All four jobs run in parallel on every PR targeting `main`. Concurrency group cancels in-progress runs for the same PR.
 

@@ -71,6 +71,11 @@
 
         <!-- WebViewActivity and ShortcutActivity are declared in their respective feature module manifests -->
 
+        <!-- Required by createComposeRule() in Robolectric unit tests -->
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="false" />
+
         <!-- FileProvider for sharing icons -->
         <provider
             android:name="androidx.core.content.FileProvider"

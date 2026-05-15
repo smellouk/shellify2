@@ -141,7 +141,7 @@ fun AddScreen(
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
-    val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState(initial = viewModel.geckoEngineManager.installState.value)
+    val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 

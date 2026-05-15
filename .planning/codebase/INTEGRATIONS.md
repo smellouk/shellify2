@@ -80,7 +80,7 @@
 ## Other Services
 
 **CI/CD — GitHub Actions:**
-- Workflows: `.github/workflows/pull_request.yml`, `.github/workflows/release.yml`
+- Workflows: `.github/workflows/pull-request.yml`, `.github/workflows/release.yml`
 - PR checks: Android Lint, Detekt, unit tests + Konsist, screenshot tests (Roborazzi)
 - Release flow: tag-triggered, builds signed APK/AAB, generates CHANGELOG via `git-cliff` (`cliff.toml`), publishes GitHub Release
 - Java distribution: Temurin 17 (via `actions/setup-java@v4`)

@@ -44,7 +44,7 @@ class AddScreenScreenshotTest {
                 AddScreen(viewModel = buildVm(AddUiState(name = "", url = "")), onSaved = {}, onBack = {})
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -58,7 +58,7 @@ class AddScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -72,7 +72,7 @@ class AddScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -86,6 +86,6 @@ class AddScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

@@ -1,0 +1,47 @@
+name: Setup Keystore
+description: Decode base64-encoded keystore to runner temp directory and optionally verify its fingerprint
+
+inputs:
+  keystore-base64:
+    description: Base64-encoded keystore file
+    required: true
+  store-password:
+    description: Keystore password (required when expected-fingerprint is set)
+    required: false
+    default: ''
+  expected-fingerprint:
+    description: Expected SHA-256 fingerprint to guard against keystore substitution
+    required: false
+    default: ''
+
+outputs:
+  keystore-path:
+    description: Absolute path to the decoded keystore file
+    value: ${{ steps.decode.outputs.keystore-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Decode keystore
+      id: decode
+      shell: bash
+      run: |
+        echo "${{ inputs.keystore-base64 }}" | base64 --decode > ${{ runner.temp }}/keystore.jks
+        echo "keystore-path=${{ runner.temp }}/keystore.jks" >> $GITHUB_OUTPUT
+
+    - name: Guard keystore fingerprint
+      if: ${{ inputs.expected-fingerprint != '' }}
+      shell: bash
+      env:
+        STORE_PASSWORD: ${{ inputs.store-password }}
+      run: |
+        FINGERPRINT=$(keytool -list -v \
+          -keystore "${{ runner.temp }}/keystore.jks" \
+          -storetype PKCS12 \
+          -storepass "$STORE_PASSWORD" \
+          | grep "SHA256:" | awk '{print $2}')
+        echo "Keystore SHA-256: $FINGERPRINT"
+        if [ "$FINGERPRINT" != "${{ inputs.expected-fingerprint }}" ]; then
+          echo "::error::Keystore fingerprint mismatch. Expected ${{ inputs.expected-fingerprint }} but got $FINGERPRINT."
+          exit 1
+        fi

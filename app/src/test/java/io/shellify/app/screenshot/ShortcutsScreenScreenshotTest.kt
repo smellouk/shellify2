@@ -44,7 +44,7 @@ class ShortcutsScreenScreenshotTest {
         composeTestRule.setContent {
             ShellifyTheme { ShortcutsScreen(viewModel = buildVm(ShortcutsUiState(items = emptyList(), isLoading = false))) }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -61,7 +61,7 @@ class ShortcutsScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -74,7 +74,7 @@ class ShortcutsScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
     @Test
@@ -87,6 +87,6 @@ class ShortcutsScreenScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

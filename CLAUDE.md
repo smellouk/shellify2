@@ -2,6 +2,8 @@
 
 Do not add Co-Authored-By lines to git commits.
 
+When creating a new directory or adding/editing files in an existing directory that has no README.md, create one. When editing a directory that already has a README.md, check whether your changes make any content stale and update it.
+
 Shellify. Wraps websites in isolated WebView containers with per-app ad blocking, biometric lock, and encrypted backup. Local-first, no cloud, no analytics.
 
 ---

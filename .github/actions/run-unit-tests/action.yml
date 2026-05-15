@@ -1,0 +1,28 @@
+name: Run Unit Tests
+description: Run Gradle unit tests, publish JUnit report to summary, and upload HTML reports
+
+inputs:
+  gradle-task:
+    description: Gradle task to run (e.g. testDebugUnitTest or testReleaseUnitTest)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Run unit tests
+      shell: bash
+      run: ./gradlew ${{ inputs.gradle-task }} --continue
+    - name: Report test results
+      if: always()
+      uses: mikepenz/action-junit-report@v5
+      with:
+        report_paths: '**/build/test-results/**/*.xml'
+        include_passed: true
+        summary: true
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-test-reports
+        path: '**/build/reports/tests/'
+        if-no-files-found: ignore

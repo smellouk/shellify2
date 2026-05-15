@@ -1,0 +1,22 @@
+name: Run Screenshot Tests
+description: Run Roborazzi screenshot verification and upload diffs on failure
+
+inputs:
+  gradle-task:
+    description: Gradle task to run (e.g. verifyRoborazziDebug or verifyRoborazziRelease)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Run screenshot verification
+      shell: bash
+      run: ./gradlew ${{ inputs.gradle-task }} --continue
+    - name: Upload screenshot diffs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: screenshot-diffs
+        path: '**/build/outputs/roborazzi/'
+        if-no-files-found: ignore
+        retention-days: 7

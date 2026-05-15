@@ -161,8 +161,14 @@ Write self-documenting code. Comments should only explain *why* something non-ob
 # Screenshot verification (compare against golden images)
 ./gradlew verifyRoborazziDebug
 
+# Instrumented tests (requires connected device or emulator)
+./gradlew :app:connectedDebugAndroidTest
+
 # Static analysis
 ./gradlew detekt lintDebug
+
+# Full local check suite
+./gradlew detekt lintDebug testDebugUnitTest
 ```
 
 ### Update screenshot goldens
@@ -208,7 +214,7 @@ plugins { id("shellify.android.library"); id("shellify.compose") }
 plugins { id("shellify.jvm.library") }
 ```
 
-See `build-logic/README.md` for details.
+See `build-logic/src/main/kotlin/` for the convention plugin implementations.
 
 ---
 

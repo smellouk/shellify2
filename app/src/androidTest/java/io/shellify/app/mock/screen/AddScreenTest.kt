@@ -159,6 +159,7 @@ class AddScreenTest {
         setAddScreen(AddUiState(name = "App", url = "https://example.com"))
         composeTestRule
             .onNodeWithText("Auto Translate")
+            .performScrollTo()
             .assertIsDisplayed()
     }
 }

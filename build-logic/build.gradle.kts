@@ -13,6 +13,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.compiler.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.testlogger.gradlePlugin)
 }
 
 gradlePlugin {
