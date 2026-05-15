@@ -50,7 +50,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run Lint
         run: ./gradlew lintDebug
       - name: Upload Lint reports
@@ -70,7 +70,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run Detekt
         run: ./gradlew detekt
       - name: Upload Detekt reports
@@ -90,7 +90,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
       - name: Upload test reports
@@ -110,7 +110,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run screenshot verification
         run: ./gradlew verifyRoborazziDebug
       - name: Upload screenshot diffs
@@ -133,7 +133,7 @@ jobs:
   #       with:
   #         distribution: temurin
   #         java-version: 17
-  #     - uses: gradle/actions/setup-gradle@v4
+  #     - uses: gradle/actions/setup-gradle@v6
   #     - name: Run instrumented tests
   #       uses: reactivecircus/android-emulator-runner@v2
   #       with:
