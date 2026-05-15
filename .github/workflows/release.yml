@@ -33,6 +33,7 @@ jobs:
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate release notes for this tag
         uses: orhun/git-cliff-action@v4
@@ -42,6 +43,7 @@ jobs:
         env:
           OUTPUT: RELEASE_NOTES.md
           GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit updated CHANGELOG.md
         run: |
