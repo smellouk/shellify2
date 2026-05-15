@@ -1,3 +1,14 @@
+import java.util.Properties
+
+val gitCommitCount = providers.exec {
+    commandLine("git", "rev-list", "--count", "HEAD")
+}.standardOutput.asText.map { it.trim().toIntOrNull() ?: 1 }
+
+val gitVersionName = providers.exec {
+    commandLine("git", "describe", "--tags", "--abbrev=0")
+    isIgnoreExitValue = true
+}.standardOutput.asText.map { it.trim().removePrefix("v").ifEmpty { "1.0.0" } }
+
 plugins {
     id("shellify.android.application")
     id("shellify.compose")
@@ -24,8 +35,8 @@ android {
 
     defaultConfig {
         applicationId = "io.shellify.app"
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = gitCommitCount.get()
+        versionName = gitVersionName.get()
 
         vectorDrawables { useSupportLibrary = true }
 
@@ -34,12 +45,18 @@ android {
 
     signingConfigs {
         create("release") {
-            val storeFilePath = System.getenv("SIGNING_STORE_FILE")
+            val props = Properties()
+            val propsFile = rootProject.file("app/release.properties")
+            if (propsFile.exists()) props.load(propsFile.inputStream())
+
+            fun prop(key: String) = props.getProperty(key) ?: System.getenv(key)
+
+            val storeFilePath = prop("SIGNING_STORE_FILE")
             if (storeFilePath != null) {
-                storeFile = file(storeFilePath)
-                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
-                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+                storeFile = rootProject.file(storeFilePath)
+                storePassword = prop("SIGNING_STORE_PASSWORD")
+                keyAlias = prop("SIGNING_KEY_ALIAS")
+                keyPassword = prop("SIGNING_KEY_PASSWORD")
             }
         }
     }
