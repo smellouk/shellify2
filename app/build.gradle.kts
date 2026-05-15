@@ -57,6 +57,7 @@ android {
                 storePassword = prop("SIGNING_STORE_PASSWORD")
                 keyAlias = prop("SIGNING_KEY_ALIAS")
                 keyPassword = prop("SIGNING_KEY_PASSWORD")
+                storeType = "PKCS12"
             }
         }
     }
