@@ -48,11 +48,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Bolt
@@ -136,12 +140,13 @@ import kotlin.math.sin
 private const val PAGE_COUNT = 7
 
 private val SUGGESTION_URLS = mapOf(
+    "reddit" to "reddit.com",
+    "discord" to "discord.com",
+    "telegram" to "web.telegram.org",
+    "github" to "github.com",
+    "mastodon" to "mastodon.social",
     "proton" to "mail.proton.me",
     "bitwarden" to "vault.bitwarden.com",
-    "element" to "app.element.io",
-    "excalidraw" to "excalidraw.com",
-    "notes" to "app.standardnotes.com",
-    "mastodon" to "mastodon.social",
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -168,12 +173,13 @@ fun OnboardingScreen(
     val secValid = secPassword.length >= 6 && secPassword == secConfirm
 
     val suggestionNames = mapOf(
+        "reddit" to stringResource(R.string.onboarding_quickpicks_reddit),
+        "discord" to stringResource(R.string.onboarding_quickpicks_discord),
+        "telegram" to stringResource(R.string.onboarding_quickpicks_telegram),
+        "github" to stringResource(R.string.onboarding_quickpicks_github),
+        "mastodon" to stringResource(R.string.onboarding_quickpicks_mastodon),
         "proton" to stringResource(R.string.onboarding_quickpicks_proton),
         "bitwarden" to stringResource(R.string.onboarding_quickpicks_bitwarden),
-        "element" to stringResource(R.string.onboarding_quickpicks_element),
-        "excalidraw" to stringResource(R.string.onboarding_quickpicks_excalidraw),
-        "notes" to stringResource(R.string.onboarding_quickpicks_notes),
-        "mastodon" to stringResource(R.string.onboarding_quickpicks_mastodon),
     )
 
     Column(
@@ -1677,6 +1683,46 @@ private fun QuickPicksPage(
 
     val suggestions = listOf(
         Suggestion(
+            "reddit",
+            stringResource(R.string.onboarding_quickpicks_reddit),
+            stringResource(R.string.onboarding_quickpicks_reddit_host),
+            Icons.Default.Forum,
+            CategoryReadingBg,
+            CategoryReadingFg
+        ),
+        Suggestion(
+            "discord",
+            stringResource(R.string.onboarding_quickpicks_discord),
+            stringResource(R.string.onboarding_quickpicks_discord_host),
+            Icons.Default.Headset,
+            SuggestionChatBg,
+            SuggestionChatFg
+        ),
+        Suggestion(
+            "telegram",
+            stringResource(R.string.onboarding_quickpicks_telegram),
+            stringResource(R.string.onboarding_quickpicks_telegram_host),
+            Icons.AutoMirrored.Filled.Send,
+            SuggestionVideoBg,
+            CategoryToolsFg
+        ),
+        Suggestion(
+            "github",
+            stringResource(R.string.onboarding_quickpicks_github),
+            stringResource(R.string.onboarding_quickpicks_github_host),
+            Icons.Default.Code,
+            SuggestionChatBg.copy(alpha = 0.45f),
+            SuggestionChatFg
+        ),
+        Suggestion(
+            "mastodon",
+            stringResource(R.string.onboarding_quickpicks_mastodon),
+            stringResource(R.string.onboarding_quickpicks_mastodon_host),
+            Icons.Default.Public,
+            SuggestionChatBg.copy(alpha = 0.6f),
+            SuggestionChatFg
+        ),
+        Suggestion(
             "proton",
             stringResource(R.string.onboarding_quickpicks_proton),
             stringResource(R.string.onboarding_quickpicks_proton_host),
@@ -1689,40 +1735,8 @@ private fun QuickPicksPage(
             stringResource(R.string.onboarding_quickpicks_bitwarden),
             stringResource(R.string.onboarding_quickpicks_bitwarden_host),
             Icons.Default.Security,
-            SuggestionVideoBg,
+            SuggestionVideoBg.copy(alpha = 0.6f),
             CategoryToolsFg
-        ),
-        Suggestion(
-            "element",
-            stringResource(R.string.onboarding_quickpicks_element),
-            stringResource(R.string.onboarding_quickpicks_element_host),
-            Icons.Default.ChatBubble,
-            SuggestionChatBg,
-            SuggestionChatFg
-        ),
-        Suggestion(
-            "excalidraw",
-            stringResource(R.string.onboarding_quickpicks_excalidraw),
-            stringResource(R.string.onboarding_quickpicks_excalidraw_host),
-            Icons.Default.Edit,
-            CategoryReadingBg,
-            CategoryReadingFg
-        ),
-        Suggestion(
-            "notes",
-            stringResource(R.string.onboarding_quickpicks_notes),
-            stringResource(R.string.onboarding_quickpicks_notes_host),
-            Icons.AutoMirrored.Filled.Article,
-            primaryContainer.copy(alpha = 0.55f),
-            primary
-        ),
-        Suggestion(
-            "mastodon",
-            stringResource(R.string.onboarding_quickpicks_mastodon),
-            stringResource(R.string.onboarding_quickpicks_mastodon_host),
-            Icons.Default.Public,
-            SuggestionChatBg.copy(alpha = 0.6f),
-            SuggestionChatFg
         ),
     )
 

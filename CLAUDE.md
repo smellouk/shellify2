@@ -23,6 +23,27 @@ Shellify. Wraps websites in isolated WebView containers with per-app ad blocking
 
 ---
 
+## Quality Checks
+
+After making any code change, run all applicable checks. **Always launch them as parallel Bash tool calls in a single message — never chain them with `&&` or run them sequentially.**
+
+| Check | Command | When to run |
+|---|---|---|
+| Static analysis | `./gradlew detekt --continue` | Every change |
+| Lint | `./gradlew lintDebug --continue` | Every change |
+| Unit tests + arch | `./gradlew testDebugUnitTest --continue` | Every change |
+| Screenshot regression | `./gradlew verifyRoborazziDebug --continue` | UI changes only |
+
+**Parallel example** — fire all four in one message with separate Bash tool calls:
+- Bash: `./gradlew detekt --continue`
+- Bash: `./gradlew lintDebug --continue`
+- Bash: `./gradlew testDebugUnitTest --continue`
+- Bash: `./gradlew verifyRoborazziDebug --continue`  ← skip if no UI touched
+
+If screenshot tests fail after a UI change, regenerate goldens (`./gradlew recordRoborazziDebug --continue`) and commit the updated images alongside the code change.
+
+---
+
 ## Architecture
 
 Clean Architecture with strict layer separation enforced at compile time by **Konsist**.

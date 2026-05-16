@@ -5,6 +5,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 class JvmLibraryConventionPlugin : Plugin<Project> {
@@ -26,7 +27,10 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
                 targetCompatibility = JavaVersion.VERSION_17
             }
             tasks.withType(KotlinCompile::class.java).configureEach {
-                kotlinOptions.jvmTarget = "17"
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_17)
+                    allWarningsAsErrors.set(true)
+                }
             }
         }
     }

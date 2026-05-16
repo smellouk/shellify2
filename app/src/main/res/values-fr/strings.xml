@@ -28,6 +28,7 @@
 
     <!-- Home -->
     <string name="home_title">Shellify</string>
+    <string name="home_loading">Chargement des applications</string>
     <string name="home_search_hint">Rechercher des applications…</string>
     <string name="home_show_details_cd">Afficher les détails</string>
     <string name="home_hide_details_cd">Masquer les détails</string>

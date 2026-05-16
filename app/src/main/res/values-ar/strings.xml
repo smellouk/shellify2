@@ -28,6 +28,7 @@
 
     <!-- Home -->
     <string name="home_title">Shellify</string>
+    <string name="home_loading">جارٍ تحميل التطبيقات</string>
     <string name="home_search_hint">ابحث عن التطبيقات…</string>
     <string name="home_show_details_cd">عرض التفاصيل</string>
     <string name="home_hide_details_cd">إخفاء التفاصيل</string>

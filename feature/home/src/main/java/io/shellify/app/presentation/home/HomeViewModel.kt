@@ -30,11 +30,11 @@ data class HomeUiState(
     val selectedCategoryId: Long? = null,
     val searchQuery: String = "",
     val isLoading: Boolean = true,
-    val quickAddLoadingUrl: String? = null,
-    val quickAddDoneUrl: String? = null,
+    val quickAddLoadingUrls: Set<String> = emptySet(),
+    val quickAddDoneUrls: Set<String> = emptySet(),
 )
 
-private data class QuickAddState(val loadingUrl: String? = null, val doneUrl: String? = null)
+private data class QuickAddState(val loadingUrls: Set<String> = emptySet(), val doneUrls: Set<String> = emptySet())
 
 class HomeViewModel(
     getWebApps: GetWebAppsUseCase,
@@ -71,8 +71,8 @@ class HomeViewModel(
             selectedCategoryId = selectedCategory,
             searchQuery = query,
             isLoading = false,
-            quickAddLoadingUrl = quickAdd.loadingUrl,
-            quickAddDoneUrl = quickAdd.doneUrl,
+            quickAddLoadingUrls = quickAdd.loadingUrls,
+            quickAddDoneUrls = quickAdd.doneUrls,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
@@ -80,10 +80,10 @@ class HomeViewModel(
     fun setSearch(query: String) = _extra.update { it.copy(second = query) }
 
     fun quickAdd(name: String, rawUrl: String) {
-        if (_quickAdd.value.loadingUrl != null) return
+        if (rawUrl in _quickAdd.value.loadingUrls || rawUrl in _quickAdd.value.doneUrls) return
         viewModelScope.launch {
             val fullUrl = if (rawUrl.startsWith("http")) rawUrl else "https://$rawUrl"
-            _quickAdd.value = QuickAddState(loadingUrl = rawUrl)
+            _quickAdd.update { it.copy(loadingUrls = it.loadingUrls + rawUrl) }
             val isolationId = UUID.randomUUID().toString()
             val manifest = runCatching { pwaAnalyzer.analyze(fullUrl) }.getOrNull()
             val iconUrl = manifest?.bestIconUrl(fullUrl)
@@ -103,9 +103,9 @@ class HomeViewModel(
                     isolationId = isolationId,
                 ),
             )
-            _quickAdd.value = QuickAddState(doneUrl = rawUrl)
+            _quickAdd.update { it.copy(loadingUrls = it.loadingUrls - rawUrl, doneUrls = it.doneUrls + rawUrl) }
             delay(1200)
-            _quickAdd.value = QuickAddState()
+            _quickAdd.update { it.copy(doneUrls = it.doneUrls - rawUrl) }
         }
     }
 

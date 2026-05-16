@@ -65,7 +65,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -1363,7 +1363,7 @@ fun GlobalSettingsScreen(
                         },
                         trailingContent = {
                             Icon(
-                                Icons.Default.OpenInNew,
+                                Icons.AutoMirrored.Default.OpenInNew,
                                 null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1402,7 +1402,7 @@ fun GlobalSettingsScreen(
                         },
                         trailingContent = {
                             Icon(
-                                Icons.Default.OpenInNew,
+                                Icons.AutoMirrored.Default.OpenInNew,
                                 null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )

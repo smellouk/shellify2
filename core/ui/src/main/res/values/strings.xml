@@ -31,6 +31,7 @@
 
     <!-- Home -->
     <string name="home_title">Shellify</string>
+    <string name="home_loading">Loading apps</string>
     <string name="home_search_hint">Search apps…</string>
     <string name="home_show_details_cd">Show details</string>
     <string name="home_hide_details_cd">Hide details</string>
@@ -445,18 +446,20 @@
     <string name="onboarding_quickpicks_selected">selected</string>
     <string name="onboarding_quickpicks_add_n">Add %d apps</string>
     <string name="onboarding_quickpicks_add_one">Add 1 app</string>
+    <string name="onboarding_quickpicks_reddit">Reddit</string>
+    <string name="onboarding_quickpicks_reddit_host">reddit.com</string>
+    <string name="onboarding_quickpicks_discord">Discord</string>
+    <string name="onboarding_quickpicks_discord_host">discord.com</string>
+    <string name="onboarding_quickpicks_telegram">Telegram</string>
+    <string name="onboarding_quickpicks_telegram_host">web.telegram.org</string>
+    <string name="onboarding_quickpicks_github">GitHub</string>
+    <string name="onboarding_quickpicks_github_host">github.com</string>
+    <string name="onboarding_quickpicks_mastodon">Mastodon</string>
+    <string name="onboarding_quickpicks_mastodon_host">mastodon.social</string>
     <string name="onboarding_quickpicks_proton">Proton Mail</string>
     <string name="onboarding_quickpicks_proton_host">mail.proton.me</string>
     <string name="onboarding_quickpicks_bitwarden">Bitwarden</string>
     <string name="onboarding_quickpicks_bitwarden_host">vault.bitwarden.com</string>
-    <string name="onboarding_quickpicks_element">Element</string>
-    <string name="onboarding_quickpicks_element_host">app.element.io</string>
-    <string name="onboarding_quickpicks_excalidraw">Excalidraw</string>
-    <string name="onboarding_quickpicks_excalidraw_host">excalidraw.com</string>
-    <string name="onboarding_quickpicks_notes">Standard Notes</string>
-    <string name="onboarding_quickpicks_notes_host">app.standardnotes.com</string>
-    <string name="onboarding_quickpicks_mastodon">Mastodon</string>
-    <string name="onboarding_quickpicks_mastodon_host">mastodon.social</string>
 
     <!-- Share / Deeplink -->
     <string name="share_copy_link">Copy link</string>

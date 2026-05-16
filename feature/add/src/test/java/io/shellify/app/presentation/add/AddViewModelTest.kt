@@ -10,6 +10,7 @@ import io.shellify.app.core.iconpack.SimpleIconsManager
 import io.shellify.app.core.iconpack.SimpleIconsState
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
+import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.LockType
@@ -52,6 +53,7 @@ class AddViewModelTest {
     private val geckoEngineManager = mockk<GeckoEngineManager>(relaxed = true)
     private val themeManager = mockk<ThemeManager>(relaxed = true)
     private val simpleIconsManager = mockk<SimpleIconsManager>(relaxed = true)
+    private val passwordManager = mockk<PasswordManager>(relaxed = true)
     private val context = mockk<Context>(relaxed = true)
 
     @Before
@@ -60,6 +62,7 @@ class AddViewModelTest {
         every { getCategories() } returns flowOf(emptyList())
         every { simpleIconsManager.state } returns MutableStateFlow(SimpleIconsState.NotImported)
         every { themeManager.defaultEngineType } returns MutableStateFlow(EngineType.SYSTEM_WEBVIEW)
+        every { passwordManager.passwordHash } returns MutableStateFlow(null)
         coEvery { getWebAppByName(any()) } returns null
         coEvery { saveWebApp(any()) } returns 1L
     }
@@ -80,6 +83,7 @@ class AddViewModelTest {
         geckoEngineManager = geckoEngineManager,
         themeManager = themeManager,
         simpleIconsManager = simpleIconsManager,
+        passwordManager = passwordManager,
         context = context,
         prefilledUrl = url,
         prefilledName = name,
@@ -276,6 +280,7 @@ class AddViewModelTest {
             geckoEngineManager = geckoEngineManager,
             themeManager = themeManager,
             simpleIconsManager = simpleIconsManager,
+            passwordManager = passwordManager,
             context = context,
         )
         advanceUntilIdle()

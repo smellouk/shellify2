@@ -79,7 +79,7 @@ class HomeScreenTest {
     fun emptyState_showsQuickSuggestions() {
         setHomeScreen(HomeUiState(apps = emptyList(), isLoading = false))
         composeTestRule
-            .onNodeWithText("YouTube")
+            .onNodeWithText("Reddit")
             .assertIsDisplayed()
     }
 

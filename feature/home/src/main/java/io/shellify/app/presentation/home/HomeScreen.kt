@@ -88,8 +88,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.Headset
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -346,7 +357,9 @@ fun HomeScreen(
                 }
             }
 
-            if (state.apps.isEmpty() && !state.isLoading) {
+            if (state.isLoading) {
+                LoadingApps(modifier = Modifier.fillMaxSize())
+            } else if (state.apps.isEmpty()) {
                 val emptyReason = state.categories
                     .find { it.id == state.selectedCategoryId }
                     ?.let { HomeEmptyState.FilteredCategory(it.name) }
@@ -356,8 +369,8 @@ fun HomeScreen(
                     reason = emptyReason,
                     onAddApp = onAddApp,
                     onQuickAdd = viewModel::quickAdd,
-                    quickAddLoadingUrl = state.quickAddLoadingUrl,
-                    quickAddDoneUrl = state.quickAddDoneUrl,
+                    quickAddLoadingUrls = state.quickAddLoadingUrls,
+                    quickAddDoneUrls = state.quickAddDoneUrls,
                 )
             } else if (isGridView) {
                 LazyVerticalStaggeredGrid(
@@ -513,13 +526,36 @@ private sealed class HomeEmptyState {
 }
 
 @Composable
+private fun LoadingApps(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "loading_dots")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "dot_phase",
+    )
+    val dots = ".".repeat(phase.toInt().coerceIn(0, 3))
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Text(
+            text = stringResource(R.string.home_loading) + dots,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun EmptyState(
     modifier: Modifier = Modifier,
     reason: HomeEmptyState = HomeEmptyState.NoApps,
     onAddApp: () -> Unit = {},
     onQuickAdd: (name: String, url: String) -> Unit = { _, _ -> },
-    quickAddLoadingUrl: String? = null,
-    quickAddDoneUrl: String? = null,
+    quickAddLoadingUrls: Set<String> = emptySet(),
+    quickAddDoneUrls: Set<String> = emptySet(),
 ) {
     val filteredTitle = if (reason is HomeEmptyState.FilteredCategory)
         stringResource(R.string.home_empty_filtered_category, reason.name)
@@ -621,12 +657,12 @@ private fun EmptyState(
             Spacer(Modifier.height(Dimens.spaceSm))
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                 listOf(
-                    Triple("YouTube", "youtube.com", Icons.Default.PlayArrow),
-                    Triple("WhatsApp", "web.whatsapp.com", Icons.AutoMirrored.Filled.Chat),
-                    Triple("Spotify", "open.spotify.com", Icons.Default.MusicNote),
+                    Triple("Reddit", "reddit.com", Icons.Default.Forum),
+                    Triple("Discord", "discord.com", Icons.Default.Headset),
+                    Triple("GitHub", "github.com", Icons.Default.Code),
                 ).forEach { (name, host, icon) ->
-                    val isLoading = quickAddLoadingUrl == host
-                    val isDone = quickAddDoneUrl == host
+                    val isLoading = host in quickAddLoadingUrls
+                    val isDone = host in quickAddDoneUrls
                     val isIdle = !isLoading && !isDone
                     Row(
                         modifier = Modifier
@@ -639,7 +675,7 @@ private fun EmptyState(
                                 RoundedCornerShape(Dimens.corner14)
                             )
                             .clickable(
-                                enabled = quickAddLoadingUrl == null && !isDone,
+                                enabled = !isLoading && !isDone,
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = { onQuickAdd(name, host) },
