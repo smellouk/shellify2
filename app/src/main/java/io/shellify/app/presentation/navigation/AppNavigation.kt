@@ -203,7 +203,7 @@ fun AppNavigation(
                             appId, app.getWebAppById, app.getWebAppByName, app.saveWebApp,
                             app.getCategories, app.pwaAnalyzer, app.faviconFetcher,
                             app.geckoEngineManager, app.themeManager,
-                            app.simpleIconsManager, app,
+                            app.simpleIconsManager, app, app.passwordManager,
                             prefilledUrl = prefilledUrl, prefilledName = prefilledName
                         )
                     },

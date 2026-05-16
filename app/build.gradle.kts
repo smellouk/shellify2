@@ -81,7 +81,6 @@ android {
         }
     }
 
-
     lint {
         lintConfig = file("${rootDir}/config/lint/lint.xml")
         abortOnError = false
@@ -139,6 +138,7 @@ dependencies {
     implementation(composeBom)
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
@@ -196,6 +196,8 @@ dependencies {
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.biometric)
+    androidTestImplementation(libs.sqlcipher)
 }
 
 // espresso-core:3.7.0 requires concurrent-futures:1.2.0, but the Compose BOM strictly pins 1.1.0.
@@ -209,7 +211,6 @@ configurations.configureEach {
         resolutionStrategy.force("androidx.concurrent:concurrent-futures:1.2.0")
     }
 }
-
 
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     reports {
