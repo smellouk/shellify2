@@ -24,7 +24,9 @@ jobs:
           expected-fingerprint: ${{ vars.KEYSTORE_FINGERPRINT }}
 
       - name: Build release APK and AAB
-        run: ./gradlew assembleRelease bundleRelease
+        run: |
+          ./gradlew assembleRelease 
+          ./gradlew bundleRelease
         env:
           SIGNING_STORE_FILE: ${{ runner.temp }}/keystore.jks
           SIGNING_STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
