@@ -40,6 +40,7 @@ data class GlobalSettingsUiState(
     val accentColor: Int? = null,
     val defaultUaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val defaultEngineType: EngineType = EngineType.SYSTEM_WEBVIEW,
+    val geckoSafeBrowsing: Boolean = false,
     // App lock password
     val hasPassword: Boolean = false,
     val wipeOnFailedAttempts: Boolean = false,
@@ -97,6 +98,9 @@ class GlobalSettingsViewModel(
                     accentColor = themeManager.accentColor.first(),
                     defaultUaMode = themeManager.defaultUaMode.first(),
                     defaultEngineType = themeManager.defaultEngineType.first(),
+                    geckoSafeBrowsing = themeManager.geckoSafeBrowsing.first().also { v ->
+                        geckoEngineManager.applySafeBrowsing(v)
+                    },
                     hasPassword = passwordManager.passwordHash.first() != null,
                     wipeOnFailedAttempts = passwordManager.wipeOnFailedAttempts.first(),
                     screenshotProtection = passwordManager.screenshotProtection.first(),
@@ -124,6 +128,12 @@ class GlobalSettingsViewModel(
         }
         viewModelScope.launch {
             themeManager.defaultEngineType.collect { v -> _state.update { it.copy(defaultEngineType = v) } }
+        }
+        viewModelScope.launch {
+            themeManager.geckoSafeBrowsing.collect { v ->
+                geckoEngineManager.applySafeBrowsing(v)
+                _state.update { it.copy(geckoSafeBrowsing = v) }
+            }
         }
         viewModelScope.launch {
             passwordManager.passwordHash.collect { h -> _state.update { it.copy(hasPassword = h != null) } }
@@ -173,6 +183,9 @@ class GlobalSettingsViewModel(
 
     fun setDefaultEngineType(engine: EngineType) =
         viewModelScope.launch { themeManager.setDefaultEngineType(engine) }
+
+    fun setGeckoSafeBrowsing(v: Boolean) =
+        viewModelScope.launch { themeManager.setGeckoSafeBrowsing(v) }
 
     // ── App lock password ─────────────────────────────────────────────────────
 
@@ -225,7 +238,7 @@ class GlobalSettingsViewModel(
             val hash = passwordManager.passwordHash.first()
             if (hash != null && verifyPassword(currentPassword, hash)) {
                 getWebApps().first()
-                    .filter { it.lockType == LockType.PASSWORD }
+                    .filter { it.lockType != LockType.NONE }
                     .forEach { app ->
                         isolationManager.clearData(app.isolationId)
                         saveWebApp(app.copy(lockType = LockType.NONE))

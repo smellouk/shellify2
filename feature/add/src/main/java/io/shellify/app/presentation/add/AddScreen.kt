@@ -614,6 +614,7 @@ fun AddScreen(
                 onToggle = { on ->
                     viewModel.setLockType(if (on) io.shellify.app.domain.model.LockType.PASSWORD else io.shellify.app.domain.model.LockType.NONE)
                 },
+                canEnable = state.hasPassword,
             ) {
                 listOf(
                     io.shellify.app.domain.model.LockType.PASSWORD to lockPasswordLabel,
@@ -932,6 +933,7 @@ private fun FeatureCard(
     title: String,
     enabled: Boolean,
     onToggle: (Boolean) -> Unit,
+    canEnable: Boolean = true,
     expandedContent: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
@@ -966,7 +968,7 @@ private fun FeatureCard(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
                 )
-                Switch(checked = enabled, onCheckedChange = onToggle)
+                Switch(checked = enabled, enabled = canEnable, onCheckedChange = onToggle)
             }
             AnimatedVisibility(
                 visible = enabled,

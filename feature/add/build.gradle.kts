@@ -5,6 +5,7 @@ plugins {
 android { namespace = "io.shellify.feature.add" }
 dependencies {
     implementation(project(":core:domain"))
+    implementation(project(":core:security"))
     implementation(project(":core:iconpack"))
     implementation(project(":core:engine"))
     implementation(project(":core:shortcut"))

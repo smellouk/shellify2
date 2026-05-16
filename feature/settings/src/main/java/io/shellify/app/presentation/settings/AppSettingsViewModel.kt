@@ -25,6 +25,7 @@ import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -42,6 +43,7 @@ data class AppSettingsUiState(
     val isSelectingPackIcon: Boolean = false,
     val showDisableLockDialog: Boolean = false,
     val disableLockError: Boolean = false,
+    val hasPassword: Boolean = false,
 )
 
 class AppSettingsViewModel(
@@ -69,6 +71,17 @@ class AppSettingsViewModel(
         viewModelScope.launch {
             val app = getWebAppById(appId)
             _state.update { it.copy(app = app, isLoading = false) }
+        }
+        viewModelScope.launch {
+            passwordManager.passwordHash.collect { hash ->
+                val hasPassword = hash != null
+                _state.update { s ->
+                    s.copy(
+                        hasPassword = hasPassword,
+                        app = if (!hasPassword) s.app?.copy(lockType = LockType.NONE) else s.app,
+                    )
+                }
+            }
         }
     }
 

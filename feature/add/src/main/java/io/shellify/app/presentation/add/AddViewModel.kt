@@ -15,6 +15,7 @@ import io.shellify.app.core.iconpack.SimpleIconEntry
 import io.shellify.app.core.iconpack.SimpleIconsManager
 import io.shellify.app.core.iconpack.SimpleIconsReader
 import io.shellify.app.core.iconpack.SimpleIconsState
+import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
@@ -32,6 +33,7 @@ import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -73,6 +75,7 @@ data class AddUiState(
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val engineType: EngineType = EngineType.SYSTEM_WEBVIEW,
     // Security
+    val hasPassword: Boolean = false,
     val lockType: LockType = LockType.NONE,
     val wipeOnFailedAttempts: Boolean = false,
     val analyzeError: String? = null,
@@ -102,6 +105,7 @@ class AddViewModel(
     private val themeManager: ThemeManager,
     private val simpleIconsManager: SimpleIconsManager,
     private val context: Context,
+    private val passwordManager: PasswordManager,
     private val prefilledUrl: String = "",
     private val prefilledName: String = "",
 ) : ViewModel() {
@@ -158,6 +162,17 @@ class AddViewModel(
             viewModelScope.launch {
                 val defaultEngine = themeManager.defaultEngineType.first()
                 _state.update { it.copy(engineType = defaultEngine) }
+            }
+        }
+        viewModelScope.launch {
+            passwordManager.passwordHash.collect { hash ->
+                val hasPassword = hash != null
+                _state.update { s ->
+                    s.copy(
+                        hasPassword = hasPassword,
+                        lockType = if (!hasPassword) LockType.NONE else s.lockType,
+                    )
+                }
             }
         }
     }

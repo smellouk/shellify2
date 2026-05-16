@@ -632,6 +632,51 @@ fun GlobalSettingsScreen(
                     }
                 }
 
+                SurfaceCard {
+                    ListItem(
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(
+                                            alpha = 0.4f
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.Info,
+                                    null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.global_settings_gecko_safe_browsing_title),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        supportingContent = {
+                            Text(
+                                stringResource(R.string.global_settings_gecko_safe_browsing_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = state.geckoSafeBrowsing,
+                                onCheckedChange = viewModel::setGeckoSafeBrowsing,
+                                enabled = state.defaultEngineType == EngineType.GECKOVIEW,
+                            )
+                        },
+                    )
+                }
+
                 // ── Security ──────────────────────────────────────────────────────
                 SectionLabel(stringResource(R.string.global_settings_section_security))
                 SurfaceCard {

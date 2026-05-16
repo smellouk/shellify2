@@ -486,6 +486,7 @@ fun AppSettingsScreen(
                     trailingContent = {
                         Switch(
                             checked = app.lockType != LockType.NONE,
+                            enabled = state.hasPassword,
                             onCheckedChange = { on ->
                                 if (on) {
                                     viewModel.setLockType(LockType.PASSWORD)
