@@ -56,7 +56,6 @@
     <!-- Add / Edit -->
     <string name="add_title">Ajouter une PWA</string>
     <string name="add_create_app">Créer l\'application</string>
-    <string name="edit_title">Modifier l\'application</string>
     <string name="add_url_label">URL du site</string>
     <string name="add_url_hint">https://exemple.com</string>
     <string name="add_name_label">Nom de l\'application</string>

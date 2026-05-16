@@ -174,7 +174,6 @@ fun AddScreen(
     val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
 
     val createAppTitle = stringResource(R.string.add_create_app)
-    val editAppTitle = stringResource(R.string.edit_title)
     val themeColorLabel = stringResource(R.string.add_theme_color)
     val themeColorNotSet = stringResource(R.string.add_theme_color_not_set)
     val lockPasswordLabel = stringResource(R.string.add_lock_password)
@@ -186,7 +185,7 @@ fun AddScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (state.name.isEmpty() && state.url.isEmpty()) createAppTitle else editAppTitle,
+                        createAppTitle,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                     )

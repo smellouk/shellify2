@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-Generate docs/privacy.html and docs/terms.html from docs/legal/*.md.
+Generate docs/privacy.html, docs/terms.html and docs/changelog.html.
 
 Run from the repository root:
-    python3 scripts/generate_legal.py
+    python3 docs/scripts/generate_legal.py
 """
 import html
 import re
 from pathlib import Path
 
-ROOT      = Path(__file__).parent.parent
-LEGAL_DIR = ROOT / "docs" / "legal"
-DOCS_DIR  = ROOT / "docs"
+ROOT           = Path(__file__).resolve().parent.parent.parent
+LEGAL_DIR      = ROOT / "docs" / "legal"
+DOCS_DIR       = ROOT / "docs"
+CHANGELOG_PATH = ROOT / "CHANGELOG.md"
 
 
 # ── Inline markdown → HTML ────────────────────────────────────────────────────
@@ -157,6 +158,57 @@ def parse_md(path: Path) -> tuple[str, str, list[tuple[int, str, str]]]:
     return page_title, last_updated, sections
 
 
+def parse_changelog(path: Path) -> list[tuple[str, str, str]]:
+    """Return list of (version, date, body_markdown) from a git-cliff CHANGELOG.md."""
+    text = path.read_text(encoding="utf-8")
+    pattern = re.compile(r"^##\s+\[([^\]]+)\](?:\s+-\s+(\S+))?", re.MULTILINE)
+    matches = list(pattern.finditer(text))
+    releases: list[tuple[str, str, str]] = []
+    for idx, m in enumerate(matches):
+        version = m.group(1)
+        date    = m.group(2) or ""
+        start   = m.end()
+        end     = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+        body    = text[start:end].strip()
+        releases.append((version, date, body))
+    return releases
+
+
+def _version_id(version: str) -> str:
+    return "v-" + re.sub(r"[^a-zA-Z0-9]", "-", version).strip("-")
+
+
+def _changelog_body(text: str) -> str:
+    """Convert a changelog release body (### Category + bullet lists) to HTML."""
+    lines = text.splitlines()
+    blocks: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip():
+            i += 1
+            continue
+        if line.startswith("### "):
+            cat = html.escape(line[4:].strip())
+            blocks.append(f'<h3 class="release-category">{cat}</h3>')
+            i += 1
+            continue
+        if re.match(r"^[-*] ", line):
+            items: list[str] = []
+            while i < len(lines) and re.match(r"^[-*] ", lines[i]):
+                items.append(f"<li>{inline(lines[i][2:].strip())}</li>")
+                i += 1
+            blocks.append("<ul>\n" + "\n".join(items) + "\n</ul>")
+            continue
+        para: list[str] = []
+        while i < len(lines) and lines[i].strip() and not lines[i].startswith("### ") and not re.match(r"^[-*] ", lines[i]):
+            para.append(lines[i].strip())
+            i += 1
+        if para:
+            blocks.append(f"<p>{inline(' '.join(para))}</p>")
+    return "\n".join(blocks)
+
+
 # ── Shared HTML fragments ─────────────────────────────────────────────────────
 
 _GH_SVG = (
@@ -274,6 +326,18 @@ _LEGAL_CSS = """\
   padding: 16px 20px; margin: 16px 0;
 }
 .trademark-box p { margin-bottom: 0 !important; }
+.doc-tag-changelog { background: rgba(0,200,83,.12); color: #00c853; }
+[data-theme="light"] .doc-tag-changelog { background: rgba(0,121,50,.1); color: #007932; }
+.release-version {
+  font-size: 1rem; font-weight: 700; font-family: var(--font-mono);
+  color: var(--primary); letter-spacing: -.02em;
+}
+.release-date { font-size: .8125rem; color: var(--text-subtle); margin-left: 10px; }
+h3.release-category {
+  font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--text-subtle); margin: 20px 0 8px;
+}
+.release-empty { color: var(--text-subtle); font-style: italic; font-size: .9375rem; }
 @media (max-width: 820px) {
   .legal-wrap { grid-template-columns: 1fr; gap: 0; padding-top: 32px; }
   .toc { position: static; margin-bottom: 32px; }
@@ -285,9 +349,11 @@ _THEME_SCRIPT = """\
 (function () {
   const root = document.documentElement;
   const btn  = document.getElementById('theme-btn');
+  const ICON_MOON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const ICON_SUN  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
   function applyTheme(t) {
     root.dataset.theme = t;
-    btn.textContent = t === 'dark' ? '🌙' : '☀️';
+    btn.innerHTML = t === 'dark' ? ICON_MOON : ICON_SUN;
     try { localStorage.setItem('shellify-theme', t); } catch (e) {}
   }
   const stored = (() => { try { return localStorage.getItem('shellify-theme'); } catch (e) { return null; } })();
@@ -346,6 +412,7 @@ def _page(
     meta_desc: str,
     nav_privacy_active: bool,
     nav_terms_active: bool,
+    nav_changelog_active: bool = False,
     doc_tag: str,
     doc_tag_cls: str,
     h1: str,
@@ -355,8 +422,9 @@ def _page(
     toc_html: str,
     sections: str,
 ) -> str:
-    pa = ' class="active nav-hide-mobile"' if nav_privacy_active else ' class="nav-hide-mobile"'
-    ta = ' class="active nav-hide-mobile"' if nav_terms_active   else ' class="nav-hide-mobile"'
+    pa = ' class="active nav-hide-mobile"' if nav_privacy_active   else ' class="nav-hide-mobile"'
+    ta = ' class="active nav-hide-mobile"' if nav_terms_active     else ' class="nav-hide-mobile"'
+    ca = ' class="active nav-hide-mobile"' if nav_changelog_active else ' class="nav-hide-mobile"'
 
     return f"""\
 <!DOCTYPE html>
@@ -374,12 +442,13 @@ def _page(
 
 <nav class="site-nav" role="navigation" aria-label="Main">
   <div class="nav-inner">
-    <a href="index.html" class="nav-logo">Shellify</a>
+    <a href="index.html" class="nav-logo" style="display:flex;align-items:center;gap:8px;"><img src="icon.png" alt="" width="48" height="48" style="border-radius:10px;">Shellify</a>
     <div class="nav-links">
       <a href="index.html" class="nav-hide-mobile">Home</a>
       <a href="privacy.html"{pa}>Privacy Policy</a>
       <a href="terms.html"{ta}>Terms</a>
-      <button class="theme-toggle" id="theme-btn" aria-label="Toggle theme" title="Toggle dark/light mode">🌙</button>
+      <a href="changelog.html"{ca}>Changelog</a>
+      <button class="theme-toggle" id="theme-btn" aria-label="Toggle theme" title="Toggle dark/light mode"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
       <a href="https://github.com/smellouk/shellify" class="btn-github" rel="noopener">
         {_GH_SVG}
         GitHub
@@ -420,6 +489,7 @@ def _page(
       <div class="footer-links">
         <a href="privacy.html">Privacy Policy</a>
         <a href="terms.html">Terms of Service</a>
+        <a href="changelog.html">Changelog</a>
         <a href="https://github.com/smellouk/shellify" rel="noopener">GitHub</a>
         <a href="mailto:contact@shellify.app">Contact</a>
       </div>
@@ -453,7 +523,7 @@ def gen_privacy(last_updated: str, sections: list[tuple[int, str, str]]) -> str:
             "Everything stays on your device, encrypted."
         ),
         toc_html=_toc(sections, [
-            ("📄 Terms of Service", "terms.html"),
+            (f"{_SVG_DOC} Terms of Service", "terms.html"),
             ("← Back to Shellify",  "index.html"),
         ]),
         sections=_sections_html(sections),
@@ -477,10 +547,74 @@ def gen_terms(last_updated: str, sections: list[tuple[int, str, str]]) -> str:
             "and logo are trademarks and are not open-source licensed. Governed by German law."
         ),
         toc_html=_toc(sections, [
-            ("🔒 Privacy Policy",  "privacy.html"),
+            (f"{_SVG_LOCK} Privacy Policy", "privacy.html"),
             ("← Back to Shellify", "index.html"),
         ]),
         sections=_sections_html(sections),
+    )
+
+
+_SVG_LOCK = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+_SVG_DOC  = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+
+
+def _changelog_toc(releases: list[tuple[str, str, str]], alt: list[tuple[str, str]]) -> str:
+    items = "\n".join(
+        f'    <a class="toc-link" href="#{_version_id(v)}">{html.escape(v)}{(" — " + html.escape(d)) if d else ""}</a>'
+        for v, d, _ in releases
+    )
+    if not items:
+        items = '    <span class="toc-link" style="opacity:.5">No releases yet</span>'
+    alt_links = "\n".join(f'      <a href="{href}">{label}</a>' for label, href in alt)
+    return (
+        "  <aside class=\"toc\" aria-label=\"Table of contents\">\n"
+        "    <div class=\"toc-title\">Releases</div>\n"
+        f"{items}\n"
+        "    <div class=\"toc-sep\"></div>\n"
+        f"    <div class=\"toc-alt\">\n{alt_links}\n    </div>\n"
+        "  </aside>"
+    )
+
+
+def _changelog_sections_html(releases: list[tuple[str, str, str]]) -> str:
+    if not releases:
+        return '    <div class="doc-section"><p class="release-empty">No releases yet — check back after the first tagged version.</p></div>'
+    parts = []
+    for version, date, body in releases:
+        date_html = f'<span class="release-date">{html.escape(date)}</span>' if date else ""
+        parts.append(
+            f'    <div class="doc-section" id="{_version_id(version)}">\n'
+            f'      <h2><span class="release-version">{html.escape(version)}</span>{date_html}</h2>\n'
+            f"{_changelog_body(body)}\n"
+            "    </div>"
+        )
+    return "\n\n".join(parts)
+
+
+def gen_changelog(releases: list[tuple[str, str, str]]) -> str:
+    latest_date = next((d for _, d, _ in releases if d), "—")
+    return _page(
+        page_title="Changelog — Shellify",
+        meta_desc="Full release history for Shellify. Auto-generated from conventional commits.",
+        nav_privacy_active=False,
+        nav_terms_active=False,
+        nav_changelog_active=True,
+        doc_tag="Changelog",
+        doc_tag_cls="doc-tag-changelog",
+        h1="Release history",
+        last_updated=latest_date,
+        note_cls="doc-note-teal",
+        note_body=(
+            "<strong>Auto-generated</strong> from conventional commits using "
+            '<a href="https://git-cliff.org" rel="noopener">git-cliff</a>. '
+            "Each entry reflects a tagged release."
+        ),
+        toc_html=_changelog_toc(releases, [
+            (f"{_SVG_LOCK} Privacy Policy", "privacy.html"),
+            (f"{_SVG_DOC} Terms of Service", "terms.html"),
+            ("← Back to Shellify", "index.html"),
+        ]),
+        sections=_changelog_sections_html(releases),
     )
 
 
@@ -496,6 +630,11 @@ def main() -> None:
     out = DOCS_DIR / "terms.html"
     out.write_text(gen_terms(last_updated, sections), encoding="utf-8")
     print(f"✓ {out.relative_to(ROOT)}  ({len(sections)} sections)")
+
+    releases = parse_changelog(CHANGELOG_PATH)
+    out = DOCS_DIR / "changelog.html"
+    out.write_text(gen_changelog(releases), encoding="utf-8")
+    print(f"✓ {out.relative_to(ROOT)}  ({len(releases)} releases)")
 
 
 if __name__ == "__main__":

@@ -56,7 +56,6 @@
     <!-- Add / Edit -->
     <string name="add_title">إضافة PWA</string>
     <string name="add_create_app">إنشاء تطبيق</string>
-    <string name="edit_title">تعديل التطبيق</string>
     <string name="add_url_label">رابط الموقع</string>
     <string name="add_url_hint">https://example.com</string>
     <string name="add_name_label">اسم التطبيق</string>

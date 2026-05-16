@@ -55,7 +55,6 @@
     <!-- Add / Edit -->
     <string name="add_title">Add PWA</string>
     <string name="add_create_app">Create App</string>
-    <string name="edit_title">Edit App</string>
     <string name="add_url_label">Website URL</string>
     <string name="add_url_hint">https://example.com</string>
     <string name="add_name_label">App name</string>
