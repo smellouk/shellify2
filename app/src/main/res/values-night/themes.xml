@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Shellify" parent="Theme.AppCompat.DayNight.NoActionBar" />
-
     <style name="Theme.Shellify.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#FAFAFA</item>
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_splash_screen</item>
-        <item name="windowSplashScreenIconBackgroundColor">#FAFAFA</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/ic_launcher_background</item>
         <item name="postSplashScreenTheme">@style/Theme.Shellify</item>
     </style>
 

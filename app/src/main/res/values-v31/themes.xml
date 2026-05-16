@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- API 31+ (Android 12+): use Material You wallpaper-derived dynamic colors -->
+    <style name="Theme.Shellify.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/system_neutral1_100</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/system_neutral1_100</item>
+        <item name="postSplashScreenTheme">@style/Theme.Shellify</item>
+    </style>
+
+</resources>
