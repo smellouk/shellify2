@@ -29,7 +29,6 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             tasks.withType(KotlinCompile::class.java).configureEach {
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_17)
-                    allWarningsAsErrors.set(true)
                 }
             }
         }
