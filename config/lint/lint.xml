@@ -54,6 +54,8 @@
     <issue id="SetTextI18n" severity="warning" />
     <issue id="StringFormatInvalid" severity="error" />
     <issue id="StringFormatMatches" severity="error" />
+    <issue id="MissingTranslation" severity="error" />
+    <issue id="ExtraTranslation" severity="error" />
 
     <!-- Unused resources -->
     <issue id="UnusedResources" severity="warning" />

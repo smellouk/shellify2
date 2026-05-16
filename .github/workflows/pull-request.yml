@@ -41,24 +41,6 @@ jobs:
             PR title must have a non-empty description after the type/scope.
             Example: "feat(feature:home): add category filter"
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-android
-      - name: Build debug APKs
-        run: ./gradlew assembleDebug assembleDebugAndroidTest
-      - name: Upload debug APKs
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apks
-          path: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-          retention-days: 1
-
   lint:
     name: Android Lint
     runs-on: ubuntu-latest
@@ -114,7 +96,6 @@ jobs:
   unit-tests:
     name: Unit Tests & Konsist
     runs-on: ubuntu-latest
-    needs: [build]
     timeout-minutes: 30
     permissions:
       contents: read
@@ -129,7 +110,6 @@ jobs:
   screenshot-tests:
     name: Screenshot Tests
     runs-on: ubuntu-latest
-    needs: [build]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +121,6 @@ jobs:
   instrumentation-tests:
     name: Instrumentation Tests
     runs-on: ubuntu-latest
-    needs: [build]
     timeout-minutes: 30
     permissions:
       contents: read
@@ -149,14 +128,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-android
-      - name: Download pre-built APKs
-        uses: actions/download-artifact@v4
-        with:
-          name: debug-apks
-          path: .
       - uses: ./.github/actions/run-instrumentation-tests
         with:
-          gradle-task: ':app:connectedDebugAndroidTest -x :app:packageDebug -x :app:packageDebugAndroidTest'
+          gradle-task: :app:connectedDebugAndroidTest
           api-level: ${{ vars.EMULATOR_API_LEVEL }}
           upload-results: 'true'
           artifact-name: instrumentation-test-results-pr-${{ github.event.pull_request.number }}
@@ -165,7 +139,7 @@ jobs:
     name: PR Summary
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [pr-title, build, lint, detekt, unit-tests, screenshot-tests, instrumentation-tests]
+    needs: [pr-title, lint, detekt, unit-tests, screenshot-tests, instrumentation-tests]
     if: always()
     steps:
       - name: Write workflow summary
@@ -175,14 +149,13 @@ jobs:
           echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| 📝 PR Title | ${{ needs.pr-title.result == 'success' && '✅ Passed' || needs.pr-title.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏗️ Build | ${{ needs.build.result == 'success' && '✅ Passed' || needs.build.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔍 Android Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || needs.lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🧹 Detekt | ${{ needs.detekt.result == 'success' && '✅ Passed' || needs.detekt.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🧪 Unit Tests & Konsist | ${{ needs.unit-tests.result == 'success' && '✅ Passed' || needs.unit-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 📸 Screenshot Tests | ${{ needs.screenshot-tests.result == 'success' && '✅ Passed' || needs.screenshot-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 📱 Instrumentation Tests | ${{ needs.instrumentation-tests.result == 'success' && '✅ Passed' || needs.instrumentation-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ needs.pr-title.result }}" != "success" || "${{ needs.build.result }}" != "success" || "${{ needs.lint.result }}" != "success" || "${{ needs.detekt.result }}" != "success" || "${{ needs.unit-tests.result }}" != "success" || "${{ needs.screenshot-tests.result }}" != "success" || "${{ needs.instrumentation-tests.result }}" != "success" ]]; then
+          if [[ "${{ needs.pr-title.result }}" != "success" || "${{ needs.lint.result }}" != "success" || "${{ needs.detekt.result }}" != "success" || "${{ needs.unit-tests.result }}" != "success" || "${{ needs.screenshot-tests.result }}" != "success" || "${{ needs.instrumentation-tests.result }}" != "success" ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> One or more checks failed. Download the artifacts above for details." >> $GITHUB_STEP_SUMMARY
           else
