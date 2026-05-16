@@ -29,6 +29,7 @@ class ThemeManager(private val context: Context) {
     private val keyDynamicColor = booleanPreferencesKey("dynamic_color")
     private val keyDefaultUa = stringPreferencesKey("default_ua")
     private val keyDefaultEngine = stringPreferencesKey("default_engine")
+    private val keyGeckoSafeBrowsing = booleanPreferencesKey("gecko_safe_browsing")
 
     val themeMode: Flow<ThemeMode> = context.themeStore.data.map { prefs ->
         runCatching { ThemeMode.valueOf(prefs[keyThemeMode] ?: "") }.getOrDefault(ThemeMode.SYSTEM)
@@ -52,6 +53,10 @@ class ThemeManager(private val context: Context) {
                 prefs[keyDefaultEngine] ?: ""
             )
         }.getOrDefault(EngineType.SYSTEM_WEBVIEW)
+    }
+
+    val geckoSafeBrowsing: Flow<Boolean> = context.themeStore.data.map { prefs ->
+        prefs[keyGeckoSafeBrowsing] ?: false
     }
 
     private val keyAccentColor = stringPreferencesKey("accent_color")
@@ -89,6 +94,10 @@ class ThemeManager(private val context: Context) {
 
     suspend fun setDefaultEngineType(engine: EngineType) {
         context.themeStore.edit { it[keyDefaultEngine] = engine.name }
+    }
+
+    suspend fun setGeckoSafeBrowsing(enabled: Boolean) {
+        context.themeStore.edit { it[keyGeckoSafeBrowsing] = enabled }
     }
 
     private val keyOnboardingDone = booleanPreferencesKey("onboarding_done")

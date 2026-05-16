@@ -111,6 +111,17 @@ class GeckoEngineManager(private val context: Context) {
     @Volatile
     private var cancelRequested = false
 
+    @Volatile
+    private var _safeBrowsingEnabled: Boolean = false
+
+    fun isSafeBrowsingEnabled(): Boolean = _safeBrowsingEnabled
+
+    fun applySafeBrowsing(enabled: Boolean) {
+        _safeBrowsingEnabled = enabled
+        val level = if (enabled) ContentBlocking.SafeBrowsing.DEFAULT else ContentBlocking.SafeBrowsing.NONE
+        sharedRuntime?.settings?.contentBlocking?.setSafeBrowsing(level)
+    }
+
     fun isInstalled(): Boolean {
         if (!prefs.getBoolean(KEY_INSTALLED, false)) return false
         val dir = getLibsDir()
@@ -136,12 +147,13 @@ class GeckoEngineManager(private val context: Context) {
     }
 
     private fun buildRuntime(): GeckoRuntime {
+        val safeBrowsingLevel = if (_safeBrowsingEnabled) ContentBlocking.SafeBrowsing.DEFAULT else ContentBlocking.SafeBrowsing.NONE
         val settings = GeckoRuntimeSettings.Builder()
             .javaScriptEnabled(true)
             .contentBlocking(
                 ContentBlocking.Settings.Builder()
                     .antiTracking(ContentBlocking.AntiTracking.DEFAULT)
-                    .safeBrowsing(ContentBlocking.SafeBrowsing.DEFAULT)
+                    .safeBrowsing(safeBrowsingLevel)
                     .cookieBehavior(ContentBlocking.CookieBehavior.ACCEPT_NON_TRACKERS)
                     .build()
             )

@@ -145,6 +145,7 @@ class BackupManager(
         val accentColor = themeManager.accentColor.first()
         val defaultUaMode = themeManager.defaultUaMode.first()
         val defaultEngine = themeManager.defaultEngineType.first()
+        val geckoSafeBrowsing = themeManager.geckoSafeBrowsing.first()
         val languageCode = themeManager.languageCode.first()
         val wipe = passwordManager.wipeOnFailedAttempts.first()
         val screenshot = passwordManager.screenshotProtection.first()
@@ -165,6 +166,7 @@ class BackupManager(
             if (accentColor != null) put("accent_color", accentColor)
             put("default_ua_mode", defaultUaMode.name)
             put("default_engine", defaultEngine.name)
+            put("gecko_safe_browsing", geckoSafeBrowsing)
             put("language_code", languageCode)
             put("wipe_on_failed_attempts", wipe)
             put("screenshot_protection", screenshot)
@@ -300,6 +302,7 @@ class BackupManager(
         runCatching { themeManager.setAccentColor(if (obj.has("accent_color")) obj.getInt("accent_color") else null) }
         runCatching { themeManager.setDefaultUaMode(UserAgentMode.valueOf(obj.getString("default_ua_mode"))) }
         runCatching { themeManager.setDefaultEngineType(EngineType.valueOf(obj.getString("default_engine"))) }
+        runCatching { themeManager.setGeckoSafeBrowsing(obj.getBoolean("gecko_safe_browsing")) }
         runCatching { themeManager.setLanguageCode(obj.optString("language_code", "en")) }
 
         // Security

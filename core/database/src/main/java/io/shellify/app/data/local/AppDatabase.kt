@@ -27,10 +27,12 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
 
-        fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
-            instance ?: synchronized(this) {
+        fun getInstance(context: Context, crypto: CryptoManager): AppDatabase {
+            System.loadLibrary("sqlcipher")
+            return instance ?: synchronized(this) {
                 instance ?: buildDatabase(context, crypto).also { instance = it }
             }
+        }
 
         private fun buildDatabase(context: Context, crypto: CryptoManager): AppDatabase {
             // Passphrase is a random 32-byte secret encrypted at rest in SharedPreferences.
