@@ -15,6 +15,7 @@ jobs:
     name: Build Release App
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.actor != 'github-actions[bot]'
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-android
@@ -73,6 +74,7 @@ jobs:
     name: Unit Tests (Release)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.actor != 'github-actions[bot]'
     permissions:
       contents: read
       checks: write
@@ -87,6 +89,7 @@ jobs:
     name: Screenshot Tests (Release)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.actor != 'github-actions[bot]'
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-android
@@ -98,6 +101,7 @@ jobs:
     name: Instrumentation Tests (Debug)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.actor != 'github-actions[bot]'
     permissions:
       contents: read
       checks: write
@@ -113,7 +117,7 @@ jobs:
     name: Workflow Summary
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: always()
+    if: always() && github.actor != 'github-actions[bot]'
     needs: [build, smoke-test, unit-tests, screenshot-tests, instrumentation-tests]
     steps:
       - name: Write workflow summary
