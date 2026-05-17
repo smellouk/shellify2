@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
+import io.shellify.app.core.engine.GeckoNativeLoader
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -53,13 +54,13 @@ class GeckoEngineManagerTest {
 
     @Test
     fun isInstalled_returnsTrue_whenPrefsAndSoFilePresent() {
-        fakeInstall("128.0.0")
+        fakeInstall(GeckoEngineManager.GECKO_VERSION)
         assertTrue(GeckoEngineManager(context).isInstalled())
     }
 
     @Test
     fun installState_isInstalled_whenFakeInstallPresent() {
-        fakeInstall("128.0.0", verified = true)
+        fakeInstall(GeckoEngineManager.GECKO_VERSION, verified = true)
         val state = GeckoEngineManager(context).installState.value
         assertTrue(state is GeckoInstallState.Installed)
         assertTrue((state as GeckoInstallState.Installed).verified)
@@ -67,19 +68,19 @@ class GeckoEngineManagerTest {
 
     @Test
     fun getInstalledVersion_returnsStoredVersion() {
-        fakeInstall("128.5.0")
-        assertEquals("128.5.0", GeckoEngineManager(context).getInstalledVersion())
+        fakeInstall(GeckoEngineManager.GECKO_VERSION)
+        assertEquals(GeckoEngineManager.GECKO_VERSION, GeckoEngineManager(context).getInstalledVersion())
     }
 
     @Test
     fun updateAvailable_returnsFalse_whenNoLatestVersionKnown() {
-        fakeInstall("128.0.0")
+        fakeInstall(GeckoEngineManager.GECKO_VERSION)
         assertFalse(GeckoEngineManager(context).updateAvailable)
     }
 
     @Test
     fun uninstall_clearsInstalledStateAndFiles() {
-        fakeInstall("128.0.0")
+        fakeInstall(GeckoEngineManager.GECKO_VERSION)
         val m = GeckoEngineManager(context)
         m.uninstall()
         assertFalse(m.isInstalled())
@@ -91,13 +92,42 @@ class GeckoEngineManagerTest {
     @Test
     fun isInstalled_returnsFalse_whenPrefSetButNoSoFile() {
         context.getSharedPreferences("gecko_engine", Context.MODE_PRIVATE)
-            .edit().putBoolean("installed", true).putString("version", "128.0.0").apply()
+            .edit().putBoolean("installed", true).putString("version", GeckoEngineManager.GECKO_VERSION).apply()
+        assertFalse(GeckoEngineManager(context).isInstalled())
+    }
+
+    // Regression: stale 128.x libraries must not be treated as a valid install on devices that
+    // require 16 KB page alignment (Android 15+), where loading a 4 KB-aligned .so would crash.
+    @Test
+    fun isInstalled_returnsFalse_whenVersionMismatch() {
+        fakeInstall("128.0.20240704121409")
         assertFalse(GeckoEngineManager(context).isInstalled())
     }
 
     @Test
+    fun installState_isNotInstalled_whenVersionMismatch() {
+        fakeInstall("128.0.20240704121409")
+        assertTrue(GeckoEngineManager(context).installState.value is GeckoInstallState.NotInstalled)
+    }
+
+    // GeckoNativeLoader must not throw or crash when the libs directory does not exist —
+    // guards against a cold-start crash if prefs and disk are out of sync.
+    @Test
+    fun nativeLoader_doesNotCrash_whenLibsDirMissing() {
+        GeckoNativeLoader.injectAndLoad(context)
+    }
+
+    // Stub .so files (wrong ELF / wrong page alignment) must produce a logged warning, not a
+    // process-fatal RuntimeException. This mirrors the 4 KB-vs-16 KB alignment failure on
+    // Android 15 devices, but with a deliberately malformed stub rather than a real library.
+    @Test
+    fun nativeLoader_doesNotCrash_whenLibsAreStubs() {
+        fakeInstall(GeckoEngineManager.GECKO_VERSION)
+        GeckoNativeLoader.injectAndLoad(context)
+    }
+
+    @Test
     fun applySafeBrowsing_defaultsToFalseOnFreshState() {
-        // Safe browsing starts disabled — no prefs write required
         assertFalse(manager.isSafeBrowsingEnabled())
     }
 

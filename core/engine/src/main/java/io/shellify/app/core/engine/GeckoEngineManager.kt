@@ -42,7 +42,7 @@ class GeckoEngineManager(private val context: Context) {
         private const val KEY_VERIFIED = "sha256_verified"
         private const val KEY_SHA256 = "sha256_hash"
 
-        const val GECKO_VERSION = "128.0.20240704121409"
+        const val GECKO_VERSION = "140.0.20250707120347"
         private const val MAVEN_BASE = "https://maven.mozilla.org/maven2/org/mozilla/geckoview"
 
         private val ABI_ARTIFACT = mapOf(
@@ -54,10 +54,10 @@ class GeckoEngineManager(private val context: Context) {
 
         // SHA-256 of the AAR for each ABI at GECKO_VERSION — fetched from maven.mozilla.org
         private val KNOWN_SHA256 = mapOf(
-            "arm64-v8a" to "23c1fb46874310d8ba2708f12022e6b3d719a8434efbb95090f4f8a8ae57621c",
-            "armeabi-v7a" to "c908a15b8e3e40967deedfb70b007ddc42a479caf00077e38c0b5dc56674d6eb",
-            "x86_64" to "ff45bf56fb6fd4caed09f94e8ea95ffa3de3059e08ce2f80dbde9621753c481e",
-            "x86" to "be651ec149648afa8e4628434cb2c05ac9b7973347f26232a076a3ced79a6cfd",
+            "arm64-v8a" to "ac09410e56d92310a05df56df4eeafbfbcf82243dc66a214b788e2a1b413fa45",
+            "armeabi-v7a" to "34aefeb7a5400a4cec4475d41ee6f231c50f1cd04dd5c82ea550ffa96fffaebf",
+            "x86_64" to "d294025a1c5c8d293677f8a645ff8a39edff3124c53f301917bc02b69e36f612",
+            "x86" to "eec957f0b8242588a846a60e59a524d1fc25adedcd7b520399bfc9da2dfe1409",
         )
 
         // libmozglue must be loaded before libxul (dependency order)
@@ -124,6 +124,7 @@ class GeckoEngineManager(private val context: Context) {
 
     fun isInstalled(): Boolean {
         if (!prefs.getBoolean(KEY_INSTALLED, false)) return false
+        if (prefs.getString(KEY_VERSION, null) != GECKO_VERSION) return false
         val dir = getLibsDir()
         return dir.exists() && dir.listFiles()?.any { it.extension == "so" } == true
     }
