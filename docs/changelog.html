@@ -149,7 +149,7 @@ h3.release-category {
 
   <aside class="toc" aria-label="Table of contents">
     <div class="toc-title">Releases</div>
-    <span class="toc-link" style="opacity:.5">No releases yet</span>
+    <a class="toc-link" href="#v-1-0-0">1.0.0 — 2026-05-17</a>
     <div class="toc-sep"></div>
     <div class="toc-alt">
       <a href="privacy.html"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Privacy Policy</a>
@@ -163,7 +163,7 @@ h3.release-category {
       <span class="doc-tag doc-tag-changelog">Changelog</span>
       <h1>Release history</h1>
       <div class="doc-meta">
-        <span>Last updated: —</span>
+        <span>Last updated: 2026-05-17</span>
         <span>·</span>
         <a href="mailto:contact@shellify.app">contact@shellify.app</a>
       </div>
@@ -173,7 +173,193 @@ h3.release-category {
       <strong>Auto-generated</strong> from conventional commits using <a href="https://git-cliff.org" rel="noopener">git-cliff</a>. Each entry reflects a tagged release.
     </div>
 
-    <div class="doc-section"><p class="release-empty">No releases yet — check back after the first tagged version.</p></div>
+    <div class="doc-section" id="v-1-0-0">
+      <h2><span class="release-version">1.0.0</span><span class="release-date">2026-05-17</span></h2>
+<h3 class="release-category">Bug Fixes</h3>
+<ul>
+<li>Fix build errors and deprecation warnings</li>
+<li>Four UX fixes: analyze dialog, status bar color, shortcut icon, color/icon picker</li>
+<li>Fix shortcut icon: use createWithBitmap, drop adaptive framing and host-app badge</li>
+<li><strong>feature:add</strong>: Show pending icon in preview immediately after analysis, before Apply All</li>
+<li><strong>core:pwa</strong>: Fix icon selection: exclude monochrome, prefer maskable over any/unknown</li>
+<li>Fix Clean Architecture violations: move EngineType to domain, decouple shortcut from presentation</li>
+<li><strong>feature:home</strong>: Remove tip card from Shortcuts empty state</li>
+<li><strong>core:theme</strong>: Adapt screen background to accent color and replace violet swatch with green</li>
+<li>Unify accent palette and fix onboarding background</li>
+<li><strong>feature:onboarding</strong>: Fix onboarding language re-select and complete token coverage</li>
+<li><strong>feature:onboarding</strong>: Mirror directional icons in RTL for onboarding navigation</li>
+<li><strong>feature:onboarding</strong>: Fix language card icon alignment in RTL</li>
+<li><strong>feature:home</strong>: Fix suggestion card height and token cleanup in HomeScreen</li>
+<li><strong>feature:add</strong>: Remove gap between app name and URL in suggestion cards</li>
+<li><strong>feature:add</strong>: Fix suggestion card height consistency across locales</li>
+<li><strong>feature:add</strong>: Remove font padding gap between app name and URL in suggestion cards</li>
+<li><strong>feature:add</strong>: Polish Add screen spacing and divider consistency</li>
+<li>Fix accessibility: replace fixed heights with heightIn on text containers</li>
+<li><strong>feature:home</strong>: Restore chip pill background on feature icons</li>
+<li><strong>feature:home</strong>: Fix AppCard layout: feature icons row starts at card edge</li>
+<li><strong>feature:home</strong>: Fix spacing in AppCard and restore status bar color in WebView</li>
+<li>Use scrim view for status bar color on all API levels</li>
+<li>Fix status bar scrim: always use edge-to-edge so insets reach container</li>
+<li><strong>feature:webview</strong>: Fix WebView status bar color and FAB nav bar overlap</li>
+<li><strong>feature:home</strong>: Compact search bar: match button height and fix text clipping</li>
+<li><strong>feature:home</strong>: Fix SVG shortcut icon clipping and add icon preview tap-through</li>
+<li><strong>core:ui</strong>: Polish UI: card borders, icon picker card, status bar, home title branding</li>
+<li><strong>feature:onboarding</strong>: Wrap onboarding password fields in a card</li>
+<li><strong>core:backup</strong>: Fix backup to include icon pack data and user preferences</li>
+<li><strong>core:backup</strong>: Fix backup restore completeness, backup UI gating, and shortcut icon padding</li>
+<li><strong>feature:webview</strong>: Overhaul WebView bottom sheet UI and fix silent auto-translation</li>
+<li><strong>core:translate</strong>: Fix translate toggle off not stopping translation on page reload</li>
+<li><strong>core:translate</strong>: Remove API key, default to translate.fedilab.app</li>
+<li>Fix hardcoded colors, dead param, and missing translations</li>
+<li><strong>feature:webview</strong>: Drop base64 padding to avoid %3D%3D in shared links</li>
+<li>Fix 10 security vulnerabilities found in audit</li>
+<li>Fix 6 failing Android instrumented tests</li>
+<li><strong>feature:onboarding</strong>: Fix unenforceable suspension clause in consent screen</li>
+<li><strong>feature:onboarding</strong>: Strengthen acceptable-use reserve clause with explicit grounds</li>
+<li><strong>feature:onboarding</strong>: Strengthen privacy disclaimer to cover store, transmit</li>
+<li><strong>feature:onboarding</strong>: Disclose local OS sharing feature in consent screen</li>
+<li><strong>feature:onboarding</strong>: Strengthen consent_not_2 with intentionally + transmit</li>
+<li><strong>core:database</strong>: Reset database to version 1, remove all migrations</li>
+<li><strong>app</strong>: Correct datastore paths and add missing strings</li>
+<li><strong>app</strong>: Specify PKCS12 store type to resolve release signing on CI</li>
+<li><strong>feature:settings</strong>: Update privacy, terms, and changelog links to .html URLs</li>
+</ul>
+<h3 class="release-category">Documentation</h3>
+<ul>
+<li>Add planning docs for upcoming features</li>
+<li>Add Apache 2.0 license, README, legal docs, and app feature updates</li>
+<li>Add new features documents</li>
+<li>Add per-module README documentation for all 32 folders</li>
+<li>Initialize GSD project with roadmap (4 phases, 43 requirements)</li>
+<li><strong>CLAUDE.md</strong>: Forbid hardcoded strings, colors, dimensions, and text sizes</li>
+<li><strong>readme</strong>: Fix outdated and inaccurate content</li>
+<li>Add project README and update core/ui documentation</li>
+<li>Add changelog page, update nav, replace demo recording, and fix create app title</li>
+<li><strong>site</strong>: Update landing page and add app icon</li>
+<li>Reorganize README header in Neo-Store style</li>
+</ul>
+<h3 class="release-category">Features</h3>
+<ul>
+<li><strong>core:crypto</strong>: Add at-rest encryption: Android Keystore AES-256-GCM + SQLCipher</li>
+<li><strong>feature:add</strong>: Redesign Create App screen with expandable feature cards</li>
+<li><strong>feature:home</strong>: Add empty state illustration to HomeScreen</li>
+<li><strong>core:theme</strong>: Add dynamic theme switching: ThemeMode + ThemeManager + Appearance sheet</li>
+<li><strong>core:pwa</strong>: Extract icon from apple-touch-icon and og:image when no PWA manifest icons</li>
+<li><strong>feature:add</strong>: Add Fetch Icon button to Basic Info card</li>
+<li><strong>feature:settings</strong>: Add Global Settings screen and bottom navigation tabs</li>
+<li><strong>feature:home</strong>: Add Shortcuts tab for managing launcher shortcuts</li>
+<li><strong>feature:home</strong>: Add Change icon option for shortcuts via image picker</li>
+<li>Add per-app locking, categories with icon/color, and backup/restore</li>
+<li>Add pluggable browser engine, WebView improvements, and global settings enhancements</li>
+<li><strong>core:theme</strong>: Add design token system and user-selectable theme color</li>
+<li>Redesign all screens to match design handoff specs</li>
+<li><strong>feature:home</strong>: Redesign AppCard to compact horizontal layout</li>
+<li><strong>feature:home</strong>: Quick-add from suggestions + empty state polish</li>
+<li><strong>core:iconpack</strong>: Add Simple Icons pack: import, picker, and icon selection</li>
+<li><strong>core:domain</strong>: Introduce IconSource sealed class for typed icon storage</li>
+<li><strong>feature:home</strong>: Shortcuts screen: add/remove flow, grid/list toggle, per-icon colors</li>
+<li><strong>feature:add</strong>: Pre-fill Add Category dialog from suggestion chips</li>
+<li><strong>feature:home</strong>: Add Change Icon flow to Shortcuts screen with unified SVG rendering</li>
+<li><strong>core:backup</strong>: Overhaul backup/restore + polish UI dialogs and shortcut tracking</li>
+<li><strong>feature:settings</strong>: Improve app settings: full Basic Info editing, favicon fallback, and context menu clear data</li>
+<li><strong>core:translate</strong>: Switch translation engine from Google to LibreTranslate</li>
+<li><strong>core:translate</strong>: Add LibreTranslate API key support and debug logging</li>
+<li><strong>feature:settings</strong>: Add GeckoView engine selector in App Settings with missing-engine warning</li>
+<li><strong>core:engine</strong>: Add GeckoView SHA-256 integrity verification with UI feedback</li>
+<li><strong>feature:webview</strong>: Add deeplink and QR code sharing for quick app install</li>
+<li><strong>feature:home</strong>: Extract AppShareSheet as shared composable, add Share to home screen context menu</li>
+<li><strong>feature:webview</strong>: Encode URL as base64url in deeplinks, keep name as plain text</li>
+<li><strong>feature:settings</strong>: Add Open Source Licenses screen to settings</li>
+<li><strong>feature:settings</strong>: Add Changelog screen to settings</li>
+<li><strong>feature:settings</strong>: Replace in-app changelog with shellify.app/changelog link</li>
+<li><strong>feature:settings</strong>: Add Privacy Policy link to Settings → About</li>
+<li><strong>feature:onboarding</strong>: Add first-launch consent screen with legal disclaimer</li>
+<li><strong>feature:onboarding</strong>: Update consent screen with lawyer-reviewed legal text</li>
+<li><strong>feature:onboarding</strong>: Add no-facilitation clause to consent screen disclaimer</li>
+<li><strong>feature:onboarding</strong>: Add legal and abuse contact links to consent screen</li>
+<li><strong>feature:onboarding</strong>: Add impersonation and phishing clauses to acceptable use</li>
+<li><strong>feature:settings</strong>: Implement lawyer-recommended backup session data disclosures</li>
+<li><strong>feature:webview</strong>: Implement lawyer-recommended deep-link sharing disclosures and confirmation</li>
+<li><strong>feature:webview</strong>: Extract DeepLinkConfirmDialog and add 12 smoke tests</li>
+<li><strong>site</strong>: Add GitHub Pages site with landing, privacy, and terms pages</li>
+<li><strong>app</strong>: Refresh launcher icon and splash screen assets</li>
+<li><strong>app</strong>: Introduce theme variants and dimension tokens</li>
+<li><strong>app</strong>: Add Arabic and French string translations</li>
+<li><strong>core</strong>: Update backup, database, engine, and theme modules</li>
+<li><strong>app</strong>: Update app module, manifest, and navigation</li>
+<li><strong>feature</strong>: Update add, home, and settings screens</li>
+<li><strong>shortcuts</strong>: Gate icon-pack button on pack availability and use app theme color for icon background</li>
+<li><strong>site</strong>: Add assetlinks.json for Android App Links and disable Jekyll</li>
+</ul>
+<h3 class="release-category">Maintenance</h3>
+<ul>
+<li>Initial scaffold PWAForge Android app</li>
+<li>Add .gitignore, remove build artifacts from tracking</li>
+<li>Misc in-progress changes (WebView, isolation, add/settings screens)</li>
+<li><strong>core:database</strong>: Add Room schema exports for DB migrations 10–12</li>
+<li>Add new app icon</li>
+<li>Enable Gradle configuration cache</li>
+<li>Enable Gradle local build cache</li>
+<li>Add CI workflows, issue templates, PR template, and contributing guide</li>
+<li>Add codebase map to .planning/codebase/</li>
+<li>Configure GSD git settings and worktree isolation</li>
+<li>Enable squash merge by default for phase branches</li>
+<li>Add Dependabot, PR title check, and SECURITY.md</li>
+<li>Release build setup and README polish</li>
+<li><strong>deps</strong>: Bump gradle/actions from 4 to 6 (#4)</li>
+<li><strong>deps</strong>: Bump actions/checkout from 4 to 6 (#2)</li>
+<li><strong>deps</strong>: Bump actions/setup-java from 4 to 5 (#5)</li>
+<li><strong>deps</strong>: Bump actions/download-artifact from 4 to 8 (#3)</li>
+<li><strong>deps</strong>: Bump orhun/git-cliff-action from 3 to 4 (#1)</li>
+<li><strong>release</strong>: Pass GITHUB_TOKEN to git-cliff for private repo access</li>
+<li><strong>pull_request</strong>: Fix invalid disallowScopes yaml syntax</li>
+<li><strong>release</strong>: Remove GITHUB_REPO from git-cliff to avoid PR metadata fetch</li>
+<li><strong>release</strong>: Defer CHANGELOG and site commits until after GitHub release</li>
+<li><strong>release</strong>: Fix circular dependency by removing needs from build job</li>
+<li><strong>release</strong>: Run changelog and update-site in parallel after build</li>
+<li><strong>release</strong>: Add keystore fingerprint guard and consolidate artifacts</li>
+<li>Add test logger, SARIF reporting, and reusable composite actions</li>
+<li>Update pull-request workflow, build-logic plugins, lint rules, and dependencies</li>
+<li><strong>build-logic</strong>: Migrate to compilerOptions DSL and enable allWarningsAsErrors</li>
+<li>Fix dependabot PR failures in workflow and build</li>
+<li><strong>deps</strong>: Bump github/codeql-action from 3 to 4 (#2)</li>
+<li><strong>release</strong>: Run assembleRelease and bundleRelease as separate steps</li>
+<li><strong>release</strong>: Fix artifact glob to match nested paths</li>
+<li><strong>main</strong>: Set 1-day retention for release artifacts</li>
+</ul>
+<h3 class="release-category">Refactoring</h3>
+<ul>
+<li>Add comprehensive string resources for all UI text</li>
+<li>Move all hardcoded strings to resources and add circular reveal theme animation</li>
+<li>Move hardcoded values to design tokens, localize all UI strings, add translations</li>
+<li><strong>feature:add</strong>: Tighten suggestion card padding using Dimens tokens</li>
+<li>Replace all hardcoded .dp values with Dimens tokens across screens</li>
+<li>Replace hardcoded .sp values with Dimens tokens in CategoryScreen and GlobalSettingsScreen</li>
+<li><strong>feature:home</strong>: Replace textSizeEmptyTitle with typography.titleLarge in HomeScreen</li>
+<li>Replace hardcoded dp/sp values and fontSize tokens with Dimens and M3 typography</li>
+<li><strong>feature:home</strong>: Move feature icons to dedicated row with right-aligned menu</li>
+<li>Convert 5 AlertDialogs to ModalBottomSheet</li>
+<li>Rename app from PWAForge to Shellify with new package io.shellify.app</li>
+<li>Enforce Clean Architecture, migrate all VMs to use cases, extract shared UI components</li>
+<li>Extract 10 feature modules, add 48 E2E smoke tests, reorganize androidTest</li>
+<li><strong>feature:onboarding</strong>: Merge redundant acceptable-use clauses 7/8/9 into one</li>
+</ul>
+<h3 class="release-category">Reverted Changes</h3>
+<ul>
+<li><strong>core:translate</strong>: Revert to Google Translate, remove LibreTranslate and debug logging</li>
+</ul>
+<h3 class="release-category">Testing</h3>
+<ul>
+<li>Add 95 Android instrumented integration tests</li>
+<li><strong>feature:onboarding</strong>: Add consent screen smoke tests and route sanity checks</li>
+<li><strong>feature:onboarding</strong>: Add consent-gate tests to prevent regression on first-launch routing</li>
+<li>Add Roborazzi screenshot testing with 20 golden images across 6 screens</li>
+<li><strong>app</strong>: Add E2E instrumented tests for core security and engine features</li>
+<li><strong>app</strong>: Add screenshot and unit tests with Roborazzi golden images</li>
+<li><strong>app</strong>: Update AddScreen screenshot goldens for Create App title change</li>
+<li><strong>app</strong>: Update AddScreenTest to assert Create App title is always shown</li>
+</ul>
+    </div>
   </article>
 </div>
 </main>
