@@ -31,7 +31,7 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ci-release-artifacts
           path: |
