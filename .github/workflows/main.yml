@@ -39,6 +39,7 @@ jobs:
             app/build/outputs/bundle/release/*.aab
             app/build/outputs/mapping/release/mapping.txt
           if-no-files-found: error
+          retention-days: 1
 
   smoke-test:
     name: Smoke Test Release APK
