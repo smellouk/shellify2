@@ -136,7 +136,7 @@ jobs:
         with:
           name: Shellify ${{ needs.changelog.outputs.version }}
           body_path: RELEASE_NOTES.md
-          files: artifacts/*
+          files: artifacts/**
           draft: false
           prerelease: ${{ contains(needs.changelog.outputs.version, '-alpha') || contains(needs.changelog.outputs.version, '-beta') || contains(needs.changelog.outputs.version, '-rc') }}
 
