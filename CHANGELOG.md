@@ -3,6 +3,34 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.1.0] - 2026-05-17
+
+### Bug Fixes
+
+- **core:engine**: Upgrade GeckoView to 140.x and guard against version mismatch
+- **core:database**: Enable schema export and add migration test
+- **app**: Keep GeckoView classes from R8 to prevent native SIGSEGV in release
+
+### Documentation
+
+- Revert LICENSE copyright to Apache template placeholder
+- Correct and expand technical debt in CONCERNS.md and CLAUDE.md
+- **privacy**: Update logo image reference from icon.png to icon.webp
+
+### Features
+
+- **feature:onboarding**: Add versioned consent with update re-consent screen
+
+### Maintenance
+
+- **site**: Regenerate legal pages for v1.0.0
+- **deps**: Bump actions/checkout from 4 to 6 (#5)
+- **deps**: Bump actions/download-artifact from 4 to 8 (#3)
+- **deps**: Bump actions/upload-artifact from 4 to 7 (#4)
+- **deps**: Bump softprops/action-gh-release from 2 to 3 (#2)
+- **deps**: Bump amannn/action-semantic-pull-request from 5 to 6 (#1)
+- **main**: Skip workflow for github-actions bot pushes
+
 ## [1.0.0] - 2026-05-17
 
 ### Bug Fixes
