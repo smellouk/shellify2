@@ -190,6 +190,32 @@ code, kbd {
   border-color: var(--primary); color: var(--text);
   background: var(--primary-dim); text-decoration: none;
 }
+.btn-github-dl {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #2ea44f; color: #fff;
+  padding: 12px 24px; border-radius: var(--radius-full);
+  font-weight: 700; font-size: 0.9375rem;
+  border: none; cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 0 24px rgba(46,164,79,0.35); text-decoration: none;
+}
+.btn-github-dl:hover {
+  background: #2c974b; transform: translateY(-2px);
+  color: #fff; text-decoration: none;
+  box-shadow: 0 0 40px rgba(46,164,79,0.5);
+}
+.btn-obtainium {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--primary); color: #fff;
+  padding: 12px 24px; border-radius: var(--radius-full);
+  font-weight: 700; font-size: 0.9375rem;
+  border: none; cursor: pointer; transition: all 0.2s ease;
+  box-shadow: var(--glow-primary); text-decoration: none;
+}
+.btn-obtainium:hover {
+  background: var(--primary-hov); transform: translateY(-2px);
+  color: #fff; text-decoration: none;
+  box-shadow: 0 0 48px rgba(124,77,255,0.45);
+}
 
 /* ── Badge ───────────────────────────────────────────── */
 .badge {

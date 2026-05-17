@@ -1,18 +1,29 @@
+<h1 align="center">
+  <img src="docs/icon.webp" alt="Shellify icon" width="192" height="192"/>
+  <br>
+  Shellify
+</h1>
+
+<p align="center"><strong>Turn any website into an isolated, ad-free app on your home screen.</strong></p>
+
 <div align="center">
 
-# Shellify
+[![Latest release](https://img.shields.io/github/v/release/smellouk/shellify?style=flat&labelColor=D0E8FF&color=0076D6)](https://github.com/smellouk/shellify/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/smellouk/shellify/total?style=flat&labelColor=D0E8FF&color=0076D6)](https://github.com/smellouk/shellify/releases)
+[![Stars](https://img.shields.io/github/stars/smellouk/shellify?style=flat&labelColor=D0E8FF&color=0076D6)](https://github.com/smellouk/shellify/stargazers)
+[![License](https://img.shields.io/github/license/smellouk/shellify?style=flat&labelColor=D0E8FF&color=0076D6)](LICENSE)
+[![CI](https://github.com/smellouk/shellify/actions/workflows/main.yml/badge.svg)](https://github.com/smellouk/shellify/actions/workflows/main.yml)
 
-<img src="docs/icon.webp" alt="Shellify icon" width="96" height="96" />
+</div>
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Min SDK](https://img.shields.io/badge/Min%20SDK-26%20(Android%208.0)-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/oreo)
-[![Target SDK](https://img.shields.io/badge/Target%20SDK-36%20(Android%2015)-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/15)
-[![Main](https://github.com/smellouk/shellify/actions/workflows/main.yml/badge.svg)](https://github.com/smellouk/shellify/actions/workflows/main.yml)
+<div align="center">
 
-**Turn any website into an isolated, ad-free app on your home screen.**
+[<img src="docs/get_github.png" alt="Get it on GitHub" width="45%" align="center">](https://github.com/smellouk/shellify/releases/latest)
+[<img src="docs/get_obtainium.png" alt="Get it on Obtainium" width="45%" align="center">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.shellify.app%22%2C%22url%22%3A%22https%3A//github.com/smellouk/shellify%22%2C%22author%22%3A%22smellouk%22%2C%22name%22%3A%22Shellify%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22filterReleaseNotesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22verifyLatestTag%5C%22%3Afalse%2C%5C%22dontSortReleasesList%5C%22%3Afalse%2C%5C%22useLatestAssetDateAsReleaseDate%5C%22%3Afalse%2C%5C%22trackOnly%5C%22%3Afalse%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%5C%22%2C%5C%22versionDetection%5C%22%3Atrue%2C%5C%22releaseDateAsVersion%5C%22%3Afalse%2C%5C%22useVersionCodeAsOSVersion%5C%22%3Afalse%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22invertAPKFilter%5C%22%3Afalse%2C%5C%22autoApkFilterByArch%5C%22%3Atrue%2C%5C%22appName%5C%22%3A%5C%22Shellify%5C%22%2C%5C%22exemptFromBackgroundUpdates%5C%22%3Afalse%2C%5C%22skipUpdateNotifications%5C%22%3Afalse%2C%5C%22about%5C%22%3A%5C%22A%20local-first%20Android%20PWA%20launcher%20that%20wraps%20websites%20in%20isolated%20WebView%20containers%20with%20per-app%20ad%20blocking%2C%20biometric%20lock%2C%20and%20encrypted%20backup.%5C%22%2C%5C%22appAuthor%5C%22%3A%5C%22smellouk%5C%22%7D%22%2C%22overrideSource%22%3Anull%7D)
 
-Shellify is a local-first Android PWA launcher. It wraps websites in individual WebView containers with per-app isolation, ad blocking, translation, biometric locking, and encrypted backup — no account, no cloud, no tracking.
+</div>
+
+<div align="center">
 
 ### Signing Certificate Fingerprints
 
@@ -22,6 +33,7 @@ Use these to verify the APK signature.
 SHA-256: EF:A3:C6:37:40:77:87:EE:97:18:58:7C:DE:FE:3F:86:02:E2:41:05:49:BE:DE:71:8F:4E:4D:74:EB:0C:23:21
 SHA-1: 75:F2:73:AF:01:93:EF:08:F3:F2:2F:8C:B2:EA:FE:8B:BC:A0:27:73
 ```
+
 </div>
 
 
