@@ -103,12 +103,22 @@ class ThemeManager(private val context: Context) {
     private val keyOnboardingDone = booleanPreferencesKey("onboarding_done")
     private val keyOnboardingPage = intPreferencesKey("onboarding_page")
     private val keyConsentGiven = booleanPreferencesKey("consent_given")
+    private val keyConsentVersion = intPreferencesKey("consent_version")
 
     val onboardingDone: Flow<Boolean> =
         context.themeStore.data.map { it[keyOnboardingDone] ?: false }
     val onboardingPage: Flow<Int> = context.themeStore.data.map { it[keyOnboardingPage] ?: 0 }
     val consentGiven: Flow<Boolean> =
         context.themeStore.data.map { it[keyConsentGiven] ?: false }
+
+    /**
+     * The version of the terms the user last accepted.
+     * Existing users who accepted via the old boolean key are migrated to version 1.
+     * 0 = never consented, 1 = accepted before versioning was introduced.
+     */
+    val consentVersion: Flow<Int> = context.themeStore.data.map { prefs ->
+        prefs[keyConsentVersion] ?: if (prefs[keyConsentGiven] == true) 1 else 0
+    }
 
     suspend fun setOnboardingDone() {
         context.themeStore.edit { it[keyOnboardingDone] = true }
@@ -119,7 +129,38 @@ class ThemeManager(private val context: Context) {
     }
 
     suspend fun setConsentGiven() {
-        context.themeStore.edit { it[keyConsentGiven] = true }
+        context.themeStore.edit {
+            it[keyConsentGiven] = true
+            it[keyConsentVersion] = CURRENT_CONSENT_VERSION
+        }
+    }
+
+    suspend fun setConsentVersion(version: Int) {
+        context.themeStore.edit { it[keyConsentVersion] = version }
+    }
+
+    /** Removes consent keys so the next read returns the zero/unset state. Test use only. */
+    suspend fun clearConsentForTesting() {
+        context.themeStore.edit { prefs ->
+            prefs.remove(keyConsentGiven)
+            prefs.remove(keyConsentVersion)
+        }
+    }
+
+    /**
+     * Sets only the legacy boolean key, leaving consent_version absent.
+     * Reproduces the on-disk state of users who consented before versioning was introduced.
+     * Test use only.
+     */
+    suspend fun seedLegacyConsentForTesting() {
+        context.themeStore.edit { prefs ->
+            prefs[keyConsentGiven] = true
+            prefs.remove(keyConsentVersion)
+        }
+    }
+
+    companion object {
+        const val CURRENT_CONSENT_VERSION = 2
     }
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */

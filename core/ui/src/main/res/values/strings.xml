@@ -268,6 +268,7 @@
     <string name="consent_what_2">Functions as a web-viewing tool that loads websites selected by the user</string>
     <string name="consent_what_3">All browsing data and app data remain stored locally on the user\'s device unless the user interacts directly with a third-party website or service</string>
     <string name="consent_what_4">Shellify may allow users to locally share user-selected website links or app configurations through standard operating-system sharing features. Such sharing is initiated solely by users and is not transmitted, stored, indexed, or moderated by Shellify</string>
+    <string name="consent_what_5">Displays brand logos sourced from Simple Icons to identify the apps you add. These logos are trademarks of their respective owners and are used solely for identification — Shellify does not claim ownership of them</string>
     <string name="consent_section_not_title">What Shellify does not do</string>
     <string name="consent_not_1">We do not own, host, control, monitor, modify, or endorse third-party websites or services</string>
     <string name="consent_not_2">We do not intentionally collect, store, or transmit your browsing activity or the content you access through third-party websites</string>
@@ -304,6 +305,13 @@
     <string name="consent_checkbox_label">I have read and agree to the Terms and Privacy Policy</string>
     <string name="consent_agree_button">I Agree &amp; Continue</string>
     <string name="consent_decline_button">Decline</string>
+    <string name="consent_update_title">We\'ve updated our terms</string>
+    <string name="consent_update_subtitle">A small update to our Terms of Service and Privacy Policy. Please review the changes and accept to continue using Shellify.</string>
+    <string name="consent_update_changes_title">What\'s new</string>
+    <string name="consent_update_changes_1">Clarified how brand icons from Simple Icons are displayed to identify your apps</string>
+    <string name="consent_update_changes_2">Added acknowledgement that brand logos are trademarks of their respective owners</string>
+    <string name="consent_update_checkbox_label">I have read and accept the updated Terms and Privacy Policy</string>
+    <string name="consent_update_agree_button">Accept &amp; Continue</string>
     <string name="global_settings_ua_dialog_title">Default user agent</string>
     <string name="global_settings_schedule_dialog_title">Auto-backup schedule</string>
     <string name="global_settings_remove_password_title">Remove app password?</string>

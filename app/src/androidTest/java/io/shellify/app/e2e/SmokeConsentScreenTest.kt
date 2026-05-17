@@ -95,6 +95,15 @@ class SmokeConsentScreenTest {
     }
 
     @Test
+    fun consentScreen_brandIconDisclosure_isPresent() {
+        launch()
+        composeTestRule
+            .onNodeWithText("Displays brand logos sourced from Simple Icons to identify the apps you add.", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun consentScreen_privacyPolicyLink_isVisible() {
         launch()
         composeTestRule

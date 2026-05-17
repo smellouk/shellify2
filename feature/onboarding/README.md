@@ -4,7 +4,7 @@
 
 ## Overview
 
-`feature:onboarding` is the mandatory entry point for every new installation of Shellify. It consists of two distinct screens: a non-skippable privacy consent gate (`ConsentScreen`) and an optional seven-step wizard (`OnboardingScreen`). The completion flag is stored in DataStore; once set, the flow is never shown again.
+`feature:onboarding` is the mandatory entry point for every new installation of Shellify. It consists of three distinct screens: a non-skippable first-run consent gate (`ConsentScreen`), a re-consent gate for existing users when terms change (`UpdateConsentScreen`), and an optional seven-step setup wizard (`OnboardingScreen`). Completion flags are stored in DataStore and checked on every cold launch.
 
 ## Purpose
 
@@ -19,16 +19,25 @@
 
 ```kotlin
 @Composable
-fun ConsentScreen(
-    onConsentAccepted: () -> Unit,
-    onConsentDeclined: () -> Unit,
-)
+fun ConsentScreen(onAccepted: () -> Unit)
 ```
 
-- Displays the full privacy policy text (scrollable).
-- Two buttons: **Accept** (proceeds to `OnboardingScreen`) and **Decline** (closes the app).
-- Acceptance is persisted by `OnboardingViewModel.markConsentAccepted()` before invoking `onConsentAccepted`.
-- Declining calls `finish()` on the host Activity — Shellify will not launch without consent.
+- Shown to first-time users only (`consentVersion == 0`).
+- Scrollable summary of all key terms (6 sections) plus links to the full Privacy Policy and Terms of Service.
+- **I Agree & Continue** (enabled once the checkbox is ticked) → `ThemeManager.setConsentGiven()` (writes `consent_given = true` and `consent_version = CURRENT_CONSENT_VERSION`) → routes to `OnboardingScreen`.
+- **Decline** calls `finish()` on the host Activity — Shellify will not launch without consent.
+
+### `UpdateConsentScreen`
+
+```kotlin
+@Composable
+fun UpdateConsentScreen(onAccepted: () -> Unit)
+```
+
+- Shown to existing users when `consentVersion < ThemeManager.CURRENT_CONSENT_VERSION`.
+- Summarises only what changed (bullet list) plus links to the full docs.
+- **Accept & Continue** → `ThemeManager.setConsentVersion(CURRENT_CONSENT_VERSION)` → routes to `HomeScreen`.
+- **Decline** closes the app, same as `ConsentScreen`.
 
 ### `OnboardingViewModel`
 
@@ -104,12 +113,15 @@ Once `markOnboardingComplete()` is called, the start destination permanently bec
 
 ```mermaid
 flowchart TD
-    A([App Launch]) --> B{Consent accepted?}
-    B -- No --> C[ConsentScreen]
+    A([App Launch]) --> B{consentVersion?}
+    B -- 0 --> C[ConsentScreen]
     C -- Decline --> X([App exits])
     C -- Accept --> D{Onboarding complete?}
-    B -- Yes --> D
-    D -- Yes --> Z([HomeScreen])
+    B -- outdated --> U[UpdateConsentScreen]
+    U -- Decline --> X
+    U -- Accept --> Z([HomeScreen])
+    B -- current --> D
+    D -- Yes --> Z
     D -- No --> S1[Step 1: Language]
     S1 -->|Next / Skip| S2[Step 2: Backup]
     S2 -->|Next / Skip| S3[Step 3: Password]
@@ -127,7 +139,7 @@ flowchart TD
 
 ## Configuration
 
-- **Consent re-display**: to force the consent screen again (e.g., after a privacy policy update), increment `CONSENT_VERSION` in `OnboardingRepository`. The screen reappears if the stored version is lower than the current one.
+- **Terms updates**: to require existing users to re-consent, increment `CURRENT_CONSENT_VERSION` in `ThemeManager`. Users whose stored `consent_version` is lower will see `UpdateConsentScreen` on the next launch. Update `consent_update_changes_*` strings to describe what changed.
 - **Step order**: the step list is defined as a `List<OnboardingStep>` sealed class in `OnboardingViewModel`. Reordering or removing steps requires only changing that list — the `HorizontalPager` derives its page count dynamically.
 - **RTL support**: step 1 language selection immediately triggers `AppCompatDelegate.setApplicationLocales()`, so the wizard itself re-renders in RTL for Arabic without requiring a restart.
 - **Permission requests**: step 7 uses `accompanist-permissions` (or Compose `rememberPermissionState`). Declined permissions are not re-requested within the wizard; the user can grant them later via system settings.

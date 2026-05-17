@@ -15,9 +15,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.presentation.navigation.Screen
 import io.shellify.app.presentation.navigation.resolveStartDestination
 import io.shellify.app.presentation.onboarding.ConsentScreen
+import io.shellify.app.presentation.onboarding.UpdateConsentScreen
 import io.shellify.app.presentation.theme.ShellifyTheme
 import org.junit.Rule
 import org.junit.Test
@@ -43,11 +45,12 @@ class ConsentGateTest {
                 Box(modifier = Modifier.size(400.dp, 900.dp)) {
                     val navController = rememberNavController()
                     val startDestination = resolveStartDestination(
-                        consentGiven = false,
+                        consentVersion = 0,
                         onboardingDone = false,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { ConsentScreen(onAccepted = {}) }
+                        composable(Screen.UpdateConsent.route) { UpdateConsentScreen(onAccepted = {}) }
                         composable(Screen.Onboarding.route) { Text("Onboarding") }
                         composable(Screen.Home.route) { Text("Home") }
                     }
@@ -61,17 +64,43 @@ class ConsentGateTest {
     }
 
     @Test
-    fun consentAlreadyGiven_skipsConsentScreen() {
+    fun outdatedConsent_routesToUpdateConsentScreen() {
         composeTestRule.setContent {
             ShellifyTheme {
                 Box(modifier = Modifier.size(400.dp, 900.dp)) {
                     val navController = rememberNavController()
                     val startDestination = resolveStartDestination(
-                        consentGiven = true,
+                        consentVersion = 1,
+                        onboardingDone = true,
+                    )
+                    NavHost(navController = navController, startDestination = startDestination) {
+                        composable(Screen.Consent.route) { ConsentScreen(onAccepted = {}) }
+                        composable(Screen.UpdateConsent.route) { UpdateConsentScreen(onAccepted = {}) }
+                        composable(Screen.Onboarding.route) { Text("Onboarding") }
+                        composable(Screen.Home.route) { Text("Home") }
+                    }
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("We've updated our terms").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Before you start").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText("Home").assertIsNotDisplayed()
+    }
+
+    @Test
+    fun currentConsent_onboardingPending_routesToOnboarding() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Box(modifier = Modifier.size(400.dp, 900.dp)) {
+                    val navController = rememberNavController()
+                    val startDestination = resolveStartDestination(
+                        consentVersion = ThemeManager.CURRENT_CONSENT_VERSION,
                         onboardingDone = false,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { ConsentScreen(onAccepted = {}) }
+                        composable(Screen.UpdateConsent.route) { UpdateConsentScreen(onAccepted = {}) }
                         composable(Screen.Onboarding.route) { Text("Onboarding Screen") }
                         composable(Screen.Home.route) { Text("Home") }
                     }

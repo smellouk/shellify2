@@ -1,6 +1,6 @@
 # Privacy Policy — Shellify
 
-**Last updated: May 2026**
+**Last updated: May 17, 2026**
 
 ---
 
@@ -39,7 +39,7 @@ This includes:
 - **Cookies** — encrypted per-app cookie jars (AES-256-GCM)
 - **WebView storage** — per-app isolated profile directories containing cache, local storage, and IndexedDB (Android 13+)
 - **Downloaded icons** — PWA favicons stored as image files
-- **Optional icon packs** — Simple Icons JSON data downloaded on demand
+- **Optional icon packs** — Simple Icons brand logo data downloaded on demand and stored locally for display purposes; these icons are trademarks of their respective owners
 
 The App's database is encrypted at rest using SQLCipher (AES-256). Cryptographic keys are protected by the Android Keystore system, which uses hardware-backed key storage on supported devices.
 

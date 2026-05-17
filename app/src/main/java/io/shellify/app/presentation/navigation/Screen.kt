@@ -17,6 +17,7 @@ sealed class Screen(val route: String) {
     }
 
     object Consent : Screen("consent")
+    object UpdateConsent : Screen("update_consent")
     object GlobalSettings : Screen("global_settings")
     object Licenses : Screen("licenses")
     object Shortcuts : Screen("shortcuts")

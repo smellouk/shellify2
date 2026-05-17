@@ -58,6 +58,7 @@ import androidx.navigation.navArgument
 import io.shellify.app.ShellifyApplication
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.core.locale.LocaleHelper
+import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.presentation.add.AddScreen
 import io.shellify.app.presentation.add.AddViewModel
 import io.shellify.app.presentation.category.CategoryScreen
@@ -67,6 +68,7 @@ import io.shellify.app.presentation.home.HomeViewModel
 import io.shellify.app.presentation.onboarding.ConsentScreen
 import io.shellify.app.presentation.onboarding.OnboardingScreen
 import io.shellify.app.presentation.onboarding.OnboardingViewModel
+import io.shellify.app.presentation.onboarding.UpdateConsentScreen
 import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
@@ -103,11 +105,11 @@ fun AppNavigation(
     val currentLanguage = remember { LocaleHelper.getLanguageCode(context) }
     val coroutineScope = rememberCoroutineScope()
 
-    val consentGiven by app.themeManager.consentGiven.collectAsState(initial = null)
+    val consentVersion by app.themeManager.consentVersion.collectAsState(initial = null)
     val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
-    if (consentGiven == null || onboardingDone == null) return
+    if (consentVersion == null || onboardingDone == null) return
 
-    val startDestination = resolveStartDestination(consentGiven == true, onboardingDone == true)
+    val startDestination = resolveStartDestination(consentVersion!!, onboardingDone == true)
 
     var pendingDeepLinkUrl by remember { mutableStateOf<String?>(null) }
     var pendingDeepLinkName by remember { mutableStateOf<String?>(null) }
@@ -308,6 +310,19 @@ fun AppNavigation(
                 )
             }
 
+            composable(Screen.UpdateConsent.route) {
+                UpdateConsentScreen(
+                    onAccepted = {
+                        coroutineScope.launch {
+                            app.themeManager.setConsentVersion(ThemeManager.CURRENT_CONSENT_VERSION)
+                        }
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.UpdateConsent.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
                     viewModel = remember {
@@ -363,9 +378,10 @@ internal fun DeepLinkConfirmDialog(url: String, onConfirm: () -> Unit, onDismiss
     )
 }
 
-internal fun resolveStartDestination(consentGiven: Boolean, onboardingDone: Boolean): String =
+internal fun resolveStartDestination(consentVersion: Int, onboardingDone: Boolean): String =
     when {
-        !consentGiven -> Screen.Consent.route
+        consentVersion == 0 -> Screen.Consent.route
+        consentVersion < ThemeManager.CURRENT_CONSENT_VERSION -> Screen.UpdateConsent.route
         !onboardingDone -> Screen.Onboarding.route
         else -> Screen.Home.route
     }

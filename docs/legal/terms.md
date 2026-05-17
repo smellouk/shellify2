@@ -1,6 +1,6 @@
 # Terms of Service — Shellify
 
-**Last updated: May 2026**
+**Last updated: May 17, 2026**
 
 ---
 
@@ -90,6 +90,8 @@ To provide certain features, Shellify may interact with third-party services inc
 - and the optional Mozilla GeckoView engine.
 
 These services are governed exclusively by their own terms and privacy policies. Shellify is not responsible for their availability, accuracy, or data practices.
+
+**Brand Icons.** Brand logos and icons displayed within the App — including icons sourced from Simple Icons — are trademarks of their respective brand owners. Shellify uses them solely to identify web apps you choose to add, in a nominative and non-commercial context. This does not imply affiliation with, endorsement by, or sponsorship by any brand.
 
 ---
 
