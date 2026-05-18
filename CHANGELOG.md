@@ -3,6 +3,17 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.1.1] - 2026-05-18
+
+### Bug Fixes
+
+- **feature:webview**: Back press navigates browser history instead of exiting app
+
+### Maintenance
+
+- **site**: Regenerate legal pages for v1.1.0
+- **release**: Merge changelog and site update into single publish job
+
 ## [1.1.0] - 2026-05-17
 
 ### Bug Fixes
