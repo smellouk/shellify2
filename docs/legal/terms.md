@@ -59,11 +59,11 @@ Shellify is not affiliated with, endorsed by, sponsored by, or officially connec
 
 ---
 
-## 6. Open Source & Trademarks
+## 6. Open Source & Branding
 
 The Shellify source code is made available under an open-source license. That license governs your use of the code.
 
-The "Shellify" name, logo, and associated branding are proprietary trademarks and are **not** licensed under the open-source license. You may not use them to promote derived products or suggest affiliation without prior written permission. See the NOTICE file in the source repository for full trademark terms.
+The "Shellify" name, logo, and project branding are identifiers of the official project and are not granted under the open-source license. You may not use the Shellify branding in a way that suggests endorsement, affiliation, or official status for derivative works without prior permission. See the NOTICE file in the source repository for full details.
 
 ---
 

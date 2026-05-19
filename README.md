@@ -429,7 +429,7 @@ Full details: [`docs/legal/privacy.md`](docs/legal/privacy.md)
 
 - **Terms of Service:** [`docs/legal/terms.md`](docs/legal/terms.md)
 - **Privacy Policy:** [`docs/legal/privacy.md`](docs/legal/privacy.md)
-- **Trademark:** The "Shellify" name, logo, and branding are proprietary trademarks and are **not** covered by the open-source license. See [`NOTICE`](NOTICE).
+- **Branding:** The "Shellify" name, logo, and project branding are identifiers of the official project and are not granted under the open-source license. See [`NOTICE`](NOTICE).
 
 ---
 
