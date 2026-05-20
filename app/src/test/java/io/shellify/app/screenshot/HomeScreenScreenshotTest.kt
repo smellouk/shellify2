@@ -1,8 +1,12 @@
 package io.shellify.app.screenshot
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import io.shellify.app.presentation.home.AppCardContextMenu
 import io.mockk.every
 import io.mockk.mockk
 import io.shellify.app.domain.model.Category
@@ -121,6 +125,24 @@ class HomeScreenScreenshotTest {
                     onOpenApp = {},
                     onOpenSettings = {},
                 )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun appContextMenu() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Surface(modifier = Modifier.fillMaxWidth()) {
+                    AppCardContextMenu(
+                        onAssignCategory = {},
+                        onShare = {},
+                        onClearData = {},
+                        onDelete = {},
+                        onSettings = {},
+                    )
+                }
             }
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)

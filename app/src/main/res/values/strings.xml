@@ -46,6 +46,7 @@
     <string name="home_menu_settings">Settings</string>
     <string name="home_menu_clear_data">Clear Data</string>
     <string name="home_menu_delete">Delete</string>
+    <string name="home_menu_more_cd">More options</string>
     <string name="home_gecko_required">GeckoView engine missing</string>
     <string name="home_clear_data_title">Clear App Data</string>
     <string name="home_clear_data_body">This will delete all cookies, local storage, and cached data for \"%s\". The app will stay in your list but you\'ll be logged out of all sessions.</string>

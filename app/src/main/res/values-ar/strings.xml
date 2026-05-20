@@ -47,6 +47,7 @@
     <string name="home_menu_settings">الإعدادات</string>
     <string name="home_menu_clear_data">مسح البيانات</string>
     <string name="home_menu_delete">حذف</string>
+    <string name="home_menu_more_cd">المزيد من الخيارات</string>
     <string name="home_gecko_required">محرك GeckoView مفقود</string>
     <string name="home_clear_data_title">مسح بيانات التطبيق</string>
     <string name="home_clear_data_body">سيؤدي هذا إلى حذف جميع ملفات تعريف الارتباط والتخزين المحلي والبيانات المؤقتة لـ \"%s\". سيبقى التطبيق في قائمتك لكنك ستتم تسجيل الخروج من جميع الجلسات.</string>

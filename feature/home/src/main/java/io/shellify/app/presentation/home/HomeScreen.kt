@@ -47,7 +47,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Fullscreen
@@ -406,6 +406,7 @@ fun HomeScreen(
                                 )
                             },
                             onClearData = { viewModel.clearData(app) },
+                            onDelete = { viewModel.delete(app) },
                         )
                     }
                 }
@@ -441,6 +442,7 @@ fun HomeScreen(
                                 )
                             },
                             onClearData = { viewModel.clearData(app) },
+                            onDelete = { viewModel.delete(app) },
                         )
                     }
                 }
@@ -752,11 +754,13 @@ private fun AppCard(
     onSettings: () -> Unit,
     onAssignCategory: (Long?) -> Unit,
     onClearData: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val engineMissing = app.engineType == EngineType.GECKOVIEW && !geckoInstalled
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showClearDataDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
 
     Card(
@@ -818,30 +822,17 @@ private fun AppCard(
                         modifier = Modifier.size(Dimens.sizeXl)
                     ) {
                         Icon(
-                            Icons.Default.MoreVert, contentDescription = "Menu",
+                            Icons.Default.MoreVert, contentDescription = stringResource(R.string.home_menu_more_cd),
                             modifier = Modifier.size(Dimens.sizeXs)
                         )
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_assign_category)) },
-                            leadingIcon = { Icon(Icons.Default.Category, null) },
-                            onClick = { showMenu = false; showCategoryPicker = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.share_button)) },
-                            leadingIcon = { Icon(Icons.Default.Share, null) },
-                            onClick = { showMenu = false; showShareSheet = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_clear_data)) },
-                            leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
-                            onClick = { showMenu = false; showClearDataDialog = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_settings)) },
-                            leadingIcon = { Icon(Icons.Default.Settings, null) },
-                            onClick = { showMenu = false; onSettings() },
+                        AppCardContextMenu(
+                            onAssignCategory = { showMenu = false; showCategoryPicker = true },
+                            onShare = { showMenu = false; showShareSheet = true },
+                            onClearData = { showMenu = false; showClearDataDialog = true },
+                            onDelete = { showMenu = false; showDeleteDialog = true },
+                            onSettings = { showMenu = false; onSettings() },
                         )
                     }
                 }
@@ -900,7 +891,19 @@ private fun AppCard(
             confirmLabel = stringResource(R.string.home_clear_data_button),
             onConfirm = { showClearDataDialog = false; onClearData() },
             onDismiss = { showClearDataDialog = false },
-            icon = Icons.Default.DeleteSweep,
+            icon = Icons.Default.Delete,
+            isDestructive = true,
+        )
+    }
+
+    if (showDeleteDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.settings_delete_confirm, app.name),
+            body = stringResource(R.string.settings_delete_confirm_body),
+            confirmLabel = stringResource(R.string.home_menu_delete),
+            onConfirm = { showDeleteDialog = false; onDelete() },
+            onDismiss = { showDeleteDialog = false },
+            icon = Icons.Default.DeleteForever,
             isDestructive = true,
         )
     }
@@ -1009,5 +1012,42 @@ private fun FeatureTags(app: WebApp) {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun AppCardContextMenu(
+    onAssignCategory: () -> Unit,
+    onShare: () -> Unit,
+    onClearData: () -> Unit,
+    onDelete: () -> Unit,
+    onSettings: () -> Unit,
+) {
+    Column {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.home_menu_assign_category)) },
+            leadingIcon = { Icon(Icons.Default.Category, null) },
+            onClick = onAssignCategory,
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.share_button)) },
+            leadingIcon = { Icon(Icons.Default.Share, null) },
+            onClick = onShare,
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.home_menu_clear_data)) },
+            leadingIcon = { Icon(Icons.Default.Delete, null) },
+            onClick = onClearData,
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.home_menu_delete)) },
+            leadingIcon = { Icon(Icons.Default.DeleteForever, null) },
+            onClick = onDelete,
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.home_menu_settings)) },
+            leadingIcon = { Icon(Icons.Default.Settings, null) },
+            onClick = onSettings,
+        )
     }
 }
