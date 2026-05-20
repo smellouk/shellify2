@@ -47,6 +47,7 @@
     <string name="home_menu_settings">Paramètres</string>
     <string name="home_menu_clear_data">Effacer les données</string>
     <string name="home_menu_delete">Supprimer</string>
+    <string name="home_menu_more_cd">Plus d\'options</string>
     <string name="home_gecko_required">Moteur GeckoView manquant</string>
     <string name="home_clear_data_title">Effacer les données de l\'application</string>
     <string name="home_clear_data_body">Ceci supprimera tous les cookies, le stockage local et les données mises en cache pour \"%s\". L\'application restera dans votre liste mais vous serez déconnecté de toutes les sessions.</string>

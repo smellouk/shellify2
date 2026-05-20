@@ -139,6 +139,13 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `delete calls deleteWebApp with correct app`() = runTest {
+        viewModel.delete(app1)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { deleteWebApp(app1) }
+    }
+
+    @Test
     fun `quickAdd saves a new web app`() = runTest {
         val manifest = mockk<PwaManifest>(relaxed = true)
         every { manifest.name } returns "Gmail"

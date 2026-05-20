@@ -172,6 +172,7 @@ val timeout = 5000
 
 - **Unit tests:** JUnit 4 + MockK — required for all use cases, mappers, and utilities
 - **Instrumented tests:** ALL live in `app/src/androidTest/` — never in feature modules
+- **No hardcoded strings in instrumented tests** — always resolve via `context.getString(R.string.*)`; if no resource exists yet, add it (and its translations) before writing the test
 - **Compose UI tests:** Required for new screens (at least one Roborazzi screenshot test)
 - **Architecture tests:** Konsist — runs automatically with `testDebugUnitTest`; do not suppress failures
 - **DB tests:** Room in-memory database via `MigrationTestHelper`

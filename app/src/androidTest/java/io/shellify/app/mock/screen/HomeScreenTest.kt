@@ -4,6 +4,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import io.mockk.verify
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.domain.model.Category
@@ -196,5 +198,60 @@ class HomeScreenTest {
         composeTestRule
             .onNodeWithText(context.getString(CoreUiR.string.home_empty_filtered_category, "Media"), substring = true)
             .assertIsDisplayed()
+    }
+
+    // ─── Context menu ─────────────────────────────────────────────────────────
+
+    @Test
+    fun contextMenu_showsAllItems() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        setHomeScreen(HomeUiState(apps = listOf(app), hasAnyApps = true, isLoading = false))
+
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.home_menu_more_cd)).performClick()
+
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_assign_category)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.share_button)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_clear_data)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_delete)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_settings)).assertIsDisplayed()
+    }
+
+    @Test
+    fun contextMenu_deleteItem_showsConfirmationDialog() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        setHomeScreen(HomeUiState(apps = listOf(app), hasAnyApps = true, isLoading = false))
+
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.home_menu_more_cd)).performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_delete)).performClick()
+
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.settings_delete_confirm, "GitHub"))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun contextMenu_deleteConfirmed_callsViewModelDelete() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        val vm = buildViewModel(HomeUiState(apps = listOf(app), hasAnyApps = true, isLoading = false))
+        composeTestRule.setContent {
+            ShellifyTheme {
+                HomeScreen(
+                    viewModel = vm,
+                    geckoInstalled = true,
+                    currentLanguage = "en",
+                    onLanguageChange = {},
+                    onAddApp = {},
+                    onEditApp = {},
+                    onOpenApp = {},
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.home_menu_more_cd)).performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_delete)).performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_menu_delete)).performClick()
+
+        verify(exactly = 1) { vm.delete(app) }
     }
 }
