@@ -9,6 +9,7 @@ import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.core.theme.ThemeMode
+import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Job
@@ -137,7 +138,7 @@ class OnboardingViewModel(
                                         ?: manifest.shortName?.takeIf { it.isNotBlank() }
                                         ?: name,
                                     url = fullUrl,
-                                    iconSource = io.shellify.app.domain.model.IconSource.fromLegacyPath(
+                                    iconSource = IconSource.fromLegacyPath(
                                         fetchedIconPath
                                     ),
                                     themeColor = manifest.themeColor,

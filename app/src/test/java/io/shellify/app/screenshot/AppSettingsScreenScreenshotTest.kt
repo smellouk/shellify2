@@ -85,4 +85,40 @@ class AppSettingsScreenScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
+    @Test
+    fun controlCenterToggle_enabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("Linear", "https://linear.app").copy(showControlCenter = true),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun controlCenterToggle_disabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("Linear", "https://linear.app").copy(showControlCenter = false),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
 }

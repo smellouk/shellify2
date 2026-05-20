@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -367,6 +368,13 @@ fun AppSettingsScreen(
             // ── Features ─────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_features))
             SurfaceCard {
+                ToggleListItem(
+                    label = stringResource(R.string.settings_control_center),
+                    checked = app.showControlCenter,
+                    onToggle = viewModel::toggleControlCenter,
+                    icon = { Icon(Icons.Default.Tune, null) },
+                )
+                CardDivider()
                 ToggleListItem(
                     label = stringResource(R.string.settings_fullscreen),
                     checked = app.isFullscreen,

@@ -36,6 +36,7 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     lockType = runCatching { LockType.valueOf(lockType) }.getOrDefault(LockType.NONE),
     wipeOnFailedAttempts = wipeOnFailedAttempts,
     hasLauncherShortcut = hasLauncherShortcut,
+    showControlCenter = showControlCenter,
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -66,4 +67,5 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     lockType = lockType.name,
     wipeOnFailedAttempts = wipeOnFailedAttempts,
     hasLauncherShortcut = hasLauncherShortcut,
+    showControlCenter = showControlCenter,
 )

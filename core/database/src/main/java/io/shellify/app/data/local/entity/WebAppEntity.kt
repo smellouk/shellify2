@@ -56,4 +56,5 @@ data class WebAppEntity(
     val engineType: String = "SYSTEM_WEBVIEW",
     val wipeOnFailedAttempts: Boolean = false,
     @ColumnInfo(name = "has_launcher_shortcut") val hasLauncherShortcut: Boolean = false,
+    @ColumnInfo(name = "show_control_center") val showControlCenter: Boolean = true,
 )

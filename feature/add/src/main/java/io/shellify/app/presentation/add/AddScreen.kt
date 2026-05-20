@@ -113,6 +113,7 @@ import io.shellify.app.core.iconpack.SimpleIconEntry
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.core.shortcut.PwaShortcutManager
+import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.PwaManifest
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
@@ -609,15 +610,15 @@ fun AddScreen(
 
             FeatureCard(
                 Icons.Default.Lock, stringResource(R.string.add_feature_applock),
-                enabled = state.lockType != io.shellify.app.domain.model.LockType.NONE,
+                enabled = state.lockType != LockType.NONE,
                 onToggle = { on ->
-                    viewModel.setLockType(if (on) io.shellify.app.domain.model.LockType.PASSWORD else io.shellify.app.domain.model.LockType.NONE)
+                    viewModel.setLockType(if (on) LockType.PASSWORD else LockType.NONE)
                 },
                 canEnable = state.hasPassword,
             ) {
                 listOf(
-                    io.shellify.app.domain.model.LockType.PASSWORD to lockPasswordLabel,
-                    io.shellify.app.domain.model.LockType.SYSTEM to lockSystemLabel,
+                    LockType.PASSWORD to lockPasswordLabel,
+                    LockType.SYSTEM to lockSystemLabel,
                 ).forEach { (type, label) ->
                     Row(
                         modifier = Modifier
