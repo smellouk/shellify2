@@ -19,6 +19,7 @@ import io.shellify.app.core.shortcut.SvgIconRenderer
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
@@ -124,7 +125,8 @@ class AppSettingsViewModel(
     fun toggleFullscreen() = update { it.copy(isFullscreen = !it.isFullscreen) }
     fun toggleAdBlock() = update { it.copy(adBlockEnabled = !it.adBlockEnabled) }
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
-    fun setTranslateTarget(lang: io.shellify.app.domain.model.TranslateLanguage) =
+    fun toggleControlCenter() = update { it.copy(showControlCenter = !it.showControlCenter) }
+    fun setTranslateTarget(lang: TranslateLanguage) =
         update { it.copy(translateTarget = lang) }
 
     fun setLockType(v: LockType) = update { it.copy(lockType = v) }

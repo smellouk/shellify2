@@ -184,4 +184,21 @@ class WebAppMapperTest {
         val app = baseApp().copy(iconSource = source)
         assertEquals(source, app.toEntity().iconSource)
     }
+
+    @Test
+    fun `toDomain maps showControlCenter true by default`() {
+        assertEquals(true, baseEntity().toDomain().showControlCenter)
+    }
+
+    @Test
+    fun `toDomain maps showControlCenter false`() {
+        val entity = baseEntity().copy(showControlCenter = false)
+        assertEquals(false, entity.toDomain().showControlCenter)
+    }
+
+    @Test
+    fun `toEntity preserves showControlCenter false`() {
+        val app = baseApp().copy(showControlCenter = false)
+        assertEquals(false, app.toEntity().showControlCenter)
+    }
 }

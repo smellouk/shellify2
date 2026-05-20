@@ -148,6 +148,7 @@ App module only: `shellify.android.application`
 - **Indentation:** 4 spaces, no tabs
 - **No semicolons**
 - **No wildcard imports** (except `androidx.compose.material3.*`, `androidx.compose.material.icons.*`, `java.util.*`)
+- **No fully-qualified class names in code** — always use a top-level import; `io.shellify.app.domain.model.Foo` as a type reference inside a function body or signature is forbidden
 - **No `System.out.*` or `.printStackTrace()`** — use Logcat
 - **No `java.lang.Math`** — use `kotlin.math`
 - **No `java.util.stream.*`** — use Kotlin collections

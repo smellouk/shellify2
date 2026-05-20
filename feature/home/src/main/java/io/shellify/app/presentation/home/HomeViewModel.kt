@@ -9,6 +9,7 @@ import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.shortcut.PwaShortcutManager
 import io.shellify.app.domain.model.Category
 import io.shellify.app.domain.model.WebApp
+import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
@@ -94,7 +95,7 @@ class HomeViewModel(
                         ?: manifest?.shortName?.takeIf { it.isNotBlank() }
                         ?: name,
                     url = fullUrl,
-                    iconSource = io.shellify.app.domain.model.IconSource.fromLegacyPath(
+                    iconSource = IconSource.fromLegacyPath(
                         fetchedIconPath
                     ),
                     themeColor = manifest?.themeColor,

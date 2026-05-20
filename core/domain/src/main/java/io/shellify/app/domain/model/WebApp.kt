@@ -36,6 +36,8 @@ data class WebApp(
     val wipeOnFailedAttempts: Boolean = false,
     // Launcher shortcut
     val hasLauncherShortcut: Boolean = false,
+    // Control center
+    val showControlCenter: Boolean = true,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
     val iconPath: String?

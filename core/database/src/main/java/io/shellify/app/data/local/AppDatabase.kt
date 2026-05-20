@@ -11,11 +11,12 @@ import io.shellify.app.data.local.dao.CategoryDao
 import io.shellify.app.data.local.dao.WebAppDao
 import io.shellify.app.data.local.entity.CategoryEntity
 import io.shellify.app.data.local.entity.WebAppEntity
+import io.shellify.app.data.local.migration.MIGRATION_1_2
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(IconSourceConverter::class)
@@ -45,6 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "shellify.db",
             )
                 .openHelperFactory(factory)
+                .addMigrations(MIGRATION_1_2)
                 .build()
                 .also { passphrase.fill(0) }
         }

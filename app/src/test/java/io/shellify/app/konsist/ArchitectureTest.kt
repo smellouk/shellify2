@@ -284,4 +284,21 @@ class ArchitectureTest {
                 file.packagee == null
             }
     }
+
+    @Test
+    fun `no production file uses fully-qualified domain model references in code`() {
+        projectFiles
+            .assertFalse(
+                additionalMessage = "Add an import instead of using io.shellify.app.domain.model.* inline"
+            ) { file ->
+                file.text.lines().any { line ->
+                    val trimmed = line.trim()
+                    !trimmed.startsWith("import ") &&
+                        !trimmed.startsWith("package ") &&
+                        !trimmed.startsWith("//") &&
+                        !trimmed.startsWith("*") &&
+                        trimmed.contains("io.shellify.app.domain.model.")
+                }
+            }
+    }
 }

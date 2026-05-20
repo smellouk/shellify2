@@ -114,6 +114,10 @@ class WebViewActivity : FragmentActivity() {
         @VisibleForTesting
         var pageFinishedCallback: (() -> Unit)? = null
 
+        /** Overrides the [WebApp] used in [onCreate]. Set in tests to inject a custom app. */
+        @VisibleForTesting
+        var webAppOverride: WebApp? = null
+
         fun launchIntent(context: android.content.Context, appId: Long): Intent =
             Intent(context, WebViewActivity::class.java)
                 .putExtra(EXTRA_APP_ID, appId)
@@ -151,7 +155,7 @@ class WebViewActivity : FragmentActivity() {
         val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
         val previewUrl = intent.getStringExtra(EXTRA_PREVIEW_URL)
 
-        val pwaApp: WebApp = when {
+        val pwaApp: WebApp = webAppOverride ?: when {
             previewUrl != null -> WebApp(
                 name = intent.getStringExtra(EXTRA_PREVIEW_NAME) ?: previewUrl,
                 url = previewUrl,
@@ -412,6 +416,7 @@ class WebViewActivity : FragmentActivity() {
                 val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
                 val pwaAppState by currentAppFlow.collectAsState()
                 val pwaApp = pwaAppState ?: return@setContent
+                if (!pwaApp.showControlCenter) return@setContent
                 val passwordHash by app.passwordManager.passwordHash.collectAsState(initial = null)
                 val hasGlobalPassword = passwordHash != null
 
