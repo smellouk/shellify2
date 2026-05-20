@@ -6,6 +6,7 @@
             android:exported="false"
             android:hardwareAccelerated="true"
             android:documentLaunchMode="intoExisting"
+            android:label="@string/webview_task_label"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Shellify.WebView" />
