@@ -691,7 +691,17 @@ class WebViewActivity : FragmentActivity() {
     private fun applyTaskDescription(app: WebApp) {
         val icon: Bitmap? =
             app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
-        setTaskDescription(ActivityManager.TaskDescription(app.name, icon))
+        val rawColor = app.themeColor
+            ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+            ?: Color.WHITE
+        // colorPrimary must be fully opaque — Android silently ignores the label when it is 0.
+        val opaqueColor = Color.argb(255, Color.red(rawColor), Color.green(rawColor), Color.blue(rawColor))
+        setTaskDescription(ActivityManager.TaskDescription(app.name, icon, opaqueColor))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        currentAppFlow.value?.let { applyTaskDescription(it) }
     }
 
     override fun onDestroy() {
