@@ -23,50 +23,42 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
-import io.shellify.app.presentation.theme.Dimens
-import kotlinx.coroutines.flow.MutableStateFlow
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
-import io.shellify.app.presentation.webview.WebViewServiceProvider
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import io.shellify.app.core.engine.BrowserEngine
 import io.shellify.app.core.engine.BrowserEngineCallback
-import io.shellify.app.domain.model.EngineType
 import io.shellify.app.core.engine.GeckoViewEngine
 import io.shellify.app.core.engine.SystemWebViewEngine
 import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.security.isLegacyHash
 import io.shellify.app.core.security.showSystemLockPrompt
 import io.shellify.app.core.security.verifyPassword
-import kotlinx.coroutines.flow.first
 import io.shellify.app.core.theme.ThemeMode
 import io.shellify.app.core.translate.TranslateBridge
-import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.WebApp
-import io.shellify.core.ui.R
+import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.theme.ShellifyTheme
-import kotlinx.coroutines.CoroutineScope
+import io.shellify.core.ui.R
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -105,15 +97,11 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var container: FrameLayout
     private lateinit var isolationManager: IsolationManager
+    private lateinit var viewModel: WebViewViewModel
     private var statusBarScrim: View? = null
 
     @VisibleForTesting
     var splashOverlay: View? = null
-    private val currentAppFlow = MutableStateFlow<WebApp?>(null)
-    private val errorFlow = MutableStateFlow<WebLoadError?>(null)
-    private val isRetryingFlow = MutableStateFlow(false)
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val visitedUrls = mutableSetOf<String>()
 
     @VisibleForTesting
     fun navigateTo(url: String) = engine.loadUrl(url)
@@ -136,23 +124,19 @@ class WebViewActivity : FragmentActivity() {
                 ?: run { finish(); return }
             else -> { finish(); return }
         }
-        currentAppFlow.value = pwaApp
 
-        // Collect screenshot-protection flag reactively. DataStore emits the current value
-        // immediately on first collection, so FLAG_SECURE is applied before any frame is drawn.
-        // runBlocking on the main thread was removed — it deadlocked in test environments where
-        // the DataStore flow never emitted while the main thread was blocked.
-        scope.launch {
+        lifecycleScope.launch {
             app.passwordManager.screenshotProtection.collect { on ->
                 if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
         }
 
+        viewModel = ViewModelProvider(this, WebViewViewModel.Factory(pwaApp, app))[WebViewViewModel::class.java]
+
         engine = engineFactory?.invoke() ?: when {
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
                 GeckoViewEngine(this, app.geckoEngineManager)
-
             else -> SystemWebViewEngine(app.adBlocker)
         }
 
@@ -168,8 +152,7 @@ class WebViewActivity : FragmentActivity() {
                 ?: Color.BLACK
         )
 
-        val engineView =
-            engine.createView(this, pwaApp, buildCallback({ currentAppFlow.value }, container))
+        val engineView = engine.createView(this, pwaApp, buildCallback())
 
         if (engine is SystemWebViewEngine) {
             val wv = (engine as SystemWebViewEngine).getWebView()
@@ -182,9 +165,6 @@ class WebViewActivity : FragmentActivity() {
             FrameLayout.LayoutParams.MATCH_PARENT,
         )
 
-        // Apply status-bar and nav-bar insets to the container so WebView content never renders
-        // behind system bars. Works on all API levels including Android 15 where
-        // setDecorFitsSystemWindows(true) is ignored. Insets are 0 when bars are hidden.
         ViewCompat.setOnApplyWindowInsetsListener(container) { view, insets ->
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
@@ -216,43 +196,66 @@ class WebViewActivity : FragmentActivity() {
         applyStatusBarColor(pwaApp.themeColor)
         applyTaskDescription(pwaApp)
 
-        authenticate(app, pwaApp)
+        observeState(app, pwaApp)
+        collectCommands()
     }
 
-    private fun authenticate(app: WebViewServiceProvider, pwaApp: WebApp) {
-        when (pwaApp.lockType) {
-            LockType.NONE -> startLoading(pwaApp)
-            LockType.PASSWORD -> {
-                val hash = runBlocking { app.passwordManager.passwordHash.first() }
-                if (hash != null) showPasswordDialog(app, pwaApp) else startLoading(pwaApp)
+    private fun observeState(app: WebViewServiceProvider, pwaApp: WebApp) {
+        lifecycleScope.launch {
+            var previousAuthState: AuthState? = null
+            viewModel.uiState.collect { state ->
+                val authState = state.authState
+                if (authState != previousAuthState) {
+                    previousAuthState = authState
+                    handleAuthState(app, pwaApp, authState)
+                }
             }
+        }
+        addErrorOverlay(app)
+        addControlsOverlay(app)
+    }
 
-            LockType.SYSTEM -> showSystemLockWithWipe(app, pwaApp)
+    private fun handleAuthState(app: WebViewServiceProvider, pwaApp: WebApp, authState: AuthState) {
+        when (authState) {
+            AuthState.Loading -> Unit
+            AuthState.Authenticated -> startLoading(pwaApp)
+            is AuthState.PasswordRequired -> showPasswordDialog(app, pwaApp, authState)
+            AuthState.SystemLockRequired -> showSystemLockWithWipe(app, pwaApp)
         }
     }
 
-    private fun showPasswordDialog(app: WebViewServiceProvider, pwaApp: WebApp) {
+    private fun collectCommands() {
+        lifecycleScope.launch {
+            viewModel.commands.collect { command ->
+                when (command) {
+                    is WebViewCommand.LoadUrl -> engine.loadUrl(command.url)
+                    WebViewCommand.Reload -> engine.reload()
+                    WebViewCommand.Finish -> finish()
+                }
+            }
+        }
+    }
+
+    private fun showPasswordDialog(app: WebViewServiceProvider, pwaApp: WebApp, initial: AuthState.PasswordRequired) {
         val pwaAccentColor = pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
-        // Load persisted count so the wipe limit survives process death between attempts.
-        val persistedAttempts = runBlocking { app.passwordManager.getFailedAttempts(pwaApp.id) }
         val overlay = ComposeView(this).apply {
             setContent {
                 val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
                 val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
-                val hash by app.passwordManager.passwordHash.collectAsState(initial = null)
-                val wipe by app.passwordManager.wipeOnFailedAttempts.collectAsState(initial = false)
-                var failedAttempts by remember { mutableStateOf(persistedAttempts) }
-                val maxAttempts = 3
-                val remaining = maxAttempts - failedAttempts
+                val authState by viewModel.uiState.collectAsState()
+                val state = authState.authState
+                if (state !is AuthState.PasswordRequired) return@setContent
 
+                val maxAttempts = 3
+                val remaining = maxAttempts - state.failedAttempts
                 val err2 = stringResource(R.string.webview_password_error_2_attempts)
                 val err1 = stringResource(R.string.webview_password_error_1_attempt)
                 val errBasic = stringResource(R.string.webview_password_error)
                 val errorMessage = when {
-                    failedAttempts == 0 -> null
-                    wipe && remaining == 2 -> err2
-                    wipe && remaining == 1 -> err1
-                    !wipe -> errBasic
+                    state.failedAttempts == 0 -> null
+                    state.wipeEnabled && remaining == 2 -> err2
+                    state.wipeEnabled && remaining == 1 -> err1
+                    !state.wipeEnabled -> errBasic
                     else -> null
                 }
 
@@ -266,22 +269,19 @@ class WebViewActivity : FragmentActivity() {
                         appName = pwaApp.name,
                         errorMessage = errorMessage,
                         onConfirm = { input ->
-                            val h = hash
-                            if (h != null && verifyPassword(input, h)) {
-                                scope.launch(Dispatchers.IO) {
-                                    app.passwordManager.clearFailedAttempts(pwaApp.id)
-                                    // Transparently upgrade a legacy SHA-256 hash to PBKDF2.
-                                    if (isLegacyHash(h)) app.passwordManager.setPassword(input)
+                            if (verifyPassword(input, state.hash)) {
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    if (isLegacyHash(state.hash)) app.passwordManager.setPassword(input)
                                 }
                                 container.removeView(this@apply)
-                                startLoading(pwaApp)
+                                viewModel.onPasswordVerified()
                             } else {
-                                failedAttempts++
-                                scope.launch(Dispatchers.IO) {
-                                    app.passwordManager.recordFailedAttempt(pwaApp.id)
-                                }
-                                if (wipe && failedAttempts >= maxAttempts) {
-                                    wipeAndUnlock(app, pwaApp)
+                                viewModel.recordFailedAttempt()
+                                val newState = viewModel.uiState.value.authState
+                                if (newState is AuthState.PasswordRequired &&
+                                    newState.wipeEnabled && newState.failedAttempts >= maxAttempts
+                                ) {
+                                    viewModel.onWipeAndUnlock()
                                 }
                             }
                         },
@@ -299,23 +299,24 @@ class WebViewActivity : FragmentActivity() {
 
     private fun showSystemLockWithWipe(app: WebViewServiceProvider, pwaApp: WebApp) {
         val maxAttempts = 3
-        // Load persisted count so the wipe limit survives process death between attempts.
-        var failedAttempts = runBlocking { app.passwordManager.getFailedAttempts(pwaApp.id) }
 
         fun prompt() {
             showSystemLockPrompt(
                 activity = this,
                 title = getString(R.string.webview_lock_prompt_title, pwaApp.name),
                 onSuccess = {
-                    scope.launch(Dispatchers.IO) { app.passwordManager.clearFailedAttempts(pwaApp.id) }
-                    startLoading(pwaApp)
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        app.passwordManager.clearFailedAttempts(pwaApp.id)
+                    }
+                    viewModel.onPasswordVerified()
                 },
                 onFailed = {
-                    failedAttempts++
-                    scope.launch(Dispatchers.IO) { app.passwordManager.recordFailedAttempt(pwaApp.id) }
-                    val wipe = runBlocking { app.passwordManager.wipeOnFailedAttempts.first() }
-                    if (wipe && failedAttempts >= maxAttempts) {
-                        wipeAndUnlock(app, pwaApp)
+                    viewModel.recordFailedAttempt()
+                    val state = viewModel.uiState.value.authState
+                    if (state is AuthState.PasswordRequired &&
+                        state.wipeEnabled && state.failedAttempts >= maxAttempts
+                    ) {
+                        viewModel.onWipeAndUnlock()
                     } else {
                         prompt()
                     }
@@ -325,45 +326,29 @@ class WebViewActivity : FragmentActivity() {
         prompt()
     }
 
-    private fun wipeAndUnlock(app: WebViewServiceProvider, pwaApp: WebApp) {
-        scope.launch(Dispatchers.IO) {
-            app.isolationManager.clearData(pwaApp.isolationId)
-            app.saveWebApp(pwaApp.copy(lockType = LockType.NONE))
-            finish()
-        }
-    }
-
     private fun startLoading(pwaApp: WebApp) {
-        scope.launch {
+        lifecycleScope.launch {
             showSplash(pwaApp)
             if (engine is SystemWebViewEngine) {
                 isolationManager.restoreSession(pwaApp.isolationId)
             }
             engine.loadUrl(pwaApp.url)
-            addErrorOverlay()
-            addControlsOverlay()
         }
     }
 
-    private fun addErrorOverlay() {
-        val app = application as WebViewServiceProvider
+    private fun addErrorOverlay(app: WebViewServiceProvider) {
         val overlay = ComposeView(this).apply {
             setContent {
                 val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
                 val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
-                val currentApp by currentAppFlow.collectAsState()
-                val accentColor = currentApp?.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
-                val error by errorFlow.collectAsState()
-                val isRetrying by isRetryingFlow.collectAsState()
-                if (error == null) return@setContent
+                val state by viewModel.uiState.collectAsState()
+                val accentColor = state.app?.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                val error = state.error ?: return@setContent
                 ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, accentColor = accentColor, controlStatusBar = false) {
                     WebViewErrorScreen(
-                        error = error!!,
-                        isRetrying = isRetrying,
-                        onRetry = {
-                            isRetryingFlow.value = true
-                            engine.reload()
-                        },
+                        error = error,
+                        isRetrying = state.isRetrying,
+                        onRetry = { viewModel.onRetry() },
                     )
                 }
             }
@@ -374,14 +359,13 @@ class WebViewActivity : FragmentActivity() {
         ))
     }
 
-    private fun addControlsOverlay() {
-        val app = application as WebViewServiceProvider
+    private fun addControlsOverlay(app: WebViewServiceProvider) {
         val overlay = ComposeView(this).apply {
             setContent {
                 val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
                 val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
-                val pwaAppState by currentAppFlow.collectAsState()
-                val pwaApp = pwaAppState ?: return@setContent
+                val state by viewModel.uiState.collectAsState()
+                val pwaApp = state.app ?: return@setContent
                 if (!pwaApp.showControlCenter) return@setContent
                 val passwordHash by app.passwordManager.passwordHash.collectAsState(initial = null)
 
@@ -394,44 +378,14 @@ class WebViewActivity : FragmentActivity() {
                     WebViewControlCenter(
                         pwaApp = pwaApp,
                         hasGlobalPassword = passwordHash != null,
-                        onAdBlockChanged = { on ->
-                            val updated = pwaApp.copy(adBlockEnabled = on)
-                            currentAppFlow.value = updated
-                            scope.launch(Dispatchers.IO) { app.saveWebApp(updated) }
-                            engine.getCurrentUrl()?.let { engine.loadUrl(it) }
-                        },
-                        onTranslateChanged = { on ->
-                            val updated = pwaApp.copy(translateEnabled = on)
-                            currentAppFlow.value = updated
-                            scope.launch(Dispatchers.IO) { app.saveWebApp(updated) }
-                            if (on) {
-                                engine.evaluateJavascript("window.__shellifyTranslateLoaded = false;", null)
-                                val script = TranslateBridge.buildScript(
-                                    targetLang = updated.translateTarget.code,
-                                    autoTranslate = true,
-                                )
-                                engine.evaluateJavascript(script, null)
-                            } else {
-                                engine.getCurrentUrl()?.let { engine.loadUrl(it) }
-                            }
-                        },
+                        onAdBlockChanged = { viewModel.onAdBlockChanged(it) },
+                        onTranslateChanged = { viewModel.onTranslateChanged(it) },
                         onFullscreenChanged = { on ->
-                            val updated = pwaApp.copy(isFullscreen = on)
-                            currentAppFlow.value = updated
-                            scope.launch(Dispatchers.IO) { app.saveWebApp(updated) }
-                            applyWindowMode(updated)
+                            viewModel.onFullscreenChanged(on)
+                            applyWindowMode(viewModel.uiState.value.app ?: pwaApp)
                         },
-                        onLockChanged = { on ->
-                            val updated = pwaApp.copy(lockType = if (on) LockType.PASSWORD else LockType.NONE)
-                            currentAppFlow.value = updated
-                            scope.launch(Dispatchers.IO) { app.saveWebApp(updated) }
-                        },
-                        onClearData = {
-                            scope.launch {
-                                app.isolationManager.clearData(pwaApp.isolationId)
-                                engine.loadUrl(pwaApp.url)
-                            }
-                        },
+                        onLockChanged = { viewModel.onLockChanged(it) },
+                        onClearData = { viewModel.onClearData() },
                     )
                 }
             }
@@ -443,29 +397,17 @@ class WebViewActivity : FragmentActivity() {
         )
     }
 
-    private fun buildCallback(
-        currentApp: () -> WebApp?,
-        container: FrameLayout
-    ): BrowserEngineCallback =
+    private fun buildCallback(): BrowserEngineCallback =
         object : BrowserEngineCallback {
-            private var loadFailed = false
-
             override fun onPageStarted(url: String?) {
-                if (url?.startsWith("about:") == true) return
-                loadFailed = false
-                url?.let { visitedUrls += it }
+                viewModel.onPageStarted(url)
             }
 
             override fun onPageFinished(url: String?) {
-                isRetryingFlow.value = false
-                if (!loadFailed) {
-                    errorFlow.value = null
-                    engine.getView()?.visibility = View.VISIBLE
-                }
-                url?.let { visitedUrls += it }
-                pageFinishedCallback?.invoke()
+                viewModel.onPageFinished(url)
+                engine.getView()?.visibility = if (viewModel.uiState.value.error == null) View.VISIBLE else View.INVISIBLE
                 hideSplash()
-                val app = currentApp() ?: return
+                val app = viewModel.uiState.value.app ?: return
                 if (app.translateEnabled) {
                     engine.evaluateJavascript("window.__shellifyTranslateLoaded = false;", null)
                     val script = TranslateBridge.buildScript(
@@ -483,17 +425,17 @@ class WebViewActivity : FragmentActivity() {
 
             override fun onTitleChanged(title: String?) {}
             override fun onIconReceived(icon: Bitmap?) {}
+
             override fun onError(errorCode: Int, description: String) {
-                loadFailed = true
+                viewModel.onError(errorCode, description)
                 engine.getView()?.visibility = View.INVISIBLE
                 hideSplash()
-                errorFlow.value = WebLoadError.from(errorCode, description)
             }
+
             override fun onSslError(error: String) {
-                loadFailed = true
+                viewModel.onSslError(error)
                 engine.getView()?.visibility = View.INVISIBLE
                 hideSplash()
-                errorFlow.value = WebLoadError.SslError
             }
 
             override fun onExternalLink(url: String) {
@@ -507,14 +449,15 @@ class WebViewActivity : FragmentActivity() {
                 customView = view
                 engine.getView()?.visibility = View.GONE
                 container.addView(view)
-                applyWindowMode((currentApp() ?: return).copy(isFullscreen = true))
+                val app = viewModel.uiState.value.app ?: return
+                applyWindowMode(app.copy(isFullscreen = true))
             }
 
             override fun onHideCustomView() {
                 (customView?.parent as? FrameLayout)?.removeView(customView)
                 customView = null
                 engine.getView()?.visibility = View.VISIBLE
-                currentApp()?.let { applyWindowMode(it) }
+                viewModel.uiState.value.app?.let { applyWindowMode(it) }
             }
 
             override fun onDownloadStart(
@@ -530,6 +473,7 @@ class WebViewActivity : FragmentActivity() {
             ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
             ?: Color.BLACK
         val bgColor = androidx.compose.ui.graphics.Color(rawColor)
+        @Suppress("MagicNumber")
         val isLight = (0.299 * Color.red(rawColor) + 0.587 * Color.green(rawColor) + 0.114 * Color.blue(rawColor)) / 255 > 0.5
         val contentColor = if (isLight) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White
 
@@ -587,7 +531,6 @@ class WebViewActivity : FragmentActivity() {
     private fun applyWindowMode(app: WebApp) {
         val fullscreen = app.isFullscreen
         val controller = WindowInsetsControllerCompat(window, window.decorView)
-        // Always edge-to-edge; the container insets listener handles padding.
         WindowCompat.setDecorFitsSystemWindows(window, false)
         if (fullscreen) {
             val showStatus = app.fullscreenShowStatusBar
@@ -598,17 +541,13 @@ class WebViewActivity : FragmentActivity() {
             when {
                 showStatus && showNav -> controller.show(WindowInsetsCompat.Type.systemBars())
                 showStatus -> {
-                    controller.hide(WindowInsetsCompat.Type.navigationBars()); controller.show(
-                        WindowInsetsCompat.Type.statusBars()
-                    )
+                    controller.hide(WindowInsetsCompat.Type.navigationBars())
+                    controller.show(WindowInsetsCompat.Type.statusBars())
                 }
-
                 showNav -> {
-                    controller.hide(WindowInsetsCompat.Type.statusBars()); controller.show(
-                        WindowInsetsCompat.Type.navigationBars()
-                    )
+                    controller.hide(WindowInsetsCompat.Type.statusBars())
+                    controller.show(WindowInsetsCompat.Type.navigationBars())
                 }
-
                 else -> controller.hide(WindowInsetsCompat.Type.systemBars())
             }
         } else {
@@ -620,13 +559,12 @@ class WebViewActivity : FragmentActivity() {
     @Suppress("DEPRECATION")
     private fun applyStatusBarColor(themeColor: String?) {
         val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: return
+        @Suppress("MagicNumber")
         val isLight =
             (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isStatusBarContrastEnforced =
-            false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isStatusBarContrastEnforced = false
         window.statusBarColor = color
-        // Remove any scrim left over from a previous approach.
         statusBarScrim?.let { container.removeView(it) }
         statusBarScrim = null
     }
@@ -638,25 +576,18 @@ class WebViewActivity : FragmentActivity() {
         val rawColor = app.themeColor
             ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
             ?: Color.WHITE
-        // colorPrimary must be fully opaque — Android silently ignores the label when it is 0.
         val opaqueColor = Color.argb(255, Color.red(rawColor), Color.green(rawColor), Color.blue(rawColor))
         setTaskDescription(ActivityManager.TaskDescription(app.name, icon, opaqueColor))
     }
 
     override fun onResume() {
         super.onResume()
-        currentAppFlow.value?.let { applyTaskDescription(it) }
+        viewModel.uiState.value.app?.let { applyTaskDescription(it) }
     }
 
     override fun onDestroy() {
-        currentAppFlow.value?.let { app ->
-            engine.getCurrentUrl()?.let { visitedUrls += it }
-            if (engine is SystemWebViewEngine) {
-                isolationManager.onSessionEnd(app.isolationId, visitedUrls)
-            }
-        }
+        viewModel.onSessionEnd()
         engine.destroy()
-        scope.cancel()
         super.onDestroy()
     }
 }
