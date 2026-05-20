@@ -13,8 +13,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.presentation.onboarding.ConsentScreen
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.core.ui.R as CoreUiR
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -25,6 +27,8 @@ class SmokeConsentScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun launch(onAccepted: () -> Unit = {}) {
         composeTestRule.setContent {
@@ -39,7 +43,7 @@ class SmokeConsentScreenTest {
     @Test
     fun consentScreen_renders_withoutCrash() {
         launch()
-        composeTestRule.onNodeWithText("Before you start").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_title)).assertIsDisplayed()
     }
 
     @Test
@@ -83,12 +87,12 @@ class SmokeConsentScreenTest {
     fun consentScreen_allSections_arePresent() {
         launch()
         listOf(
-            "What Shellify does",
-            "What Shellify does not do",
-            "Acceptable use",
-            "Your responsibility",
-            "Limitation of liability",
-            "Privacy",
+            context.getString(CoreUiR.string.consent_section_what_title),
+            context.getString(CoreUiR.string.consent_section_not_title),
+            context.getString(CoreUiR.string.consent_section_acceptable_title),
+            context.getString(CoreUiR.string.consent_section_responsibility_title),
+            context.getString(CoreUiR.string.consent_section_legal_title),
+            context.getString(CoreUiR.string.consent_section_privacy_title),
         ).forEach { section ->
             composeTestRule.onNodeWithText(section).performScrollTo().assertIsDisplayed()
         }
@@ -98,7 +102,7 @@ class SmokeConsentScreenTest {
     fun consentScreen_brandIconDisclosure_isPresent() {
         launch()
         composeTestRule
-            .onNodeWithText("Displays brand logos sourced from Simple Icons to identify the apps you add.", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.consent_what_5), substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -107,7 +111,7 @@ class SmokeConsentScreenTest {
     fun consentScreen_privacyPolicyLink_isVisible() {
         launch()
         composeTestRule
-            .onNodeWithText("Read our full Privacy Policy")
+            .onNodeWithText(context.getString(CoreUiR.string.consent_read_privacy))
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -116,7 +120,7 @@ class SmokeConsentScreenTest {
     fun consentScreen_tosLink_isVisible() {
         launch()
         composeTestRule
-            .onNodeWithText("Read our Terms of Service")
+            .onNodeWithText(context.getString(CoreUiR.string.consent_read_tos))
             .performScrollTo()
             .assertIsDisplayed()
     }

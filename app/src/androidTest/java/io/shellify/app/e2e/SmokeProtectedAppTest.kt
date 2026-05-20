@@ -8,6 +8,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.core.engine.GeckoEngineManager
+import io.shellify.core.ui.R as CoreUiR
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.security.hashPassword
@@ -119,7 +120,7 @@ class SmokeProtectedAppTest {
     fun lockToggle_isVisibleWhenAppIsLoaded() {
         val app = FakeData.webApp(id = 1L, name = "Notion")
         setScreen(AppSettingsUiState(app = app, isLoading = false))
-        composeTestRule.onNodeWithText("App Lock").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.settings_applock)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -127,11 +128,11 @@ class SmokeProtectedAppTest {
         val app = FakeData.webApp(id = 1L, name = "Notion").copy(lockType = LockType.PASSWORD)
         setScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("App password (set in Settings)", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.settings_lock_password), substring = true)
             .performScrollTo()
             .assertIsDisplayed()
         composeTestRule
-            .onNodeWithText("System lock (fingerprint / PIN)", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.settings_lock_system), substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -143,8 +144,8 @@ class SmokeProtectedAppTest {
         val app = FakeData.webApp(id = 1L).copy(lockType = LockType.PASSWORD)
         setScreen(AppSettingsUiState(app = app, isLoading = false, showDisableLockDialog = true))
         // "Disable App Lock" appears as both dialog title and confirm button — verify at least one
-        composeTestRule.onAllNodesWithText("Disable App Lock")[0].assertIsDisplayed()
-        composeTestRule.onNodeWithText("Current password").assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(context.getString(CoreUiR.string.settings_disable_lock_title))[0].assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_current_password)).assertIsDisplayed()
     }
 
     @Test
@@ -158,14 +159,14 @@ class SmokeProtectedAppTest {
                 disableLockError = true,
             )
         )
-        composeTestRule.onNodeWithText("Wrong password").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_wrong_password)).assertIsDisplayed()
     }
 
     @Test
     fun disableLockDialog_cancelButton_isVisible() {
         val app = FakeData.webApp(id = 1L).copy(lockType = LockType.PASSWORD)
         setScreen(AppSettingsUiState(app = app, isLoading = false, showDisableLockDialog = true))
-        composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_cancel)).assertIsDisplayed()
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

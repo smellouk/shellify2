@@ -15,12 +15,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.presentation.navigation.Screen
 import io.shellify.app.presentation.navigation.resolveStartDestination
 import io.shellify.app.presentation.onboarding.ConsentScreen
 import io.shellify.app.presentation.onboarding.UpdateConsentScreen
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.core.ui.R as CoreUiR
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,6 +37,8 @@ class ConsentGateTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     // ── Routing contract ──────────────────────────────────────────────────────
 
@@ -58,7 +62,7 @@ class ConsentGateTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Before you start").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_title)).assertIsDisplayed()
         composeTestRule.onNodeWithText("Onboarding").assertIsNotDisplayed()
         composeTestRule.onNodeWithText("Home").assertIsNotDisplayed()
     }
@@ -83,8 +87,8 @@ class ConsentGateTest {
             }
         }
 
-        composeTestRule.onNodeWithText("We've updated our terms").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Before you start").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_update_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_title)).assertIsNotDisplayed()
         composeTestRule.onNodeWithText("Home").assertIsNotDisplayed()
     }
 
@@ -109,7 +113,7 @@ class ConsentGateTest {
         }
 
         composeTestRule.onNodeWithText("Onboarding Screen").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Before you start").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_title)).assertIsNotDisplayed()
     }
 
     // ── Render guard ──────────────────────────────────────────────────────────
@@ -124,7 +128,7 @@ class ConsentGateTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Before you start").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_title)).assertIsDisplayed()
     }
 
     @Test

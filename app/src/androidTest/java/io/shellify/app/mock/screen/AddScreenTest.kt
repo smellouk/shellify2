@@ -6,12 +6,14 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.presentation.add.AddScreen
 import io.shellify.app.presentation.add.AddUiState
 import io.shellify.app.presentation.add.AddViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +32,8 @@ class AddScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun buildViewModel(uiState: AddUiState): AddViewModel {
         val geckoManager = mockk<GeckoEngineManager>(relaxed = true)
@@ -59,7 +63,7 @@ class AddScreenTest {
     fun topBar_showsCreateAppTitle_whenNameAndUrlAreEmpty() {
         setAddScreen(AddUiState(name = "", url = ""))
         composeTestRule
-            .onNodeWithText("Create App")
+            .onNodeWithText(context.getString(CoreUiR.string.add_create_app))
             .assertIsDisplayed()
     }
 
@@ -67,7 +71,7 @@ class AddScreenTest {
     fun topBar_showsCreateAppTitle_whenFormIsPreFilled() {
         setAddScreen(AddUiState(name = "My App", url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Create App")
+            .onNodeWithText(context.getString(CoreUiR.string.add_create_app))
             .assertIsDisplayed()
     }
 
@@ -77,7 +81,7 @@ class AddScreenTest {
     fun urlField_isDisplayed() {
         setAddScreen(AddUiState())
         composeTestRule
-            .onNodeWithText("Website URL")
+            .onNodeWithText(context.getString(CoreUiR.string.add_url_label))
             .assertIsDisplayed()
     }
 
@@ -95,7 +99,7 @@ class AddScreenTest {
     fun nameField_isDisplayed() {
         setAddScreen(AddUiState())
         composeTestRule
-            .onNodeWithText("App name")
+            .onNodeWithText(context.getString(CoreUiR.string.add_name_label))
             .assertIsDisplayed()
     }
 
@@ -113,7 +117,7 @@ class AddScreenTest {
     fun analyzeButton_isDisplayedWhenNotAnalyzing() {
         setAddScreen(AddUiState(isAnalyzing = false, url = "https://example.com"))
         composeTestRule
-            .onNodeWithContentDescription("Analyze site")
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.add_analyze_site_cd))
             .assertIsDisplayed()
     }
 
@@ -141,7 +145,7 @@ class AddScreenTest {
     fun settingsSection_showsAdBlockLabel() {
         setAddScreen(AddUiState(name = "App", url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Ad Blocking")
+            .onNodeWithText(context.getString(CoreUiR.string.add_feature_adblock))
             .assertIsDisplayed()
     }
 
@@ -149,7 +153,7 @@ class AddScreenTest {
     fun settingsSection_showsFullscreenLabel() {
         setAddScreen(AddUiState(name = "App", url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Fullscreen Mode")
+            .onNodeWithText(context.getString(CoreUiR.string.add_feature_fullscreen))
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -158,7 +162,7 @@ class AddScreenTest {
     fun settingsSection_showsAutoTranslateLabel() {
         setAddScreen(AddUiState(name = "App", url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Auto Translate")
+            .onNodeWithText(context.getString(CoreUiR.string.add_feature_translate))
             .performScrollTo()
             .assertIsDisplayed()
     }

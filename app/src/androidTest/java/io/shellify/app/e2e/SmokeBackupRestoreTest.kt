@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.core.backup.BackupCrypto
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
@@ -15,6 +16,7 @@ import io.shellify.app.presentation.settings.GlobalSettingsScreen
 import io.shellify.app.presentation.settings.GlobalSettingsUiState
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +40,8 @@ class SmokeBackupRestoreTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     // ── BackupCrypto round-trip ───────────────────────────────────────────────
 
@@ -111,32 +115,32 @@ class SmokeBackupRestoreTest {
     @Test
     fun globalSettings_backupSectionHeader_isVisible() {
         setScreen(GlobalSettingsUiState(isLoaded = true))
-        composeTestRule.onNodeWithText("Backup").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.global_settings_section_backup)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun globalSettings_encryptedBackupLabel_isVisible() {
         setScreen(GlobalSettingsUiState(isLoaded = true))
-        composeTestRule.onNodeWithText("Encrypted backup").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.global_settings_encrypted_backup)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun globalSettings_backupDisabled_showsDisabledStatus() {
         setScreen(GlobalSettingsUiState(isLoaded = true, backupEnabled = false))
-        composeTestRule.onNodeWithText("Disabled").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.global_settings_backup_disabled)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun globalSettings_backupEnabled_showsEnabledStatus() {
         setScreen(GlobalSettingsUiState(isLoaded = true, backupEnabled = true))
-        composeTestRule.onNodeWithText("Enabled").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.global_settings_backup_enabled)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun globalSettings_importBackupButton_isVisible() {
         setScreen(GlobalSettingsUiState(isLoaded = true))
         composeTestRule
-            .onNodeWithContentDescription("Import Backup")
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.global_settings_import_backup))
             .performScrollTo()
             .assertIsDisplayed()
     }

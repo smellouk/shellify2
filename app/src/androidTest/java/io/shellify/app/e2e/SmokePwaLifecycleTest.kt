@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.presentation.add.AddScreen
@@ -19,6 +20,7 @@ import io.shellify.app.presentation.settings.AppSettingsUiState
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -38,6 +40,8 @@ class SmokePwaLifecycleTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     // ── Scenario: Empty Home → navigate to Add ────────────────────────────────
 
@@ -59,7 +63,7 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Add a website").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_empty_subtitle_action)).performClick()
         assert(addTapped) { "onAddApp should have been invoked" }
     }
 
@@ -80,8 +84,8 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithContentDescription("Add PWA").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Forge your first app").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.home_add_fab_cd)).assertDoesNotExist()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_empty_title)).assertIsDisplayed()
     }
 
     // ── Scenario: Add screen renders with URL input ───────────────────────────
@@ -98,7 +102,7 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Website URL").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.add_url_label)).assertIsDisplayed()
     }
 
     @Test
@@ -113,7 +117,7 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Save").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.add_save)).assertIsDisplayed()
     }
 
     // ── Scenario: Saved app appears on Home ───────────────────────────────────
@@ -165,7 +169,7 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithContentDescription("Add PWA").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.home_add_fab_cd)).assertIsDisplayed()
     }
 
     // ── Scenario: Edit — form shows pre-populated data ────────────────────────
@@ -230,7 +234,7 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Delete \"Slack\"?").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.settings_delete_confirm, "Slack")).assertIsDisplayed()
     }
 
     @Test
@@ -249,7 +253,7 @@ class SmokePwaLifecycleTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Cancel").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_cancel)).performClick()
         assert(!deleted) { "onDeleted should not fire on Cancel" }
     }
 

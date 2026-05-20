@@ -5,12 +5,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.domain.model.Category
 import io.shellify.app.presentation.category.CategoryScreen
 import io.shellify.app.presentation.category.CategoryUiState
 import io.shellify.app.presentation.category.CategoryViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +31,8 @@ class CategoryScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun buildViewModel(
         categories: List<Category>?,
@@ -57,7 +61,7 @@ class CategoryScreenTest {
     fun topBar_showsCategoriesTitle() {
         setCategoryScreen(categories = emptyList())
         composeTestRule
-            .onNodeWithText("Categories")
+            .onNodeWithText(context.getString(CoreUiR.string.categories_title))
             .assertIsDisplayed()
     }
 
@@ -67,7 +71,7 @@ class CategoryScreenTest {
     fun emptyState_showsSortAppsTitle() {
         setCategoryScreen(categories = emptyList())
         composeTestRule
-            .onNodeWithText("Sort apps into spaces")
+            .onNodeWithText(context.getString(CoreUiR.string.categories_empty))
             .assertIsDisplayed()
     }
 
@@ -75,7 +79,7 @@ class CategoryScreenTest {
     fun emptyState_showsEmptySubtitle() {
         setCategoryScreen(categories = emptyList())
         composeTestRule
-            .onNodeWithText("Group your tiles by purpose", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.categories_empty_subtitle), substring = true)
             .assertIsDisplayed()
     }
 
@@ -83,8 +87,8 @@ class CategoryScreenTest {
     fun emptyState_showsSuggestionChips() {
         setCategoryScreen(categories = emptyList())
         // Quick-add suggestion chips from strings.xml
-        composeTestRule.onNodeWithText("Media").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Work").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_suggestion_media)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_suggestion_work)).assertIsDisplayed()
     }
 
     // ─── Populated list ────────────────────────────────────────────────────────
@@ -114,7 +118,7 @@ class CategoryScreenTest {
         val categories = listOf(FakeData.category(id = 1L, name = "Work"))
         setCategoryScreen(categories = categories)
         composeTestRule
-            .onNodeWithContentDescription("Add category")
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.categories_add_fab_cd))
             .assertIsDisplayed()
     }
 
@@ -127,7 +131,7 @@ class CategoryScreenTest {
             uiState = CategoryUiState(showAddDialog = true),
         )
         composeTestRule
-            .onNodeWithText("New Category")
+            .onNodeWithText(context.getString(CoreUiR.string.categories_new_dialog_title))
             .assertIsDisplayed()
     }
 
@@ -143,7 +147,7 @@ class CategoryScreenTest {
             ),
         )
         composeTestRule
-            .onNodeWithText("Edit Category")
+            .onNodeWithText(context.getString(CoreUiR.string.categories_edit_dialog_title))
             .assertIsDisplayed()
     }
 }

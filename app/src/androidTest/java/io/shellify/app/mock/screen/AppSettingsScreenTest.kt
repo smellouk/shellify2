@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.R
 import io.shellify.app.core.engine.GeckoEngineManager
+import io.shellify.core.ui.R as CoreUiR
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsUiState
@@ -64,7 +65,7 @@ class AppSettingsScreenTest {
     fun loadingState_showsSettingsTitleWhenAppIsNull() {
         setAppSettingsScreen(AppSettingsUiState(app = null, isLoading = true))
         composeTestRule
-            .onNodeWithText("App settings")
+            .onNodeWithText(context.getString(CoreUiR.string.settings_title))
             .assertIsDisplayed()
     }
 
@@ -84,7 +85,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Jira", url = "https://atlassian.net")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("App info")
+            .onNodeWithText(context.getString(CoreUiR.string.settings_app_info))
             .assertIsDisplayed()
     }
 
@@ -93,7 +94,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Slack", url = "https://slack.com")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Website URL")
+            .onNodeWithText(context.getString(CoreUiR.string.add_url_label))
             .assertIsDisplayed()
     }
 
@@ -111,7 +112,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Reddit", url = "https://reddit.com")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Block ads")
+            .onNodeWithText(context.getString(CoreUiR.string.settings_adblock))
             .assertIsDisplayed()
     }
 
@@ -120,7 +121,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "YouTube", url = "https://youtube.com")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Full screen")
+            .onNodeWithText(context.getString(CoreUiR.string.settings_fullscreen))
             .assertIsDisplayed()
     }
 
@@ -129,7 +130,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Twitter", url = "https://x.com")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Danger zone")
+            .onNodeWithText(context.getString(CoreUiR.string.settings_danger_zone))
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -139,7 +140,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Mastodon", url = "https://mastodon.social")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Delete app", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.settings_delete_app), substring = true)
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -153,7 +154,7 @@ class AppSettingsScreenTest {
             AppSettingsUiState(app = app, isLoading = false, showDeleteDialog = true)
         )
         composeTestRule
-            .onNodeWithText("Delete \"Asana\"?")
+            .onNodeWithText(context.getString(CoreUiR.string.settings_delete_confirm, "Asana"))
             .assertIsDisplayed()
     }
 }

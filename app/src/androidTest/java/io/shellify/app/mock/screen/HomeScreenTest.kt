@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.domain.model.Category
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.home.HomeScreen
@@ -12,6 +13,7 @@ import io.shellify.app.presentation.home.HomeUiState
 import io.shellify.app.presentation.home.HomeViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +32,8 @@ class HomeScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun buildViewModel(uiState: HomeUiState): HomeViewModel {
         val vm = mockk<HomeViewModel>(relaxed = true)
@@ -63,7 +67,7 @@ class HomeScreenTest {
     fun emptyState_showsForgeYourFirstAppTitle() {
         setHomeScreen(HomeUiState(apps = emptyList(), isLoading = false))
         composeTestRule
-            .onNodeWithText("Forge your first app")
+            .onNodeWithText(context.getString(CoreUiR.string.home_empty_title))
             .assertIsDisplayed()
     }
 
@@ -71,7 +75,7 @@ class HomeScreenTest {
     fun emptyState_showsAddWebsiteButton() {
         setHomeScreen(HomeUiState(apps = emptyList(), isLoading = false))
         composeTestRule
-            .onNodeWithText("Add a website")
+            .onNodeWithText(context.getString(CoreUiR.string.home_empty_subtitle_action))
             .assertIsDisplayed()
     }
 
@@ -115,7 +119,7 @@ class HomeScreenTest {
         val apps = listOf(FakeData.webApp(id = 1L, name = "Some App"))
         setHomeScreen(HomeUiState(apps = apps, hasAnyApps = true, isLoading = false))
         composeTestRule
-            .onNodeWithText("Search apps…")
+            .onNodeWithText(context.getString(CoreUiR.string.home_search_hint))
             .assertIsDisplayed()
     }
 
@@ -126,7 +130,7 @@ class HomeScreenTest {
         val apps = listOf(FakeData.webApp(id = 1L, name = "SomeApp"))
         setHomeScreen(HomeUiState(apps = apps, hasAnyApps = true, isLoading = false))
         composeTestRule
-            .onNodeWithContentDescription("Add PWA")
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.home_add_fab_cd))
             .assertIsDisplayed()
     }
 
@@ -134,7 +138,7 @@ class HomeScreenTest {
     fun fab_isNotDisplayedWhenAppsListIsEmpty() {
         setHomeScreen(HomeUiState(apps = emptyList(), hasAnyApps = false, isLoading = false))
         composeTestRule
-            .onNodeWithContentDescription("Add PWA")
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.home_add_fab_cd))
             .assertDoesNotExist()
     }
 
@@ -152,7 +156,7 @@ class HomeScreenTest {
                 isLoading = false,
             )
         )
-        composeTestRule.onNodeWithText("All").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.home_all_categories)).assertIsDisplayed()
         composeTestRule.onNodeWithText("Work").assertIsDisplayed()
     }
 
@@ -162,7 +166,7 @@ class HomeScreenTest {
     fun topBar_showsShellifyTitle() {
         setHomeScreen(HomeUiState(isLoading = false))
         composeTestRule
-            .onNodeWithText("Shellify")
+            .onNodeWithText(context.getString(CoreUiR.string.home_title))
             .assertIsDisplayed()
     }
 
@@ -170,7 +174,7 @@ class HomeScreenTest {
     fun topBar_showsLanguageChangeButton() {
         setHomeScreen(HomeUiState(isLoading = false))
         composeTestRule
-            .onNodeWithContentDescription("Change language")
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.language_change_cd))
             .assertIsDisplayed()
     }
 
@@ -190,7 +194,7 @@ class HomeScreenTest {
         )
         // The screen shows "No apps in 'Media'" when filtered category is empty
         composeTestRule
-            .onNodeWithText("No apps in \"Media\"", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.home_empty_filtered_category, "Media"), substring = true)
             .assertIsDisplayed()
     }
 }
