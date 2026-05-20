@@ -7,12 +7,14 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.domain.model.Category
 import io.shellify.app.presentation.category.CategoryScreen
 import io.shellify.app.presentation.category.CategoryUiState
 import io.shellify.app.presentation.category.CategoryViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -30,19 +32,21 @@ class SmokeCategoryLifecycleTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
+
     // ── Scenario: Empty state ─────────────────────────────────────────────────
 
     @Test
     fun emptyCategories_showsPlaceholder() {
         setScreen(categories = emptyList())
-        composeTestRule.onNodeWithText("Sort apps into spaces").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_empty)).assertIsDisplayed()
     }
 
     @Test
     fun nonEmptyCategories_fabIsVisible() {
         // FAB only shows when there are existing categories
         setScreen(categories = listOf(FakeData.category(id = 1L, name = "Work")))
-        composeTestRule.onNodeWithContentDescription("Add category").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.categories_add_fab_cd)).assertIsDisplayed()
     }
 
     // ── Scenario: Add category ────────────────────────────────────────────────
@@ -54,7 +58,7 @@ class SmokeCategoryLifecycleTest {
             ShellifyTheme { CategoryScreen(viewModel = vm) }
         }
 
-        composeTestRule.onNodeWithContentDescription("Add category").performClick()
+        composeTestRule.onNodeWithContentDescription(context.getString(CoreUiR.string.categories_add_fab_cd)).performClick()
         verify { vm.showDialog() }
     }
 
@@ -64,7 +68,7 @@ class SmokeCategoryLifecycleTest {
             categories = emptyList(),
             uiState = CategoryUiState(showAddDialog = true),
         )
-        composeTestRule.onNodeWithText("Name").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_name_label)).assertIsDisplayed()
     }
 
     @Test
@@ -73,7 +77,7 @@ class SmokeCategoryLifecycleTest {
             categories = emptyList(),
             uiState = CategoryUiState(showAddDialog = true),
         )
-        composeTestRule.onNodeWithText("Add").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_add_button)).assertIsDisplayed()
     }
 
     // ── Scenario: Category appears in list ────────────────────────────────────
@@ -109,7 +113,7 @@ class SmokeCategoryLifecycleTest {
                 newName = "Reading",
             ),
         )
-        composeTestRule.onNodeWithText("Edit Category").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_edit_dialog_title)).assertIsDisplayed()
         // "Reading" appears in both the list item and the dialog input — verify at least one
         composeTestRule.onAllNodesWithText("Reading")[0].assertIsDisplayed()
     }
@@ -124,7 +128,7 @@ class SmokeCategoryLifecycleTest {
                 newName = "Reading",
             ),
         )
-        composeTestRule.onNodeWithText("Save").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.categories_save_button)).assertIsDisplayed()
     }
 
     // ── Scenario: Delete category ─────────────────────────────────────────────
@@ -138,7 +142,7 @@ class SmokeCategoryLifecycleTest {
         composeTestRule.setContent {
             ShellifyTheme { CategoryScreen(viewModel = vm) }
         }
-        composeTestRule.onNodeWithText("Cancel").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_cancel)).performClick()
         verify { vm.dismissDialog() }
     }
 

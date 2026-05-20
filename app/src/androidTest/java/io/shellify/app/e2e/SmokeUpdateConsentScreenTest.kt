@@ -18,7 +18,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.core.theme.ThemeManager
+import io.shellify.core.ui.R as CoreUiR
 import io.shellify.app.presentation.navigation.Screen
 import io.shellify.app.presentation.navigation.resolveStartDestination
 import io.shellify.app.presentation.onboarding.UpdateConsentScreen
@@ -33,6 +35,8 @@ class SmokeUpdateConsentScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun launch(onAccepted: () -> Unit = {}) {
         composeTestRule.setContent {
@@ -49,7 +53,7 @@ class SmokeUpdateConsentScreenTest {
     @Test
     fun updateConsentScreen_rendersTitle_withoutCrash() {
         launch()
-        composeTestRule.onNodeWithText("We've updated our terms").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_update_title)).assertIsDisplayed()
     }
 
     @Test
@@ -96,14 +100,14 @@ class SmokeUpdateConsentScreenTest {
     @Test
     fun changesSection_isPresent() {
         launch()
-        composeTestRule.onNodeWithText("What's new").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_update_changes_title)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun privacyPolicyLink_isVisible() {
         launch()
         composeTestRule
-            .onNodeWithText("Read our full Privacy Policy")
+            .onNodeWithText(context.getString(CoreUiR.string.consent_read_privacy))
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -112,7 +116,7 @@ class SmokeUpdateConsentScreenTest {
     fun tosLink_isVisible() {
         launch()
         composeTestRule
-            .onNodeWithText("Read our Terms of Service")
+            .onNodeWithText(context.getString(CoreUiR.string.consent_read_tos))
             .performScrollTo()
             .assertIsDisplayed()
     }
@@ -141,7 +145,7 @@ class SmokeUpdateConsentScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("We've updated our terms").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_update_title)).assertIsDisplayed()
         composeTestRule.onNodeWithText("Home").assertIsNotDisplayed()
         composeTestRule.onNodeWithText("Consent").assertIsNotDisplayed()
     }
@@ -169,6 +173,6 @@ class SmokeUpdateConsentScreenTest {
         }
 
         composeTestRule.onNodeWithText("Home").assertIsDisplayed()
-        composeTestRule.onNodeWithText("We've updated our terms").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.consent_update_title)).assertIsNotDisplayed()
     }
 }

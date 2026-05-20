@@ -6,12 +6,14 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.presentation.shortcuts.ShortcutItem
 import io.shellify.app.presentation.shortcuts.ShortcutsScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsUiState
 import io.shellify.app.presentation.shortcuts.ShortcutsViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
+import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +32,8 @@ class ShortcutsScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun buildViewModel(uiState: ShortcutsUiState): ShortcutsViewModel {
         val vm = mockk<ShortcutsViewModel>(relaxed = true)
@@ -51,7 +55,7 @@ class ShortcutsScreenTest {
     fun topBar_showsShortcutsTitle() {
         setShortcutsScreen(ShortcutsUiState(isLoading = false))
         composeTestRule
-            .onNodeWithText("Shortcuts")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_title))
             .assertIsDisplayed()
     }
 
@@ -61,7 +65,7 @@ class ShortcutsScreenTest {
     fun emptyState_showsNoShortcutsYetTitle() {
         setShortcutsScreen(ShortcutsUiState(items = emptyList(), isLoading = false))
         composeTestRule
-            .onNodeWithText("No shortcuts yet")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_empty_title))
             .assertIsDisplayed()
     }
 
@@ -69,7 +73,7 @@ class ShortcutsScreenTest {
     fun emptyState_showsEmptyStateDescription() {
         setShortcutsScreen(ShortcutsUiState(items = emptyList(), isLoading = false))
         composeTestRule
-            .onNodeWithText("Shortcuts you add from an app's settings appear here", substring = true)
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_empty_desc), substring = true)
             .assertIsDisplayed()
     }
 
@@ -121,7 +125,7 @@ class ShortcutsScreenTest {
             )
         )
         composeTestRule
-            .onNodeWithText("Rename shortcut")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_rename_dialog_title))
             .assertIsDisplayed()
     }
 
@@ -139,7 +143,7 @@ class ShortcutsScreenTest {
             )
         )
         composeTestRule
-            .onNodeWithText("Remove shortcut?")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_remove_dialog_title))
             .assertIsDisplayed()
     }
 
@@ -158,7 +162,7 @@ class ShortcutsScreenTest {
             )
         )
         composeTestRule
-            .onNodeWithText("Change icon")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_change_icon_title))
             .assertIsDisplayed()
     }
 
@@ -175,7 +179,7 @@ class ShortcutsScreenTest {
             )
         )
         composeTestRule
-            .onNodeWithText("From icon pack")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_icon_from_pack))
             .assertIsDisplayed()
     }
 
@@ -192,10 +196,10 @@ class ShortcutsScreenTest {
             )
         )
         composeTestRule
-            .onNodeWithText("From icon pack")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_icon_from_pack))
             .assertIsDisplayed()
         composeTestRule
-            .onNodeWithText("From icon pack")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_icon_from_pack))
             .assertIsNotEnabled()
     }
 
@@ -212,7 +216,7 @@ class ShortcutsScreenTest {
             )
         )
         composeTestRule
-            .onNodeWithText("From icon pack")
+            .onNodeWithText(context.getString(CoreUiR.string.shortcuts_icon_from_pack))
             .assertIsEnabled()
     }
 }

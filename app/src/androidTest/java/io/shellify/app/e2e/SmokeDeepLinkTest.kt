@@ -5,8 +5,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.presentation.navigation.DeepLinkConfirmDialog
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.core.ui.R as CoreUiR
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -25,6 +27,8 @@ class SmokeDeepLinkTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
+
     private fun launch(url: String, onConfirm: () -> Unit = {}, onDismiss: () -> Unit = {}) {
         composeTestRule.setContent {
             ShellifyTheme {
@@ -38,19 +42,19 @@ class SmokeDeepLinkTest {
     @Test
     fun dialog_showsTitle() {
         launch("https://example.com")
-        composeTestRule.onNodeWithText("Add web app?").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.deeplink_confirm_title)).assertIsDisplayed()
     }
 
     @Test
     fun dialog_showsAddButton() {
         launch("https://example.com")
-        composeTestRule.onNodeWithText("Add").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.deeplink_confirm_add)).assertIsDisplayed()
     }
 
     @Test
     fun dialog_showsCancelButton() {
         launch("https://example.com")
-        composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_cancel)).assertIsDisplayed()
     }
 
     // ── Host extraction ───────────────────────────────────────────────────────
@@ -100,7 +104,7 @@ class SmokeDeepLinkTest {
     fun dialog_addButton_invokesConfirmCallback() {
         var confirmed = false
         launch("https://example.com", onConfirm = { confirmed = true })
-        composeTestRule.onNodeWithText("Add").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.deeplink_confirm_add)).performClick()
         assertTrue(confirmed)
     }
 
@@ -108,7 +112,7 @@ class SmokeDeepLinkTest {
     fun dialog_cancelButton_invokesDismissCallback() {
         var dismissed = false
         launch("https://example.com", onDismiss = { dismissed = true })
-        composeTestRule.onNodeWithText("Cancel").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_cancel)).performClick()
         assertTrue(dismissed)
     }
 
@@ -116,7 +120,7 @@ class SmokeDeepLinkTest {
     fun dialog_addButton_doesNotTriggerDismiss() {
         var dismissed = false
         launch("https://example.com", onConfirm = {}, onDismiss = { dismissed = true })
-        composeTestRule.onNodeWithText("Add").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.deeplink_confirm_add)).performClick()
         assertFalse(dismissed)
     }
 
@@ -124,7 +128,7 @@ class SmokeDeepLinkTest {
     fun dialog_cancelButton_doesNotTriggerConfirm() {
         var confirmed = false
         launch("https://example.com", onConfirm = { confirmed = true }, onDismiss = {})
-        composeTestRule.onNodeWithText("Cancel").performClick()
+        composeTestRule.onNodeWithText(context.getString(CoreUiR.string.common_cancel)).performClick()
         assertFalse(confirmed)
     }
 }
