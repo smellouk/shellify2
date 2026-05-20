@@ -46,22 +46,44 @@ If screenshot tests fail after a UI change, regenerate goldens (`./gradlew recor
 
 ## Architecture
 
-Clean Architecture with strict layer separation enforced at compile time by **Konsist**.
+Clean Architecture with strict layer separation enforced at compile time by **Konsist** (`app/src/test/java/io/shellify/app/konsist/ArchitectureTest.kt`).
 
 ```
-feature:*  →  core:domain  (Compose screens + ViewModels, no data access)
-core:*     →  core:domain  (infrastructure implementations)
-core:domain               (pure Kotlin, zero Android deps)
+feature:*  →  core:*  →  core:domain
 app                       (NavHost, DI wiring, ShellifyApplication)
 ```
 
-**Hard rules — Konsist will fail the build if violated:**
+- `feature:*` — Compose screens + ViewModels. May depend on `core:*` infrastructure but never on `core:database` or other `feature:*` modules.
+- `core:*` — infrastructure implementations. May depend on `core:domain`; must not depend on `presentation` or `data`.
+- `core:domain` — pure Kotlin: models, repository interfaces, use cases. Zero Android deps.
+
+**Hard rules enforced by Konsist (build fails if violated):**
 - `feature:*` must not import `core:database` directly
 - `feature:*` must not import other `feature:*` modules
 - `core:domain` must not have any Android dependencies
-- ViewModels must use use cases, not repository interfaces directly
+- ViewModels must not import `domain.repository` interfaces directly — use use cases instead
+- `*UiState` classes must be `data class` and live in `presentation..*`
+- `*ViewModel` classes must extend `androidx.lifecycle.ViewModel` and live in `presentation..*`
+- Use cases must only import from the domain layer
 
-DI is **manual** — no Hilt/Koin. Dependencies are wired in `ShellifyApplication` and passed down via ViewModel factories.
+**Known gap — Konsist does not check Activities.** Activities may import `core.*` infrastructure directly when they own system UI integration (window insets, biometrics, engine lifecycle) that no ViewModel can hold. Keep Activities thin: no business logic, no state mutation — delegate everything to the ViewModel.
+
+**Known compromise — ViewModels may use `core.*` infrastructure directly** (e.g. `IsolationManager`, `PasswordManager`) when no suitable use case exists. Konsist only blocks `domain.repository` imports. Prefer wrapping in a use case for new work.
+
+DI is **manual** — no Hilt/Koin. Dependencies are wired in `ShellifyApplication` and passed down via ViewModel factories (`ViewModelProvider.Factory` inner class on each ViewModel).
+
+### MVVM pattern (all feature modules)
+
+Every screen follows the same structure:
+
+| Piece | Rule |
+|---|---|
+| `*ViewModel` | Holds all state + business logic. Uses `viewModelScope`, exposes `StateFlow<*UiState>`. One-shot events (navigation, toasts) via `SharedFlow<*Command>`. |
+| `*UiState` | Immutable `data class`. Single source of truth the screen observes. |
+| `*Command` | Optional `sealed interface` for one-shot side-effects the View must execute (e.g. `NavigateTo`, `Finish`, `LoadUrl`). |
+| Screen / Activity | Pure View layer. Observes `uiState`, collects commands, forwards gestures to ViewModel. No coroutine scope of its own — use `lifecycleScope`. No direct data or infrastructure calls. |
+
+`feature/webview` is the exception: it uses `FragmentActivity` (not a Compose screen) because it owns a raw WebView/GeckoView hierarchy and system UI that cannot live in a ViewModel. The same ViewModel + UiState + Command pattern still applies.
 
 ---
 
