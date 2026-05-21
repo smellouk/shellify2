@@ -11,7 +11,7 @@
     "verifier": true,
     "nyquist_validation": false,
     "auto_advance": false,
-    "worktree_isolation": true,
+    "use_worktrees": true,
     "node_repair": true,
     "node_repair_budget": 2,
     "subagent_timeout": 600,
