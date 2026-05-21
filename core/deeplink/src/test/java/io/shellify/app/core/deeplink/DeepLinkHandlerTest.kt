@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.shellify.app.util.JavaUrlSafeBase64Codec
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DeepLinkHandlerTest {
@@ -153,5 +154,61 @@ class DeepLinkHandlerTest {
         val uri =
             mockUri("https", "wrong.host", path = "/add", urlParam = encodedUrl, nameParam = "App")
         assertNull(DeepLinkHandler.parse(uri, codec))
+    }
+
+    // ── parseOpen() ───────────────────────────────────────────────────────────
+
+    @Test
+    fun `parseOpen returns decoded url for custom shellify open scheme`() {
+        val encodedUrl = DeepLinkHandler.encodeUrl("https://example.com/app", codec)
+        val uri = mockUri("shellify", "open", urlParam = encodedUrl)
+        assertEquals("https://example.com/app", DeepLinkHandler.parseOpen(uri, codec))
+    }
+
+    @Test
+    fun `parseOpen returns decoded url for https shellify app open path`() {
+        val encodedUrl = DeepLinkHandler.encodeUrl("https://example.com", codec)
+        val uri = mockUri("https", "shellify.app", path = "/open", urlParam = encodedUrl)
+        assertEquals("https://example.com", DeepLinkHandler.parseOpen(uri, codec))
+    }
+
+    @Test
+    fun `parseOpen returns null for non-https decoded value`() {
+        val encodedHttp = DeepLinkHandler.encodeUrl("http://example.com", codec)
+        val uri = mockUri("shellify", "open", urlParam = encodedHttp)
+        assertNull(DeepLinkHandler.parseOpen(uri, codec))
+    }
+
+    @Test
+    fun `parseOpen returns null for wrong host on shellify scheme`() {
+        val encodedUrl = DeepLinkHandler.encodeUrl("https://example.com", codec)
+        val uri = mockUri("shellify", "add", urlParam = encodedUrl)
+        assertNull(DeepLinkHandler.parseOpen(uri, codec))
+    }
+
+    @Test
+    fun `parseOpen returns null when url param is missing`() {
+        val uri = mockUri("shellify", "open", urlParam = null)
+        assertNull(DeepLinkHandler.parseOpen(uri, codec))
+    }
+
+    // ── buildOpen() ───────────────────────────────────────────────────────────
+    // Uri.Builder is an Android platform class and cannot be tested in JVM unit tests.
+    // The build functions are verified via encodeUrl/decodeUrl round-trip assertions instead.
+
+    @Test
+    fun `buildOpen encoded url can be decoded back to original url`() {
+        val originalUrl = "https://github.com"
+        val encodedParam = DeepLinkHandler.encodeUrl(originalUrl, codec)
+        val decoded = DeepLinkHandler.decodeUrl(encodedParam, codec)
+        assertEquals(originalUrl, decoded)
+    }
+
+    @Test
+    fun `buildOpen encoded url is rejected when original is http not https`() {
+        val httpUrl = "http://example.com"
+        val encodedParam = DeepLinkHandler.encodeUrl(httpUrl, codec)
+        val decoded = DeepLinkHandler.decodeUrl(encodedParam, codec)
+        assertNull(decoded)
     }
 }

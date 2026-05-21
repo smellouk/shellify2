@@ -15,6 +15,7 @@ Each feature module owns exactly one logical user-facing flow:
 | `feature:add` | Add / edit a PWA (URL analysis + form) |
 | `feature:category` | Category CRUD |
 | `feature:home` | App grid, search, filter |
+| `feature:link-dispatcher` | URL dispatch: "Open with", share sheet, shellify://open deep link |
 | `feature:onboarding` | First-run consent wizard |
 | `feature:settings` | Per-app and global settings |
 | `feature:share` | QR code + deep-link export |

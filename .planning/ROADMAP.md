@@ -43,16 +43,22 @@
 
 **Requirements:** INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06, INTG-07, INTG-08, INTG-09
 
-**Plans:** 3 plans
+**Plans:** 5 plans (3 original + 2 gap-closure)
 
 Plans:
 
 **Wave 1**
-- [ ] 01-01-PLAN.md — Domain foundation: FindAppsForUrlUseCase, DeepLinkHandler.parseOpen/buildOpen, incognito WebViewActivity, link-dispatcher module scaffold
+- [x] 01-01-PLAN.md — Domain foundation: FindAppsForUrlUseCase, DeepLinkHandler.parseOpen/buildOpen, incognito WebViewActivity, link-dispatcher module scaffold
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 01-02-PLAN.md — LinkDispatcherActivity with three-state bottom sheet, LinkDispatcherViewModel, string resources (EN/FR/AR)
-- [ ] 01-03-PLAN.md — AppShareSheet "Copy app link" extension, App Links /open manifest entry
+- [x] 01-02-PLAN.md — LinkDispatcherActivity with three-state bottom sheet, LinkDispatcherViewModel, string resources (EN/FR/AR)
+- [x] 01-03-PLAN.md — AppShareSheet "Copy app link" extension, App Links /open manifest entry
+
+**Wave 3** *(gap closure — blocked on Wave 2 completion; from 01-VERIFICATION.md)*
+- [x] 01-04-PLAN.md — Fix AddAsNew base64url encoding (Gap 1, INTG-04); add 22 missing FR/AR translations (Gap 3)
+
+**Wave 4** *(gap closure — blocked on Wave 3 completion; touches LinkDispatcherActivity after Plan 04)*
+- [x] 01-05-PLAN.md — Extract WebViewIntentFactory into new core:navigation module; drop feature:link-dispatcher → feature:webview gradle dep; Konsist test enforces no cross-feature imports (Gap 2)
 
 **Cross-cutting constraints:**
 - `core:domain` must use `java.net.URI` (not `android.net.Uri`) — all use cases in `FindAppsForUrlUseCase`

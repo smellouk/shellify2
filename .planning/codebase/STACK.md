@@ -171,8 +171,10 @@
 :feature:webview         — WebView screen wrapping GeckoView engine
 :feature:share           — Share intent handling
 :feature:shortcut        — Pinned shortcut launcher
+:feature:link-dispatcher — Android "Open with…" handler for http/https intents and share targets
+:core:navigation         — WebViewIntentFactory interface (DI boundary between link-dispatcher and webview)
 ```
 
 ---
 
-*Stack analysis: 2026-05-15*
+*Stack analysis: 2026-05-15 — updated 2026-05-21*

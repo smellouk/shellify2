@@ -6,12 +6,8 @@
 
 ## Known Issues
 
-### HTTPS App Links Fall Back to Browser
-- Risk: `https://shellify.app/add?...` deep links open in the browser instead of the app.
-- Files: `app/src/main/AndroidManifest.xml` (lines 59–69), `.planning/deeplinks.md`
-- Cause: `assetlinks.json` has never been hosted at `https://shellify.app/.well-known/assetlinks.json`; Android cannot verify domain ownership at install time.
-- Current mitigation: `shellify://` custom scheme works as a primary fallback.
-- Fix: Host the `assetlinks.json` with the release certificate SHA-256 fingerprint. Low effort, unblocks HTTPS-based sharing (SMS, email, QR codes).
+### ~~HTTPS App Links Fall Back to Browser~~ ✅ RESOLVED (2026-05-21)
+- `android:autoVerify="true"` is set on the `shellify.app` intent filters in `AndroidManifest.xml` and `assetlinks.json` is deployed at `https://shellify.app/.well-known/assetlinks.json`. Android domain verification passes at install time.
 
 ### ~~Database Schema Tracking Disabled~~ ✅ RESOLVED (2026-05-17)
 - `exportSchema = true` set in `AppDatabase.kt`. Baseline `1.json` generated and committed under `core/database/schemas/`. KSP arg moved to top-level in `core/database/build.gradle.kts`; stale arg removed from `app/build.gradle.kts`. `DatabaseMigrationTest` added in `core/database/src/androidTest/` to validate schema and foreign-key behaviour at CI time.
@@ -163,10 +159,8 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 - Missing: `core/analytics/` module, `sessions` table (DB migration 12→13), `WebViewActivity` session hooks, and `feature/analytics/` UI.
 - Impact: No usage data is collected; features like "top apps" and "time in app" cannot be built until the session recording layer exists.
 
-### Browser Replacement (LinkDispatcherActivity) Not Yet Implemented
-- Status: Fully designed in `.planning/browser-replacement.md` but no code exists.
-- Missing: `LinkDispatcherActivity`, `FindAppsForUrlUseCase`, `shellify://open` deep-link path in `MainActivity.onNewIntent`, and outbound share integration in `AppShareSheet`.
-- Impact: Shellify does not appear in the Android "Open with…" chooser, which is a key PWA launcher differentiator.
+### ~~Browser Replacement (LinkDispatcherActivity) Not Yet Implemented~~ ✅ RESOLVED (2026-05-21)
+- `feature/link-dispatcher` is fully shipped: `LinkDispatcherActivity` handles http/https generic intents and `text/plain` share targets; `shellify://open` deep-link path wired; `FindAppsForUrlUseCase` matches URLs to installed apps; `AppShareSheet` emits `buildOpen()` links. Shellify now appears in the Android "Open with…" chooser.
 
 ### Tor / .onion Support Not Yet Implemented
 - Status: Designed in `.planning/tor-onion-support.md` — no implementation.
@@ -191,4 +185,4 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 
 ---
 
-*Concerns audit: 2026-05-15*
+*Concerns audit: 2026-05-15 — updated 2026-05-21*

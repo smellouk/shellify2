@@ -3,25 +3,25 @@
   "mode": "yolo",
   "granularity": "coarse",
   "parallelization": true,
-  "commit_docs": true,
+  "commit_docs": false,
   "model_profile": "balanced",
   "workflow": {
     "research": true,
     "plan_check": true,
     "verifier": true,
-    "nyquist_validation": false,
+    "nyquist_validation": true,
     "auto_advance": false,
     "use_worktrees": true,
     "node_repair": true,
     "node_repair_budget": 2,
     "subagent_timeout": 600,
-    "inline_plan_threshold": 3
+    "inline_plan_threshold": 3,
+    "_auto_chain_active": false
   },
   "git": {
     "base_branch": "main",
     "phase_branch_template": "feature/phase-{phase}-{slug}",
-    "milestone_branch_template": "release/{milestone}",
-    "squash": true
+    "milestone_branch_template": "release/{milestone}"
   },
   "project": {
     "name": "Shellify",

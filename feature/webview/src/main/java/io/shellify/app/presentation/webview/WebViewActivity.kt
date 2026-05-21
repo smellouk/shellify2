@@ -50,6 +50,7 @@ import io.shellify.app.core.security.verifyPassword
 import io.shellify.app.core.theme.ThemeMode
 import io.shellify.app.core.translate.TranslateBridge
 import io.shellify.app.domain.model.EngineType
+import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.theme.ShellifyTheme
@@ -69,6 +70,10 @@ class WebViewActivity : FragmentActivity() {
         const val EXTRA_APP_ID = "app_id"
         const val EXTRA_PREVIEW_URL = "preview_url"
         const val EXTRA_PREVIEW_NAME = "preview_name"
+        const val EXTRA_INCOGNITO = "incognito"
+
+        /** Passes the LockType.name string to override the preview path lock enforcement. */
+        const val EXTRA_LOCK_TYPE = "lock_type"
 
         @VisibleForTesting
         var engineFactory: (() -> BrowserEngine)? = null
@@ -86,10 +91,23 @@ class WebViewActivity : FragmentActivity() {
                 .setData(android.net.Uri.parse("shellify://app/$appId"))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
 
-        fun previewIntent(context: android.content.Context, url: String, name: String): Intent =
+        fun previewIntent(
+            context: android.content.Context,
+            url: String,
+            name: String,
+            lockType: LockType? = null,
+        ): Intent =
             Intent(context, WebViewActivity::class.java)
                 .putExtra(EXTRA_PREVIEW_URL, url)
                 .putExtra(EXTRA_PREVIEW_NAME, name)
+                .apply { lockType?.let { putExtra(EXTRA_LOCK_TYPE, it.name) } }
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+
+        /** Launches an ephemeral session that clears cookies and profile data on Activity destroy. */
+        fun incognitoIntent(context: android.content.Context, url: String): Intent =
+            Intent(context, WebViewActivity::class.java)
+                .putExtra(EXTRA_PREVIEW_URL, url)
+                .putExtra(EXTRA_INCOGNITO, true)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
     }
 
@@ -99,6 +117,7 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var isolationManager: IsolationManager
     private lateinit var viewModel: WebViewViewModel
     private var statusBarScrim: View? = null
+    private var isIncognitoSession = false
 
     @VisibleForTesting
     var splashOverlay: View? = null
@@ -114,8 +133,13 @@ class WebViewActivity : FragmentActivity() {
 
         val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
         val previewUrl = intent.getStringExtra(EXTRA_PREVIEW_URL)
+        val isIncognito = intent.getBooleanExtra(EXTRA_INCOGNITO, false)
+        isIncognitoSession = isIncognito
 
-        val pwaApp: WebApp = webAppOverride ?: when {
+        // Incognito requires a URL; cannot launch by appId in incognito mode.
+        if (isIncognito && previewUrl == null) { finish(); return }
+
+        var pwaApp: WebApp = webAppOverride ?: when {
             previewUrl != null -> WebApp(
                 name = intent.getStringExtra(EXTRA_PREVIEW_NAME) ?: previewUrl,
                 url = previewUrl,
@@ -123,6 +147,17 @@ class WebViewActivity : FragmentActivity() {
             appId != -1L -> runBlocking(Dispatchers.IO) { app.getWebAppById(appId) }
                 ?: run { finish(); return }
             else -> { finish(); return }
+        }
+
+        // On the preview path, allow the dispatcher to override the lock type (per D-02/INTG-07).
+        // This is only applied when launching by URL; for appId launches the DB-stored lock is used.
+        if (previewUrl != null) {
+            val lockTypeExtra = intent.getStringExtra(EXTRA_LOCK_TYPE)
+            if (lockTypeExtra != null) {
+                pwaApp = pwaApp.copy(
+                    lockType = runCatching { LockType.valueOf(lockTypeExtra) }.getOrDefault(LockType.NONE)
+                )
+            }
         }
 
         lifecycleScope.launch {
@@ -587,6 +622,13 @@ class WebViewActivity : FragmentActivity() {
 
     override fun onDestroy() {
         viewModel.onSessionEnd()
+        if (isIncognitoSession) {
+            // Wipe cookies and profile data for the ephemeral session (D-03).
+            val isolationId = viewModel.uiState.value.app?.isolationId
+            if (isolationId != null) {
+                lifecycleScope.launch { isolationManager.clearData(isolationId) }
+            }
+        }
         engine.destroy()
         super.onDestroy()
     }

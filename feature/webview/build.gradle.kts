@@ -5,6 +5,7 @@ plugins {
 android { namespace = "io.shellify.feature.webview" }
 dependencies {
     implementation(project(":core:domain"))
+    implementation(project(":core:navigation"))
     api(project(":core:engine"))
     implementation(project(":core:isolation"))
     implementation(project(":core:security"))

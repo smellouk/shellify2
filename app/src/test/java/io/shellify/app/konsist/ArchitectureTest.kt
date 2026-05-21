@@ -258,6 +258,39 @@ class ArchitectureTest {
             }
     }
 
+    @Test
+    fun `feature modules must not import from other feature modules`() {
+        val featurePackages = setOf(
+            "add", "category", "home", "linkdispatcher", "onboarding",
+            "settings", "share", "shortcut", "translate", "webview",
+        )
+        val featureDirRegex = Regex("/feature/([^/]+)/src/main/")
+        // Pre-existing violations excluded from enforcement until each owning feature is refactored.
+        // Do NOT add new entries here — new cross-feature imports must be fixed before merging.
+        val knownViolations = setOf(
+            "AddScreen",       // imports feature:webview.WebViewActivity — tracked in deferred-items
+            "HomeScreen",      // imports feature:webview.WebViewActivity, feature:share.AppShareSheet
+            "AppSettingsScreen", // imports feature:share.AppShareSheet, feature:add.ColorPickerDialog
+            "ShortcutActivity", // imports feature:webview.WebViewActivity
+        )
+        projectFiles
+            .filter { featureDirRegex.containsMatchIn(it.path) }
+            .filter { file -> file.name !in knownViolations }
+            .assertFalse(
+                additionalMessage = "feature:* modules must not import from other feature:* modules — extract " +
+                    "an interface in core:* and inject the implementation via ShellifyApplication's " +
+                    "*ServiceProvider (see core:navigation.WebViewIntentFactory for the canonical pattern)"
+            ) { file ->
+                val ownDir = featureDirRegex.find(file.path)?.groupValues?.get(1) ?: return@assertFalse false
+                val ownPkg = ownDir.replace("-", "")
+                file.imports.any { import ->
+                    featurePackages.any { other ->
+                        other != ownPkg && import.name.startsWith("io.shellify.app.presentation.$other.")
+                    }
+                }
+            }
+    }
+
     // ── General rules ─────────────────────────────────────────────────────────
 
     @Test

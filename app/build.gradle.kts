@@ -117,6 +117,7 @@ dependencies {
     implementation(project(":core:translate"))
     implementation(project(":core:theme"))
     implementation(project(":core:backup"))
+    implementation(project(":core:navigation"))
 
     // Feature modules
     implementation(project(":feature:home"))
@@ -129,6 +130,7 @@ dependencies {
     implementation(project(":feature:webview"))
     implementation(project(":feature:share"))
     implementation(project(":feature:shortcut"))
+    implementation(project(":feature:link-dispatcher"))
 
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)

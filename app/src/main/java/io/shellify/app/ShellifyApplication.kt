@@ -9,6 +9,7 @@ import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoNativeLoader
 import io.shellify.app.core.iconpack.SimpleIconsManager
 import io.shellify.app.core.isolation.IsolationManager
+import io.shellify.app.core.navigation.WebViewIntentFactory
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.security.PasswordManager
@@ -21,17 +22,20 @@ import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
 import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.DeleteCategoryUseCase
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
+import io.shellify.app.domain.usecase.FindAppsForUrlUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.GetWebAppByNameUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import io.shellify.app.presentation.linkdispatcher.LinkDispatcherServiceProvider
 import io.shellify.app.presentation.shortcut.ShortcutActivity
+import io.shellify.app.presentation.webview.WebViewIntentFactoryImpl
 import io.shellify.app.presentation.webview.WebViewServiceProvider
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class ShellifyApplication : Application(), WebViewServiceProvider {
+class ShellifyApplication : Application(), WebViewServiceProvider, LinkDispatcherServiceProvider {
     val pendingDeepLink = MutableSharedFlow<Pair<String, String>>(replay = 1)
 
     // Crypto first — everything else depends on it
@@ -48,6 +52,8 @@ class ShellifyApplication : Application(), WebViewServiceProvider {
     val deleteAllApps by lazy { DeleteAllAppsUseCase(webAppRepository) }
     override val getWebAppById by lazy { GetWebAppByIdUseCase(webAppRepository) }
     val getWebAppByName by lazy { GetWebAppByNameUseCase(webAppRepository) }
+    override val findAppsForUrl by lazy { FindAppsForUrlUseCase(webAppRepository) }
+    override val webViewIntentFactory: WebViewIntentFactory by lazy { WebViewIntentFactoryImpl() }
     val getCategories by lazy { GetCategoriesUseCase(categoryRepository) }
     val saveCategory by lazy { SaveCategoryUseCase(categoryRepository) }
     val deleteCategory by lazy { DeleteCategoryUseCase(categoryRepository) }

@@ -41,6 +41,7 @@ include(":core:deeplink")
 include(":core:translate")
 include(":core:theme")
 include(":core:backup")
+include(":core:navigation")
 
 // Feature modules
 include(":feature:home")
@@ -53,3 +54,4 @@ include(":feature:translate")
 include(":feature:webview")
 include(":feature:share")
 include(":feature:shortcut")
+include(":feature:link-dispatcher")

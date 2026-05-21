@@ -44,6 +44,7 @@ fun AppShareSheet(
     val customLink =
         remember(appUrl, appName) { DeepLinkHandler.buildCustomScheme(appUrl, appName) }
     val httpsLink = remember(appUrl, appName) { DeepLinkHandler.buildHttps(appUrl, appName) }
+    val openLink = remember(appUrl) { DeepLinkHandler.buildOpen(appUrl) }
     val qrBitmap = remember(customLink) { QrCodeGenerator.generate(customLink) }
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -80,18 +81,31 @@ fun AppShareSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)) {
-                OutlinedButton(onClick = {
-                    val cb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    cb.setPrimaryClip(ClipData.newPlainText("Shellify link", customLink))
-                }) { Text(stringResource(R.string.share_copy_link)) }
-                Button(onClick = {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, "$customLink\n\n$httpsLink")
-                    }
-                    context.startActivity(Intent.createChooser(intent, appName))
-                }) { Text(stringResource(R.string.share_button)) }
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        val cb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        cb.setPrimaryClip(ClipData.newPlainText("Shellify link", customLink))
+                    },
+                ) { Text(stringResource(R.string.share_copy_link)) }
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        val cb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        cb.setPrimaryClip(ClipData.newPlainText("Shellify app link", openLink))
+                    },
+                ) { Text(stringResource(R.string.share_copy_app_link)) }
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, "$customLink\n\n$httpsLink")
+                        }
+                        context.startActivity(Intent.createChooser(intent, appName))
+                    },
+                ) { Text(stringResource(R.string.share_button)) }
             }
         }
     }

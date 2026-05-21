@@ -464,6 +464,13 @@
     <!-- Share / Deeplink -->
     <string name="share_copy_link">نسخ الرابط</string>
     <string name="share_button">مشاركة</string>
+    <string name="share_copy_app_link">نسخ رابط التطبيق</string>
+
+    <!-- Link Dispatcher -->
+    <string name="link_dispatcher_chooser_title">فتح باستخدام</string>
+    <string name="link_dispatcher_no_match_title">لا توجد تطبيقات مطابقة</string>
+    <string name="link_dispatcher_open_temporarily">فتح مؤقتًا</string>
+    <string name="link_dispatcher_add_as_new">إضافة كتطبيق جديد</string>
 
     <!-- Errors -->
     <string name="error_invalid_url">يرجى إدخال رابط صحيح</string>
@@ -488,4 +495,36 @@
     <string name="webview_error_timeout_body">استغرق الخادم وقتاً طويلاً للاستجابة. أعد المحاولة لاحقاً.</string>
     <string name="webview_error_generic_title">فشل تحميل الصفحة</string>
     <string name="webview_error_generic_body">حدث خطأ ما. أعد المحاولة.</string>
+
+    <!-- Consent update -->
+    <string name="consent_update_title">حدّثنا الشروط</string>
+    <string name="consent_update_subtitle">تحديث بسيط لشروط الخدمة وسياسة الخصوصية. يرجى مراجعة التغييرات والموافقة لمتابعة استخدام Shellify.</string>
+    <string name="consent_update_changes_title">ما الجديد</string>
+    <string name="consent_update_changes_1">توضيح طريقة عرض أيقونات العلامات التجارية من Simple Icons لتمييز تطبيقاتك</string>
+    <string name="consent_update_changes_2">إضافة تنويه بأن شعارات العلامات التجارية هي علامات مسجلة لأصحابها</string>
+    <string name="consent_update_checkbox_label">قرأت ووافقت على الشروط وسياسة الخصوصية المُحدَّثة</string>
+    <string name="consent_update_agree_button">أوافق وأتابع</string>
+    <string name="consent_what_5">يعرض شعارات العلامات التجارية من Simple Icons لتمييز التطبيقات التي تضيفها. هذه الشعارات علامات مسجلة لأصحابها وتُستخدم فقط لأغراض التعريف — Shellify لا يدّعي ملكيتها</string>
+
+    <!-- Deeplink confirm -->
+    <string name="deeplink_confirm_title">إضافة تطبيق ويب؟</string>
+    <string name="deeplink_confirm_body">أنت على وشك إضافة تطبيق ويب من رابط مُشارَك. الوجهة:</string>
+    <string name="deeplink_confirm_add">إضافة</string>
+
+    <!-- Global settings — Safe Browsing -->
+    <string name="global_settings_gecko_safe_browsing_title">التصفح الآمن</string>
+    <string name="global_settings_gecko_safe_browsing_desc">يرسل روابط مجزّأة إلى Google للتحقق من التصيّد والبرامج الضارة. متاح فقط عند تحديد محرك GeckoView.</string>
+
+    <!-- Onboarding quick picks -->
+    <string name="onboarding_quickpicks_reddit">Reddit</string>
+    <string name="onboarding_quickpicks_reddit_host">reddit.com</string>
+    <string name="onboarding_quickpicks_discord">Discord</string>
+    <string name="onboarding_quickpicks_discord_host">discord.com</string>
+    <string name="onboarding_quickpicks_telegram">Telegram</string>
+    <string name="onboarding_quickpicks_telegram_host">web.telegram.org</string>
+    <string name="onboarding_quickpicks_github">GitHub</string>
+    <string name="onboarding_quickpicks_github_host">github.com</string>
+
+    <!-- WebView task label -->
+    <string name="webview_task_label">Shell</string>
 </resources>

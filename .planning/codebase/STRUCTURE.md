@@ -17,6 +17,7 @@ shellify/                          # Project root
 │   ├── iconpack/                  # Simple Icons catalogue reader/manager
 │   ├── isolation/                 # Per-app WebView profile / cookie isolation
 │   ├── locale/                    # Language code wrapping (LocaleHelper)
+│   ├── navigation/                # WebViewIntentFactory — DI boundary between link-dispatcher and webview
 │   ├── pwa/                       # PWA manifest analysis, favicon fetching
 │   ├── security/                  # Password, biometrics, Base64 codecs
 │   ├── shortcut/                  # Launcher shortcut creation/removal
@@ -27,6 +28,7 @@ shellify/                          # Project root
 │   ├── add/                       # Add / edit PWA screen
 │   ├── category/                  # Category CRUD screen
 │   ├── home/                      # Main app grid screen
+│   ├── link-dispatcher/           # "Open with…" handler for http/https intents + share targets
 │   ├── onboarding/                # First-run consent + wizard
 │   ├── settings/                  # Per-app and global settings screens
 │   ├── share/                     # QR code + deep-link share sheet
@@ -64,7 +66,6 @@ app/
 │   │           ├── AppNavigation.kt  # NavHost, bottom bar, VM instantiation
 │   │           └── Screen.kt         # Sealed route definitions
 │   └── res/                       # Launcher icons, strings, themes, xml configs
-├── schemas/                       # Room schema export (version history)
 └── build.gradle.kts
 ```
 
@@ -92,7 +93,8 @@ core/domain/src/main/java/io/shellify/app/domain/
     ├── GetCategoriesUseCase.kt
     ├── SaveCategoryUseCase.kt
     ├── DeleteCategoryUseCase.kt
-    └── DeleteAllCategoriesUseCase.kt
+    ├── DeleteAllCategoriesUseCase.kt
+    └── FindAppsForUrlUseCase.kt
 ```
 
 ### `core:database`
@@ -231,8 +233,8 @@ feature/<name>/
 - Generated: No
 - Committed: Yes
 
-**`app/schemas/`:**
-- Purpose: Room schema JSON exports for migration tracking
+**`core/database/schemas/`:**
+- Purpose: Room schema JSON exports for migration tracking (`1.json`, `2.json`)
 - Generated: Yes (by KSP during build)
 - Committed: Yes (required for migration validation)
 
@@ -248,4 +250,4 @@ feature/<name>/
 
 ---
 
-*Structure analysis: 2026-05-15*
+*Structure analysis: 2026-05-15 — updated 2026-05-21*

@@ -464,6 +464,13 @@
     <!-- Share / Deeplink -->
     <string name="share_copy_link">Copier le lien</string>
     <string name="share_button">Partager</string>
+    <string name="share_copy_app_link">Copier le lien de l\'app</string>
+
+    <!-- Link Dispatcher -->
+    <string name="link_dispatcher_chooser_title">Ouvrir avec</string>
+    <string name="link_dispatcher_no_match_title">Aucune application correspondante</string>
+    <string name="link_dispatcher_open_temporarily">Ouvrir temporairement</string>
+    <string name="link_dispatcher_add_as_new">Ajouter comme nouvelle app</string>
 
     <!-- Errors -->
     <string name="error_invalid_url">Veuillez entrer une URL valide</string>
@@ -488,4 +495,36 @@
     <string name="webview_error_timeout_body">Le serveur a mis trop de temps à répondre. Réessayez plus tard.</string>
     <string name="webview_error_generic_title">Échec du chargement</string>
     <string name="webview_error_generic_body">Une erreur s\'est produite. Réessayez.</string>
+
+    <!-- Consent update -->
+    <string name="consent_update_title">Nous avons mis à jour nos conditions</string>
+    <string name="consent_update_subtitle">Une légère mise à jour de nos Conditions d\'utilisation et de notre Politique de confidentialité. Veuillez examiner les changements et accepter pour continuer à utiliser Shellify.</string>
+    <string name="consent_update_changes_title">Nouveautés</string>
+    <string name="consent_update_changes_1">Précisé la manière dont les icônes de marque issues de Simple Icons sont affichées pour identifier vos apps</string>
+    <string name="consent_update_changes_2">Ajout d\'une mention reconnaissant que les logos de marque sont des marques déposées de leurs propriétaires respectifs</string>
+    <string name="consent_update_checkbox_label">J\'ai lu et j\'accepte les Conditions et la Politique de confidentialité mises à jour</string>
+    <string name="consent_update_agree_button">Accepter &amp; continuer</string>
+    <string name="consent_what_5">Affiche les logos de marque fournis par Simple Icons pour identifier les apps que vous ajoutez. Ces logos sont des marques déposées de leurs propriétaires respectifs et sont utilisés uniquement à des fins d\'identification — Shellify n\'en revendique pas la propriété</string>
+
+    <!-- Deeplink confirm -->
+    <string name="deeplink_confirm_title">Ajouter la web app ?</string>
+    <string name="deeplink_confirm_body">Vous êtes sur le point d\'ajouter une web app depuis un lien partagé. Destination :</string>
+    <string name="deeplink_confirm_add">Ajouter</string>
+
+    <!-- Global settings — Safe Browsing -->
+    <string name="global_settings_gecko_safe_browsing_title">Navigation sécurisée</string>
+    <string name="global_settings_gecko_safe_browsing_desc">Envoie des URL hachées à Google pour vérifier l\'hameçonnage et les logiciels malveillants. Disponible uniquement lorsque le moteur GeckoView est sélectionné.</string>
+
+    <!-- Onboarding quick picks -->
+    <string name="onboarding_quickpicks_reddit">Reddit</string>
+    <string name="onboarding_quickpicks_reddit_host">reddit.com</string>
+    <string name="onboarding_quickpicks_discord">Discord</string>
+    <string name="onboarding_quickpicks_discord_host">discord.com</string>
+    <string name="onboarding_quickpicks_telegram">Telegram</string>
+    <string name="onboarding_quickpicks_telegram_host">web.telegram.org</string>
+    <string name="onboarding_quickpicks_github">GitHub</string>
+    <string name="onboarding_quickpicks_github_host">github.com</string>
+
+    <!-- WebView task label -->
+    <string name="webview_task_label">Shell</string>
 </resources>

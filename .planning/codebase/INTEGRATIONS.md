@@ -103,4 +103,4 @@
 
 ---
 
-*Integration audit: 2026-05-15*
+*Integration audit: 2026-05-15 — updated 2026-05-21*

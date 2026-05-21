@@ -205,6 +205,23 @@ After any UI change:
 ```
 Commit the updated golden images alongside the code change.
 
+### GSD Nyquist Validation — Test Generation
+
+When generating tests to verify phase requirements, always produce **all three** of the following where applicable:
+
+| Type | Location | Command |
+|------|----------|---------|
+| Unit tests | `<module>/src/test/java/…` | `./gradlew testDebugUnitTest --continue` |
+| Screenshot tests | `<module>/src/test/java/…` (Roborazzi) | `./gradlew verifyRoborazziDebug --continue` |
+| Android instrumented tests | `app/src/androidTest/java/…` | `./gradlew connectedDebugAndroidTest --continue` |
+
+Rules:
+- Unit tests use **JUnit 4 + MockK**. Place in the same module as the code under test.
+- Screenshot tests use **Roborazzi** (`@RoborazziTest`, `captureRoboImage`). After generating, record goldens with `./gradlew recordRoborazziDebug --continue` and commit the images.
+- Instrumented tests use **androidx.test + Espresso / Compose UI Test**. All live in `app/src/androidTest/` regardless of which feature module is tested.
+- Never write hardcoded strings in instrumented tests — resolve via `context.getString(R.string.*)`.
+- If a string resource does not exist yet, create it (and its translations) before writing the test.
+
 ---
 
 ## Commit Convention
@@ -212,6 +229,8 @@ Commit the updated golden images alongside the code change.
 Format: `<type>(<scope>): <description>`
 
 Scope = module name: `feat(feature:add): ...`, `fix(core:isolation): ...`
+
+**Never use phase numbers or phase names as the scope.** Use the affected module instead (e.g. `feat(core:deeplink):` not `feat(phase-01):`). For squash commits spanning multiple modules, omit the scope entirely: `feat: ...`.
 
 Types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `ci`, `build`, `chore`, `revert`
 

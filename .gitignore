@@ -15,7 +15,7 @@ captures/
 *.jks
 keystore.properties
 .DS_Store
-sketches/
 release.properties
 app/release/
 .planning/phases/
+.planning/sketches/

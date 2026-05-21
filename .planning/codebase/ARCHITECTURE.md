@@ -51,6 +51,8 @@
 | `feature:onboarding` | First-run consent + wizard | `feature/onboarding/src/main/java/io/shellify/app/presentation/onboarding/` |
 | `feature:translate` | Per-app translation config screen | `feature/translate/src/main/java/io/shellify/app/presentation/translate/` |
 | `feature:share` | QR code + deep-link export sheet | `feature/share/src/main/java/io/shellify/app/presentation/share/AppShareSheet.kt` |
+| `feature:link-dispatcher` | Android "Open with…" handler for http/https intents and share targets | `feature/link-dispatcher/src/main/java/io/shellify/app/presentation/linkdispatcher/` |
+| `core:navigation` | `WebViewIntentFactory` interface — dependency inversion so `feature:link-dispatcher` can launch WebView without importing `feature:webview` | `core/navigation/src/main/java/io/shellify/app/core/navigation/WebViewIntentFactory.kt` |
 | `core:domain` | Domain models, repository interfaces, use cases | `core/domain/src/main/java/io/shellify/app/domain/` |
 | `core:database` | Room DAOs, entities, mappers, repository impls | `core/database/src/main/java/io/shellify/app/data/` |
 | `core:engine` | `BrowserEngine` abstraction, `SystemWebViewEngine`, `GeckoViewEngine` | `core/engine/src/main/java/io/shellify/app/core/engine/` |
@@ -157,7 +159,7 @@
 
 **Use Cases:**
 - Purpose: Single-responsibility actions bridging presentation to data
-- Examples: `core/domain/src/main/java/io/shellify/app/domain/usecase/` (10 use cases)
+- Examples: `core/domain/src/main/java/io/shellify/app/domain/usecase/` (11 use cases, including `FindAppsForUrlUseCase` added in phase 1)
 - Pattern: Command / Interactor — each class has one `operator fun invoke()` method
 
 **IsolationManager:**
@@ -181,6 +183,10 @@
 - Schemes: `shellify://add?url=…` and `https://shellify.app/add?url=…`
 - Handler: `MainActivity.onNewIntent` → `DeepLinkHandler.parse` → `ShellifyApplication.pendingDeepLink`
 
+**Web intent / "Open with…":**
+- Triggers: Any http/https intent or `text/plain` share where `LinkDispatcherActivity` is registered
+- Handler: `LinkDispatcherActivity` → `LinkDispatcherViewModel` → `FindAppsForUrlUseCase` → shows `LinkDispatcherSheet` (bottom sheet of matching Shellify apps); launches chosen app via `WebViewIntentFactory` (`core:navigation`)
+
 **BackupWorker:**
 - Location: `core/backup/src/main/java/io/shellify/app/core/backup/BackupWorker.kt`
 - Triggers: WorkManager scheduled job
@@ -190,7 +196,7 @@
 
 - **Threading:** Main thread for UI; coroutines (`Dispatchers.IO`) for DB, network, and file I/O in all use cases and managers
 - **Global state:** `ShellifyApplication` holds all singleton instances as `lazy` properties; `AppDatabase` uses a double-checked lock singleton
-- **Circular imports:** No feature-to-feature cycles; `feature:home` → `feature:share` and `feature:webview` are the only cross-feature deps (both are unidirectional)
+- **Circular imports:** No feature-to-feature cycles; `feature:home` → `feature:share` and `feature:webview`, `feature:shortcut` → `feature:webview` are the only cross-feature deps (all unidirectional); `feature:link-dispatcher` uses `core:navigation` to avoid importing `feature:webview` directly
 - **No Hilt/Dagger:** Manual DI exclusively via `ShellifyApplication` lazy properties and constructor injection at nav graph time
 - **GeckoView native loading:** GeckoView `.so` files must be pre-loaded in every process via `GeckoNativeLoader.injectAndLoad` before first use (`app/.../ShellifyApplication.kt:87`)
 
@@ -225,4 +231,4 @@
 
 ---
 
-*Architecture analysis: 2026-05-15*
+*Architecture analysis: 2026-05-15 — updated 2026-05-21*

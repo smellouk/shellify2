@@ -70,7 +70,23 @@
             </intent-filter>
         </activity>
 
-        <!-- WebViewActivity and ShortcutActivity are declared in their respective feature module manifests -->
+        <!-- WebViewActivity, ShortcutActivity, and LinkDispatcherActivity are declared in their respective feature module manifests -->
+
+        <!-- INTG-09: App Links for https://shellify.app/open — autoVerify=true because assetlinks.json is deployed.
+             This must live in the app manifest (not feature module) so the merged manifest is verified by Android. -->
+        <activity
+            android:name="io.shellify.app.presentation.linkdispatcher.LinkDispatcherActivity"
+            android:exported="true">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="shellify.app"
+                    android:pathPrefix="/open" />
+            </intent-filter>
+        </activity>
 
         <!-- Required by createComposeRule() in Robolectric unit tests -->
         <activity

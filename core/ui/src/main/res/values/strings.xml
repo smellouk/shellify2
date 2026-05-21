@@ -490,6 +490,13 @@
     <!-- Share / Deeplink -->
     <string name="share_copy_link">Copy link</string>
     <string name="share_button">Share</string>
+    <string name="share_copy_app_link">Copy app link</string>
+
+    <!-- Link Dispatcher -->
+    <string name="link_dispatcher_chooser_title">Open with</string>
+    <string name="link_dispatcher_no_match_title">No matching app</string>
+    <string name="link_dispatcher_open_temporarily">Open temporarily</string>
+    <string name="link_dispatcher_add_as_new">Add as new app</string>
 
     <!-- Errors -->
     <string name="error_invalid_url">Please enter a valid URL</string>

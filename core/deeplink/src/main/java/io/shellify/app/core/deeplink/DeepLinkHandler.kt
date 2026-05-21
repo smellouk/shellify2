@@ -33,6 +33,29 @@ object DeepLinkHandler {
             .appendQueryParameter("name", name)
             .build().toString()
 
+    /**
+     * Parses a shellify://open?url=<b64> or https://shellify.app/open?url=<b64> URI.
+     * Returns the decoded https URL, or null if the URI format is invalid or the decoded value is not https.
+     * The security gate (decodeUrl returns null for non-https values) is inherited from decodeUrl.
+     */
+    fun parseOpen(uri: Uri, codec: Base64Codec = UrlSafeBase64Codec): String? {
+        val isCustom = uri.scheme == "shellify" && uri.host == "open"
+        val isHttps = uri.scheme == "https" && uri.host == "shellify.app" &&
+            uri.path?.startsWith("/open") == true
+        if (!isCustom && !isHttps) return null
+        val rawUrl = uri.getQueryParameter("url")?.takeIf { it.isNotBlank() } ?: return null
+        return decodeUrl(rawUrl, codec)
+    }
+
+    /**
+     * Builds a shellify://open?url=<b64> URI encoding the given https URL.
+     * Does not include a name parameter — URL-only format per design decision D-01.
+     */
+    fun buildOpen(url: String, codec: Base64Codec = UrlSafeBase64Codec): String =
+        Uri.Builder().scheme("shellify").authority("open")
+            .appendQueryParameter("url", encodeUrl(url, codec))
+            .build().toString()
+
     internal fun encodeUrl(url: String, codec: Base64Codec = UrlSafeBase64Codec): String =
         codec.encode(url.toByteArray())
 
