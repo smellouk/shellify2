@@ -46,9 +46,18 @@
 **Plans:** 3 plans
 
 Plans:
+
+**Wave 1**
 - [ ] 01-01-PLAN.md — Domain foundation: FindAppsForUrlUseCase, DeepLinkHandler.parseOpen/buildOpen, incognito WebViewActivity, link-dispatcher module scaffold
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 01-02-PLAN.md — LinkDispatcherActivity with three-state bottom sheet, LinkDispatcherViewModel, string resources (EN/FR/AR)
 - [ ] 01-03-PLAN.md — AppShareSheet "Copy app link" extension, App Links /open manifest entry
+
+**Cross-cutting constraints:**
+- `core:domain` must use `java.net.URI` (not `android.net.Uri`) — all use cases in `FindAppsForUrlUseCase`
+- `android:autoVerify` must NOT appear on the generic http/https intent-filter in `feature/link-dispatcher` manifest
+- All new string resources must be added to EN, FR, and AR locale files simultaneously
 
 **Success Criteria:**
 1. Tapping a link in Gmail/Slack/any app shows Shellify in the Android "Open with" chooser
