@@ -2,7 +2,7 @@
 
 **Created:** 2026-05-15
 **Milestone:** v2 — Privacy-First Feature Parity
-**Phases:** 5 (coarse granularity)
+**Phases:** 23 (coarse granularity)
 **Requirements:** 43 v1 requirements + 5 test migration requirements, 100% mapped
 
 ---
@@ -16,6 +16,24 @@
 | 3 | Productivity & Insights | Power-user tooling and on-device usage awareness | PROD-01–05, ANLT-01–07 (12) | 5 |
 | 4 | Platform & Discovery | Shellify as a full Android citizen | PLAT-01–06, DISC-01–03, NOTF-01–04 (13) | 5 |
 | 5 | E2E Test Migration | Replace Espresso E2E tests with Maestro | TEST-01–05 (5) | 4 |
+| 6 | PWA Notification Handling | Complete in-app notification experience for PWAs | TBD | TBD |
+| 7 | Run Music in the Background | Keep audio playing from PWAs when the screen is off or the app is backgrounded | TBD | TBD |
+| 8 | Swipe to Refresh in WebViewActivity | Let users pull-to-refresh the current page in any PWA | TBD | TBD |
+| 9 | Inject JS Script to Website for PWA Editing | Allow users to inject custom JavaScript into any PWA for per-app page customisation | TBD | TBD |
+| 10 | Browser Fingerprint Hard Ghosting | Spoof or randomise browser fingerprint signals per PWA to prevent cross-site tracking | TBD | TBD |
+| 11 | Web Casting Support | Cast media from any PWA to Chromecast or other casting targets | TBD | TBD |
+| 12 | Picture-in-Picture Video | Float a video from any PWA over other apps while multitasking | TBD | TBD |
+| 13 | App Shortcuts (Long-Press Icon) | Android adaptive shortcuts menu per PWA for quick in-app actions | TBD | TBD |
+| 14 | Notification Badges | Show unread count on PWA home screen icons | TBD | TBD |
+| 15 | Find in Page | In-page text search triggered from the control center | TBD | TBD |
+| 16 | Shareable App Configs | Export a PWA's full config as a shellify:// link or QR code for community sharing | TBD | TBD |
+| 17 | Reading Mode | Strip page chrome to article text and images, à la Firefox Reader View | TBD | TBD |
+| 18 | Per-App Custom Proxy | Set a custom SOCKS5/HTTP proxy per PWA beyond the global Tor option | TBD | TBD |
+| 19 | Usage Limits Per App | Daily time cap with a soft block screen, integrated with analytics data | TBD | TBD |
+| 20 | Import Bookmarks from Chrome/Firefox as Apps | One-tap migration of browser bookmarks into Shellify PWAs | TBD | TBD |
+| 21 | Profiles Support | Guest and named profiles to switch between independent sets of added apps | TBD | TBD |
+| 22 | Network Request Log | Per-session log of domains contacted, requests blocked, and data transferred | TBD | TBD |
+| 23 | Console Log Viewer | Surface console.log output in a slide-up panel for custom JS debugging | TBD | TBD |
 
 ---
 
@@ -25,17 +43,19 @@
 
 **Requirements:** INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06, INTG-07, INTG-08, INTG-09
 
-**Plans:**
-1. `LinkDispatcherActivity` — new Activity with `ACTION_VIEW` + `ACTION_SEND` intent filters; domain matching via `FindAppsForUrlUseCase`; bottom-sheet chooser UI
-2. `shellify://open` deep link — `parseOpen()` in `DeepLinkHandler`; `MainActivity.onNewIntent` branch; lock-gate via `DeepLinkConfirmDialog`
-3. HTTPS App Links — `assetlinks.json` hosted at `shellify.app/.well-known/`; `AppShareSheet` "Share to this app" option; HomeScreen "Copy app link" long-press
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Domain foundation: FindAppsForUrlUseCase, DeepLinkHandler.parseOpen/buildOpen, incognito WebViewActivity, link-dispatcher module scaffold
+- [ ] 01-02-PLAN.md — LinkDispatcherActivity with three-state bottom sheet, LinkDispatcherViewModel, string resources (EN/FR/AR)
+- [ ] 01-03-PLAN.md — AppShareSheet "Copy app link" extension, App Links /open manifest entry
 
 **Success Criteria:**
 1. Tapping a link in Gmail/Slack/any app shows Shellify in the Android "Open with" chooser
 2. A URL matching a known PWA domain opens that PWA directly with no bottom sheet
 3. A URL matching multiple PWAs shows a bottom-sheet listing the matches
-4. `shellify://open?appId=X&url=Y` opens the correct PWA at the given URL; locked apps gate with biometrics
-5. `https://shellify.app/add?url=…` opens directly in the Shellify add-app screen with no browser intermediary
+4. `shellify://open?url=Y` opens the matching PWA (URL-only per D-04); locked apps gate with biometrics via WebViewActivity
+5. `https://shellify.app/open?url=…` opens directly in the Shellify dispatcher with no browser intermediary
 
 **Dependencies:** None — no schema changes required
 
@@ -141,6 +161,294 @@
 
 ---
 
+## Phase 6: PWA Notification Handling
+
+**Goal:** Deliver a complete in-app notification experience for PWAs — receive, display, persist, and act on Web Push notifications sent by installed web apps, with per-app permission controls and DND scheduling.
+
+**Requirements:** TBD — run `/gsd-plan-phase 6` to define
+
+**Depends on:** Phase 4 (Platform & Discovery) — Web Push infrastructure via GeckoView
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 7: Run Music in the Background
+
+**Goal:** Keep audio playing from PWAs when the screen is off or the app is backgrounded — enabling Spotify, YouTube Music, podcast, and radio PWAs to behave like native media apps.
+
+**Requirements:** TBD — run `/gsd-plan-phase 7` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 8: Swipe to Refresh in WebViewActivity
+
+**Goal:** Let users pull-to-refresh the current page in any PWA via a standard swipe-down gesture, matching the UX of native Android apps.
+
+**Requirements:** TBD — run `/gsd-plan-phase 8` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 9: Inject JS Script to Website for PWA Editing
+
+**Goal:** Allow users to write and inject custom JavaScript into any PWA on page load, enabling per-app tweaks such as hiding UI elements, overriding behaviours, or adding convenience scripts.
+
+**Requirements:** TBD — run `/gsd-plan-phase 9` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 10: Browser Fingerprint Hard Ghosting
+
+**Goal:** Spoof or randomise per-PWA browser fingerprint signals (User-Agent, canvas, WebGL, fonts, screen metrics, timezone, language) so each app presents a distinct, unlinkable identity to tracking scripts.
+
+**Requirements:** TBD — run `/gsd-plan-phase 10` to define
+
+**Depends on:** Phase 2 (Privacy & Tor) — builds on the privacy hardening and per-app isolation foundations
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 11: Web Casting Support
+
+**Goal:** Let users cast media from any PWA to Chromecast or other casting targets directly from the control center.
+
+**Requirements:** TBD — run `/gsd-plan-phase 11` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 12: Picture-in-Picture Video
+
+**Goal:** Float a playing video from any PWA in a resizable overlay so users can keep watching while switching apps or returning to the home screen.
+
+**Requirements:** TBD — run `/gsd-plan-phase 12` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 13: App Shortcuts (Long-Press Icon)
+
+**Goal:** Surface per-PWA Android adaptive shortcuts on long-press of the home screen icon, enabling quick actions like "Open inbox" or "New post" without opening the app first.
+
+**Requirements:** TBD — run `/gsd-plan-phase 13` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 14: Notification Badges
+
+**Goal:** Show unread count badges on PWA home screen icons, giving users at-a-glance awareness of pending notifications without opening the app.
+
+**Requirements:** TBD — run `/gsd-plan-phase 14` to define
+
+**Depends on:** Phase 6 (PWA Notification Handling) — badge counts driven by Web Push notifications
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 15: Find in Page
+
+**Goal:** Provide an in-page text search (Ctrl+F equivalent) accessible from the WebView control center, letting users locate content on any page.
+
+**Requirements:** TBD — run `/gsd-plan-phase 15` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 16: Shareable App Configs
+
+**Goal:** Let users export a PWA's full configuration (URL, icon, custom JS, CSS, block rules) as a `shellify://` deep link or QR code so the community can share ready-made app setups.
+
+**Requirements:** TBD — run `/gsd-plan-phase 16` to define
+
+**Depends on:** Phase 9 (Inject JS Script) — config bundle includes custom scripts
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 17: Reading Mode
+
+**Goal:** Strip page chrome down to article text and images, à la Firefox Reader View, for distraction-free reading in any PWA.
+
+**Requirements:** TBD — run `/gsd-plan-phase 17` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 18: Per-App Custom Proxy
+
+**Goal:** Allow users to configure a custom SOCKS5 or HTTP proxy for each PWA individually, enabling corporate VPN routing, regional access, and granular network control beyond the global Tor option.
+
+**Requirements:** TBD — run `/gsd-plan-phase 18` to define
+
+**Depends on:** Phase 2 (Privacy & Tor) — builds on per-app network routing foundations
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 19: Usage Limits Per App
+
+**Goal:** Let users set a daily time cap per PWA with a soft block screen when the limit is reached, positioning Shellify as a digital wellbeing tool alongside its privacy features.
+
+**Requirements:** TBD — run `/gsd-plan-phase 19` to define
+
+**Depends on:** Phase 3 (Productivity & Insights) — session tracking data powers the time accounting
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 20: Import Bookmarks from Chrome/Firefox as Apps
+
+**Goal:** Let users import browser bookmarks from Chrome or Firefox and convert them into Shellify PWAs in one step, dramatically lowering the migration barrier for new users.
+
+**Requirements:** TBD — run `/gsd-plan-phase 20` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 21: Profiles Support
+
+**Goal:** Introduce guest and named profiles so users can maintain independent sets of apps, sessions, and settings — enabling work/personal separation or shared-device use cases.
+
+**Requirements:** TBD — run `/gsd-plan-phase 21` to define
+
+**Depends on:** Phase 2 (Privacy & Tor) — isolation primitives underpin per-profile separation
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 22: Network Request Log
+
+**Goal:** Surface a lightweight per-session log of every domain contacted, request blocked, and data volume transferred for each PWA, building transparency and trust with privacy-focused users.
+
+**Requirements:** TBD — run `/gsd-plan-phase 22` to define
+
+**Depends on:** None
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
+## Phase 23: Console Log Viewer
+
+**Goal:** Surface `console.log`, `console.warn`, and `console.error` output from any PWA in a slide-up developer panel, making custom JS injection (Phase 9) practical to debug.
+
+**Requirements:** TBD — run `/gsd-plan-phase 23` to define
+
+**Depends on:** Phase 9 (Inject JS Script) — primary use case is debugging injected scripts
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
 ## Deferred (v2)
 
 | Feature | Reason |
@@ -154,4 +462,4 @@
 ---
 
 *Roadmap created: 2026-05-15*
-*Last updated: 2026-05-16 — added Phase 5: E2E Test Migration (Espresso → Maestro)*
+*Last updated: 2026-05-21 — added Phases 11–23*

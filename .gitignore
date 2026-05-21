@@ -18,3 +18,4 @@ keystore.properties
 sketches/
 release.properties
 app/release/
+.planning/phases/
