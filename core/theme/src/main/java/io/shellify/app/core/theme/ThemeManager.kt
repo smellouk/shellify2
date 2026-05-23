@@ -30,6 +30,7 @@ class ThemeManager(private val context: Context) {
     private val keyDefaultUa = stringPreferencesKey("default_ua")
     private val keyDefaultEngine = stringPreferencesKey("default_engine")
     private val keyGeckoSafeBrowsing = booleanPreferencesKey("gecko_safe_browsing")
+    private val keyGlobalNotificationsEnabled = booleanPreferencesKey("global_notifications_enabled")
 
     val themeMode: Flow<ThemeMode> = context.themeStore.data.map { prefs ->
         runCatching { ThemeMode.valueOf(prefs[keyThemeMode] ?: "") }.getOrDefault(ThemeMode.SYSTEM)
@@ -57,6 +58,10 @@ class ThemeManager(private val context: Context) {
 
     val geckoSafeBrowsing: Flow<Boolean> = context.themeStore.data.map { prefs ->
         prefs[keyGeckoSafeBrowsing] ?: false
+    }
+
+    val globalNotificationsEnabled: Flow<Boolean> = context.themeStore.data.map { prefs ->
+        prefs[keyGlobalNotificationsEnabled] ?: false
     }
 
     private val keyAccentColor = stringPreferencesKey("accent_color")
@@ -98,6 +103,10 @@ class ThemeManager(private val context: Context) {
 
     suspend fun setGeckoSafeBrowsing(enabled: Boolean) {
         context.themeStore.edit { it[keyGeckoSafeBrowsing] = enabled }
+    }
+
+    suspend fun setGlobalNotificationsEnabled(enabled: Boolean) {
+        context.themeStore.edit { it[keyGlobalNotificationsEnabled] = enabled }
     }
 
     private val keyOnboardingDone = booleanPreferencesKey("onboarding_done")
@@ -160,7 +169,7 @@ class ThemeManager(private val context: Context) {
     }
 
     companion object {
-        const val CURRENT_CONSENT_VERSION = 2
+        const val CURRENT_CONSENT_VERSION = 3
     }
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */

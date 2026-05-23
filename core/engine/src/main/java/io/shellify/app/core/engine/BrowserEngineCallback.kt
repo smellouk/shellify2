@@ -21,4 +21,8 @@ interface BrowserEngineCallback {
         mimeType: String,
         contentLength: Long,
     )
+
+    fun onNotificationReceived(title: String, body: String?, iconUrl: String?, tag: String?)
+
+    fun onNotificationPermissionRequested(onResult: (Boolean) -> Unit)
 }

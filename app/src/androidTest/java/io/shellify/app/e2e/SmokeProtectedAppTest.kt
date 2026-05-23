@@ -21,6 +21,7 @@ import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -177,6 +178,7 @@ class SmokeProtectedAppTest {
         val vm = mockk<AppSettingsViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(state)
         every { vm.geckoEngineManager } returns geckoManager
+        every { vm.commands } returns MutableSharedFlow()
         composeTestRule.setContent {
             ShellifyTheme {
                 AppSettingsScreen(viewModel = vm, onBack = {}, onDeleted = {})

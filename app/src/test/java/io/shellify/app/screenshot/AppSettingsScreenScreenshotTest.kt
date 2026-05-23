@@ -12,6 +12,8 @@ import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsUiState
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.app.presentation.settings.AppSettingsCommand
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
@@ -36,6 +38,7 @@ class AppSettingsScreenScreenshotTest {
         return mockk<AppSettingsViewModel>(relaxed = true).also {
             every { it.uiState } returns MutableStateFlow(state)
             every { it.geckoEngineManager } returns gecko
+            every { it.commands } returns MutableSharedFlow<AppSettingsCommand>()
         }
     }
 

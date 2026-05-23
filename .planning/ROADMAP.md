@@ -180,15 +180,40 @@ Plans:
 
 **Goal:** Deliver a complete in-app notification experience for PWAs — receive, display, persist, and act on Web Push notifications sent by installed web apps, with per-app permission controls and DND scheduling.
 
-**Requirements:** TBD — run `/gsd-plan-phase 6` to define
+**Requirements:** NOTF-01, NOTF-02, NOTF-03, NOTF-04
 
 **Depends on:** Phase 4 (Platform & Discovery) — Web Push infrastructure via GeckoView
 
-**Plans:**
-- TBD
+**Plans:** 6 plans across 3 waves
+
+**Wave 1** *(foundation — parallel)*
+- [x] 06-01-PLAN.md — Domain layer (NotificationPermission, PwaNotification, WebApp fields, 4 use cases) + DB migration 2→3 + NotificationEntity/DAO/RepositoryImpl
+- [x] 06-02-PLAN.md — core:webbridge module (NotificationBridge, ShellifyBridge, JsInjector) + TranslateBridge migration from core:translate
+
+**Wave 2** *(engine + UI — parallel, depends on Wave 1)*
+- [x] 06-03-PLAN.md — Engine: BrowserEngineCallback extension + WebNotificationDelegate + PermissionDelegate in GeckoViewEngine
+- [x] 06-04-PLAN.md — Settings UI: Notifications section in AppSettingsScreen, TimePickerHourDialog, DndTimeRow, AppSettingsViewModel methods, 19 strings (EN/FR/AR), Roborazzi goldens
+
+**Wave 3** *(integration — depends on Wave 2)*
+- [x] 06-05-PLAN.md — WebViewActivity wiring: PwaNotificationDispatcher (permission/DND/rate-limit gates), ShellifyBridge attachment, NotificationBridge injection, permission AlertDialog, POST_NOTIFICATIONS runtime request
+- [x] 06-06-PLAN.md — BackgroundNotificationService (ForegroundService with specialUse type) + NotificationHistoryScreen + AppNavigation route + ShellifyApplication DI + 30-day TTL pruning + instrumented navigation test
+
+**Cross-cutting constraints:**
+- DB migration 2→3 requires explicit Migration object + regenerated schemas/3.json (exportSchema = true)
+- core:webbridge migration removes TranslateBridge from core:translate; all callers updated to new package
+- feature:settings must NOT import feature:webview (Konsist); BackgroundNotificationService start/stop intents constructed in AppNavigation, not in AppSettingsScreen
+- POST_NOTIFICATIONS runtime permission required on API 33+; FOREGROUND_SERVICE_SPECIAL_USE permission required on API 34+
+- Per-app rate limit: max 100 notifications per app per UTC day (T-06-04 mitigation)
+- All 19 new string keys + 3 bg-service strings added to EN/FR/AR simultaneously
 
 **Success Criteria:**
-1. TBD
+1. A GeckoView PWA calling `new Notification('title', {body, icon})` results in an Android notification posted via NotificationManagerCompat with channel id `pwa_notifications_{isolationId}`
+2. A System WebView PWA calling `new Notification(...)` after the ShellifyBridge is injected fires the bridge and posts an Android notification (best-effort; service workers not supported on System WebView)
+3. First-time notification permission request shows a Material 3 AlertDialog with the PWA name; the user's choice persists as GRANTED/DENIED on the WebApp
+4. AppSettings → Notifications section lets the user toggle permission, set DND start/end hours (hour-only TimePicker), toggle background notifications (GeckoView only), and open the per-app history
+5. DND active for the current hour silently drops notifications (no post, no save), including midnight-crossing windows (e.g. 22→8)
+6. NotificationHistoryScreen lists notifications for the app sorted newest-first with relative timestamps; auto-pruned to 30 days at app startup
+7. BackgroundNotificationService keeps GeckoRuntime alive when backgroundNotificationsEnabled = true; respects per-app coordination with WebViewActivity to avoid duplicate sessions
 
 ---
 

@@ -4,6 +4,7 @@ import io.shellify.app.data.local.entity.WebAppEntity
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
@@ -37,6 +38,12 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     wipeOnFailedAttempts = wipeOnFailedAttempts,
     hasLauncherShortcut = hasLauncherShortcut,
     showControlCenter = showControlCenter,
+    notificationPermission = runCatching {
+        NotificationPermission.valueOf(notificationPermission)
+    }.getOrDefault(NotificationPermission.NOT_ASKED),
+    dndStartHour = dndStartHour,
+    dndEndHour = dndEndHour,
+    backgroundNotificationsEnabled = backgroundNotificationsEnabled,
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -68,4 +75,8 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     wipeOnFailedAttempts = wipeOnFailedAttempts,
     hasLauncherShortcut = hasLauncherShortcut,
     showControlCenter = showControlCenter,
+    notificationPermission = notificationPermission.name,
+    dndStartHour = dndStartHour,
+    dndEndHour = dndEndHour,
+    backgroundNotificationsEnabled = backgroundNotificationsEnabled,
 )

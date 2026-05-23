@@ -37,17 +37,25 @@ class HomeScreenScreenshotTest {
             every { it.uiState } returns MutableStateFlow(state)
         }
 
-    private fun app(id: Long, name: String, url: String, categoryId: Long? = null) =
-        WebApp(
-            id = id,
-            name = name,
-            url = url,
-            categoryId = categoryId,
-            isolationId = UUID.randomUUID().toString(),
-            isFullscreen = false,
-            adBlockEnabled = true,
-            translateEnabled = false,
-        )
+    private fun app(
+        id: Long,
+        name: String,
+        url: String,
+        categoryId: Long? = null,
+        dndStartHour: Int = -1,
+        dndEndHour: Int = -1,
+    ) = WebApp(
+        id = id,
+        name = name,
+        url = url,
+        categoryId = categoryId,
+        isolationId = UUID.randomUUID().toString(),
+        isFullscreen = false,
+        adBlockEnabled = true,
+        translateEnabled = false,
+        dndStartHour = dndStartHour,
+        dndEndHour = dndEndHour,
+    )
 
     @Test
     fun emptyState() {
@@ -143,6 +151,30 @@ class HomeScreenScreenshotTest {
                         onSettings = {},
                     )
                 }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun withDndTag() {
+        val apps = listOf(
+            app(1L, "GitHub", "https://github.com", dndStartHour = 22, dndEndHour = 8),
+            app(2L, "Notion", "https://notion.so"),
+            app(3L, "Slack", "https://slack.com", dndStartHour = 23, dndEndHour = 7),
+        )
+        composeTestRule.setContent {
+            ShellifyTheme {
+                HomeScreen(
+                    viewModel = buildVm(HomeUiState(apps = apps, hasAnyApps = true, isLoading = false)),
+                    geckoInstalled = true,
+                    currentLanguage = "en",
+                    onLanguageChange = {},
+                    onAddApp = {},
+                    onEditApp = {},
+                    onOpenApp = {},
+                    onOpenSettings = {},
+                )
             }
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)

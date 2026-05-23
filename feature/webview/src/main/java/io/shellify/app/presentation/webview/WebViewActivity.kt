@@ -14,6 +14,8 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,8 +39,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import io.shellify.app.core.engine.BrowserEngine
 import io.shellify.app.core.engine.BrowserEngineCallback
 import io.shellify.app.core.engine.GeckoViewEngine
@@ -48,20 +52,24 @@ import io.shellify.app.core.security.isLegacyHash
 import io.shellify.app.core.security.showSystemLockPrompt
 import io.shellify.app.core.security.verifyPassword
 import io.shellify.app.core.theme.ThemeMode
-import io.shellify.app.core.translate.TranslateBridge
+import io.shellify.app.core.webbridge.NotificationBridge
+import io.shellify.app.core.webbridge.ShellifyBridge
+import io.shellify.app.core.webbridge.TranslateBridge
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.app.presentation.webview.WebViewViewModel.PermissionDialogState
 import io.shellify.core.ui.R
 import androidx.core.view.ViewCompat
+import android.util.Log
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class WebViewActivity : FragmentActivity() {
@@ -77,9 +85,6 @@ class WebViewActivity : FragmentActivity() {
 
         @VisibleForTesting
         var engineFactory: (() -> BrowserEngine)? = null
-
-        @VisibleForTesting
-        var pageFinishedCallback: (() -> Unit)? = null
 
         /** Overrides the [WebApp] used in [onCreate]. Set in tests to inject a custom app. */
         @VisibleForTesting
@@ -119,6 +124,21 @@ class WebViewActivity : FragmentActivity() {
     private var statusBarScrim: View? = null
     private var isIncognitoSession = false
 
+    // Registered in onCreate — must be registered before the Activity reaches STARTED.
+    private val postNotificationsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            lifecycleScope.launch {
+                android.widget.Toast.makeText(
+                    this@WebViewActivity,
+                    getString(R.string.settings_notifications_permission_os_denied),
+                    android.widget.Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+    }
+
     @VisibleForTesting
     var splashOverlay: View? = null
 
@@ -139,26 +159,36 @@ class WebViewActivity : FragmentActivity() {
         // Incognito requires a URL; cannot launch by appId in incognito mode.
         if (isIncognito && previewUrl == null) { finish(); return }
 
-        var pwaApp: WebApp = webAppOverride ?: when {
+        val immediateApp: WebApp? = webAppOverride ?: when {
             previewUrl != null -> WebApp(
                 name = intent.getStringExtra(EXTRA_PREVIEW_NAME) ?: previewUrl,
                 url = previewUrl,
             )
-            appId != -1L -> runBlocking(Dispatchers.IO) { app.getWebAppById(appId) }
-                ?: run { finish(); return }
-            else -> { finish(); return }
+            else -> null
         }
 
+        if (immediateApp != null) {
+            initWithApp(app, immediateApp, appId, previewUrl)
+        } else if (appId != -1L) {
+            lifecycleScope.launch {
+                val webApp = withContext(Dispatchers.IO) { app.getWebAppById(appId) }
+                    ?: run { finish(); return@launch }
+                initWithApp(app, webApp, appId, previewUrl)
+            }
+        } else {
+            finish()
+        }
+    }
+
+    private fun initWithApp(app: WebViewServiceProvider, initialPwaApp: WebApp, appId: Long, previewUrl: String?) {
         // On the preview path, allow the dispatcher to override the lock type (per D-02/INTG-07).
         // This is only applied when launching by URL; for appId launches the DB-stored lock is used.
-        if (previewUrl != null) {
+        var pwaApp = if (previewUrl != null) {
             val lockTypeExtra = intent.getStringExtra(EXTRA_LOCK_TYPE)
-            if (lockTypeExtra != null) {
-                pwaApp = pwaApp.copy(
-                    lockType = runCatching { LockType.valueOf(lockTypeExtra) }.getOrDefault(LockType.NONE)
-                )
-            }
-        }
+            if (lockTypeExtra != null) initialPwaApp.copy(
+                lockType = runCatching { LockType.valueOf(lockTypeExtra) }.getOrDefault(LockType.NONE)
+            ) else initialPwaApp
+        } else initialPwaApp
 
         lifecycleScope.launch {
             app.passwordManager.screenshotProtection.collect { on ->
@@ -191,7 +221,12 @@ class WebViewActivity : FragmentActivity() {
 
         if (engine is SystemWebViewEngine) {
             val wv = (engine as SystemWebViewEngine).getWebView()
-            if (wv != null) isolationManager.attachProfile(wv, pwaApp.isolationId)
+            if (wv != null) {
+                isolationManager.attachProfile(wv, pwaApp.isolationId)
+                wv.addJavascriptInterface(ShellifyBridge(notificationCallback = { t: String, b: String, i: String ->
+                    viewModel.onNotificationReceived(t, b, i, null)
+                }), "ShellifyBridge")
+            }
         }
 
         container.addView(
@@ -233,6 +268,50 @@ class WebViewActivity : FragmentActivity() {
 
         observeState(app, pwaApp)
         collectCommands()
+        collectPermissionDialog()
+
+        // Track that this Activity is actively showing the app — used by BackgroundNotificationService
+        // to avoid creating a competing GeckoSession for the same appId (T-06-30).
+        if (appId != -1L) (application as? WebViewServiceProvider)?.registerActiveApp(appId)
+    }
+
+    private fun collectPermissionDialog() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.permissionDialog.collect { state ->
+                    when (state) {
+                        is PermissionDialogState.Hidden -> Unit
+                        is PermissionDialogState.Shown -> showPermissionDialog(state.appName)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showPermissionDialog(appName: String) {
+        AlertDialog.Builder(this)
+            .setTitle(appName)
+            .setMessage(getString(R.string.notification_permission_dialog_body, appName))
+            .setPositiveButton(R.string.notification_permission_allow) { _, _ ->
+                viewModel.onPermissionDialogResult(true)
+                requestPostNotificationsPermissionIfNeeded()
+            }
+            .setNegativeButton(R.string.notification_permission_not_now) { _, _ ->
+                viewModel.onPermissionDialogResult(false)
+            }
+            .setOnCancelListener {
+                viewModel.onPermissionDialogResult(false)
+            }
+            .show()
+    }
+
+    private fun requestPostNotificationsPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = android.Manifest.permission.POST_NOTIFICATIONS
+            if (checkSelfPermission(permission) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                postNotificationsLauncher.launch(permission)
+            }
+        }
     }
 
     private fun observeState(app: WebViewServiceProvider, pwaApp: WebApp) {
@@ -266,10 +345,14 @@ class WebViewActivity : FragmentActivity() {
                     is WebViewCommand.LoadUrl -> engine.loadUrl(command.url)
                     WebViewCommand.Reload -> engine.reload()
                     WebViewCommand.Finish -> finish()
+                    WebViewCommand.PageFinished -> pageFinishedCallback?.invoke()
                 }
             }
         }
     }
+
+    @VisibleForTesting
+    var pageFinishedCallback: (() -> Unit)? = null
 
     private fun showPasswordDialog(app: WebViewServiceProvider, pwaApp: WebApp, initial: AuthState.PasswordRequired) {
         val pwaAccentColor = pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
@@ -451,6 +534,14 @@ class WebViewActivity : FragmentActivity() {
                     )
                     engine.evaluateJavascript(script, null)
                 }
+                // Inject the notification bridge for System WebView apps with GRANTED permission.
+                // Re-injection on each page load is safe: the load-guard prevents double-patching.
+                if (app.engineType == EngineType.SYSTEM_WEBVIEW &&
+                    app.notificationPermission == NotificationPermission.GRANTED
+                ) {
+                    engine.evaluateJavascript("window.__shellifyNotificationLoaded = false;", null)
+                    engine.evaluateJavascript(NotificationBridge.buildScript(), null)
+                }
             }
 
             override fun onProgressChanged(progress: Int) {
@@ -499,6 +590,14 @@ class WebViewActivity : FragmentActivity() {
                 url: String, userAgent: String, contentDisposition: String,
                 mimeType: String, contentLength: Long,
             ) {
+            }
+
+            override fun onNotificationReceived(title: String, body: String?, iconUrl: String?, tag: String?) {
+                viewModel.onNotificationReceived(title, body, iconUrl, tag)
+            }
+
+            override fun onNotificationPermissionRequested(onResult: (Boolean) -> Unit) {
+                viewModel.onNotificationPermissionRequested(onResult)
             }
         }
 
@@ -622,6 +721,9 @@ class WebViewActivity : FragmentActivity() {
 
     override fun onDestroy() {
         viewModel.onSessionEnd()
+        // Unregister this Activity so BackgroundNotificationService can start its own session.
+        val activeAppId = intent.getLongExtra(EXTRA_APP_ID, -1L)
+        if (activeAppId != -1L) (application as? WebViewServiceProvider)?.unregisterActiveApp(activeAppId)
         if (isIncognitoSession) {
             // Wipe cookies and profile data for the ephemeral session (D-03).
             val isolationId = viewModel.uiState.value.app?.isolationId

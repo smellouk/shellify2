@@ -76,6 +76,7 @@ fun ConsentScreen(onAccepted: () -> Unit) {
                     stringResource(R.string.consent_what_3),
                     stringResource(R.string.consent_what_4),
                     stringResource(R.string.consent_what_5),
+                    stringResource(R.string.consent_what_6),
                 ),
             )
 

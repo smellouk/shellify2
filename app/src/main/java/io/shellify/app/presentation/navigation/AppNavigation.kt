@@ -74,9 +74,12 @@ import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
 import io.shellify.app.presentation.settings.LicensesScreen
+import io.shellify.app.presentation.settings.notifications.NotificationHistoryScreen
+import io.shellify.app.presentation.settings.notifications.NotificationHistoryViewModel
 import io.shellify.app.presentation.shortcuts.ShortcutsScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsViewModel
 import io.shellify.app.presentation.theme.Dimens
+import io.shellify.app.presentation.webview.BackgroundNotificationService
 import io.shellify.core.ui.R
 import kotlinx.coroutines.launch
 
@@ -236,12 +239,28 @@ fun AppNavigation(
                             app.faviconFetcher,
                             app.simpleIconsManager,
                             app.passwordManager,
-                            app.geckoEngineManager
+                            app.geckoEngineManager,
+                            app.themeManager,
                         )
                     },
                     onBack = { navController.popBackStack() },
                     onDeleted = {
                         navController.popBackStack(Screen.Home.route, inclusive = false)
+                    },
+                    onNavigateToHistory = { id ->
+                        navController.navigate(Screen.NotificationHistory.createRoute(id))
+                    },
+                    onStartBackgroundService = { id ->
+                        val intent = android.content.Intent(
+                            context, BackgroundNotificationService::class.java,
+                        ).apply { putExtra(BackgroundNotificationService.EXTRA_APP_ID, id) }
+                        context.startForegroundService(intent)
+                    },
+                    onStopBackgroundService = { id ->
+                        val intent = android.content.Intent(
+                            context, BackgroundNotificationService::class.java,
+                        ).apply { action = BackgroundNotificationService.ACTION_STOP }
+                        context.startService(intent)
                     },
                 )
             }
@@ -297,6 +316,23 @@ fun AppNavigation(
                 popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
             ) {
                 LicensesScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(
+                route = Screen.NotificationHistory.route,
+                arguments = listOf(navArgument("appId") { type = NavType.LongType }),
+                enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
+            ) { back ->
+                val appId = back.arguments!!.getLong("appId")
+                NotificationHistoryScreen(
+                    viewModel = remember(appId) {
+                        NotificationHistoryViewModel(appId, app.getNotifications)
+                    },
+                    onBack = { navController.popBackStack() },
+                )
             }
 
             composable(Screen.Consent.route) {

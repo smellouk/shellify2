@@ -38,6 +38,11 @@ data class WebApp(
     val hasLauncherShortcut: Boolean = false,
     // Control center
     val showControlCenter: Boolean = true,
+    // Notifications
+    val notificationPermission: NotificationPermission = NotificationPermission.NOT_ASKED,
+    val dndStartHour: Int = -1,
+    val dndEndHour: Int = -1,
+    val backgroundNotificationsEnabled: Boolean = false,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
     val iconPath: String?

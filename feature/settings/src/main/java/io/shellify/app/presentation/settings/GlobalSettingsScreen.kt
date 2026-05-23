@@ -58,10 +58,13 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.NoPhotography
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -147,6 +150,11 @@ fun GlobalSettingsScreen(
     // Trigger version check whenever the engine is installed
     androidx.compose.runtime.LaunchedEffect(geckoInstallState) {
         if (geckoInstallState is GeckoInstallState.Installed) viewModel.checkForGeckoUpdate()
+    }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        viewModel.setGlobalNotificationsEnabled(granted)
     }
     var showScheduleDialog by remember { mutableStateOf(false) }
     var showBackupWarning by remember { mutableStateOf(false) }
@@ -836,6 +844,42 @@ fun GlobalSettingsScreen(
                     )
                 }
 
+                // ── Notifications ─────────────────────────────────────────────────
+                SectionLabel(stringResource(R.string.global_settings_section_notifications))
+                SurfaceCard {
+                    ListItem(
+                        leadingContent = {
+                            Icon(
+                                if (state.globalNotificationsEnabled) Icons.Default.Notifications
+                                else Icons.Default.NotificationsOff,
+                                null,
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.global_settings_notifications_enabled),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = state.globalNotificationsEnabled,
+                                onCheckedChange = { on ->
+                                    if (!on) {
+                                        viewModel.setGlobalNotificationsEnabled(false)
+                                    } else if (android.os.Build.VERSION.SDK_INT >= 33) {
+                                        notificationPermissionLauncher.launch(
+                                            android.Manifest.permission.POST_NOTIFICATIONS
+                                        )
+                                    } else {
+                                        viewModel.setGlobalNotificationsEnabled(true)
+                                    }
+                                },
+                            )
+                        },
+                    )
+                }
+
                 // ── Backup ────────────────────────────────────────────────────────
                 SectionLabel(stringResource(R.string.global_settings_section_backup))
                 SurfaceCard {
@@ -1440,6 +1484,45 @@ fun GlobalSettingsScreen(
                         trailingContent = {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            uriHandler.openUri("https://shellify.app/tools.html")
+                        },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.primaryContainer.copy(
+                                            alpha = 0.4f
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.Code,
+                                    null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.settings_developer_tools),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        trailingContent = {
+                            Icon(
+                                Icons.AutoMirrored.Default.OpenInNew,
                                 null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )

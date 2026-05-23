@@ -30,42 +30,46 @@ class WebViewBackNavigationTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private val pageLoad = PageLoadIdlingResource()
 
+    private var scenario: ActivityScenario<WebViewActivity>? = null
+
     @Before
     fun setUp() {
         IdlingRegistry.getInstance().register(pageLoad)
-        WebViewActivity.pageFinishedCallback = { pageLoad.onPageFinished() }
     }
 
     @After
     fun tearDown() {
         IdlingRegistry.getInstance().unregister(pageLoad)
-        WebViewActivity.pageFinishedCallback = null
+        runCatching { scenario?.onActivity { it.pageFinishedCallback = null } }
     }
 
     @Test
     fun backFromTerms_navigatesInHistory_doesNotExitApp() {
-        val scenario = ActivityScenario.launch<WebViewActivity>(homeIntent())
+        scenario = ActivityScenario.launch<WebViewActivity>(homeIntent())
+        scenario!!.onActivity { it.pageFinishedCallback = { pageLoad.onPageFinished() } }
 
         // Idle until shellify.app home page finishes loading
         pageLoad.awaitIdle()
         pageLoad.reset()
 
+        val s = scenario!!
+
         // Navigate to terms.html — creates a back-stack entry in the WebView
-        scenario.onActivity { it.navigateTo("https://shellify.app/terms.html") }
+        s.onActivity { it.navigateTo("https://shellify.app/terms.html") }
 
         // Idle until terms page finishes loading
         pageLoad.awaitIdle()
 
         // Press back — must navigate within browser history, NOT exit the activity
-        scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        s.onActivity { it.onBackPressedDispatcher.onBackPressed() }
 
         // Activity must still be alive — back went to the previous page
-        assertNotEquals(Lifecycle.State.DESTROYED, scenario.state)
+        assertNotEquals(Lifecycle.State.DESTROYED, s.state)
 
         // Tear down: wait for onDestroy so the CountDownLatch — not waitForIdleSync() —
         // gates the cleanup. This prevents Compose frame callbacks from causing a hang.
         val destroyed = CountDownLatch(1)
-        scenario.onActivity { activity ->
+        s.onActivity { activity ->
             activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
                 override fun onDestroy(owner: LifecycleOwner) = destroyed.countDown()
             })

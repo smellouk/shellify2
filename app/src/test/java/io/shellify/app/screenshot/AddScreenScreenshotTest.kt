@@ -130,4 +130,25 @@ class AddScreenScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
+    @Test
+    fun notifications_globallyDisabled_showsInfoMessage() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AddScreen(
+                    viewModel = buildVm(
+                        AddUiState(
+                            name = "GitHub",
+                            url = "https://github.com",
+                            notificationsEnabled = true,
+                            globalNotificationsEnabled = false,
+                        )
+                    ),
+                    onSaved = {},
+                    onBack = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
 }

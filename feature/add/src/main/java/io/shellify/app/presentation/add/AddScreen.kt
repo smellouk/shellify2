@@ -46,6 +46,8 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material.icons.filled.TravelExplore
@@ -634,6 +636,39 @@ fun AddScreen(
                         )
                         Text(label, style = MaterialTheme.typography.bodyMedium)
                     }
+                }
+            }
+
+            FeatureCard(
+                Icons.Default.Notifications,
+                stringResource(R.string.add_feature_notifications),
+                state.notificationsEnabled && state.globalNotificationsEnabled,
+                viewModel::setNotificationsEnabled,
+                canEnable = state.globalNotificationsEnabled,
+            ) {
+                Text(
+                    stringResource(R.string.add_feature_notifications_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (!state.globalNotificationsEnabled) {
+                Row(
+                    modifier = Modifier.padding(horizontal = Dimens.spaceSm, vertical = Dimens.spaceXxs),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(Dimens.sizeSm),
+                    )
+                    Text(
+                        stringResource(R.string.settings_notifications_global_disabled),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 

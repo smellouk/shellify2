@@ -15,6 +15,7 @@ import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.security.PasswordManager
+import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
@@ -112,6 +113,9 @@ class ControlCenterToggleTest {
             passwordManager = PasswordManager(context),
             geckoEngineManager = mockk<GeckoEngineManager> {
                 every { installState } returns MutableStateFlow(GeckoInstallState.NotInstalled)
+            },
+            themeManager = mockk<ThemeManager>(relaxed = true) {
+                every { globalNotificationsEnabled } returns MutableStateFlow(false)
             },
         )
     }

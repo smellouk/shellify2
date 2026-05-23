@@ -3,7 +3,10 @@ package io.shellify.app.data.local
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.shellify.app.data.local.migration.MIGRATION_2_3
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -144,6 +147,70 @@ class DatabaseMigrationTest {
                 assertTrue(cursor.moveToFirst())
                 // ForeignKey(onDelete = SET_NULL) — categoryId must be NULL after parent deleted
                 assertTrue("categoryId should be NULL after category deletion", cursor.isNull(0))
+            }
+        }
+    }
+
+    // ── Migration 2 → 3 ───────────────────────────────────────────────────────
+
+    @Test
+    fun migrate2To3_addsNewColumnsAndNotificationsTable() {
+        // Step 1: create a v2 database with one WebApp row.
+        migrationHelper.createDatabase(TEST_DB_NAME, 2).use { db ->
+            db.execSQL(
+                """INSERT INTO web_apps (
+                    id, name, url, isolationId,
+                    adBlockEnabled, adBlockAllowUserToggle, adBlockCustomRules,
+                    translateEnabled, translateTarget, translateEngine,
+                    showTranslateButton, autoTranslateOnLoad,
+                    libreTranslateUrl, libreTranslateApiKey,
+                    uaMode, createdAt, updatedAt,
+                    lockType, engineType, wipeOnFailedAttempts,
+                    isFullscreen, fullscreenShowStatusBar, fullscreenShowNavBar,
+                    fullscreenShowTopToolbar, has_launcher_shortcut, show_control_center
+                ) VALUES (
+                    1, 'TestApp', 'https://test.com', 'iso-test-001',
+                    1, 0, '',
+                    0, 'en', 'AUTO',
+                    1, 0,
+                    'https://libretranslate.com', '',
+                    'CHROME_MOBILE', 0, 0,
+                    'NONE', 'SYSTEM_WEBVIEW', 0,
+                    0, 0, 0,
+                    0, 0, 1
+                )"""
+            )
+        }
+
+        // Step 2: run the migration and validate the schema matches 3.json.
+        migrationHelper.runMigrationsAndValidate(TEST_DB_NAME, 3, true, MIGRATION_2_3).use { db ->
+
+            // Step 3: verify the four new columns exist on web_apps with correct defaults.
+            db.query("SELECT notification_permission, dnd_start_hour, dnd_end_hour, background_notifications_enabled FROM web_apps WHERE id = 1").use { cursor ->
+                assertTrue("web_apps row not found after migration", cursor.moveToFirst())
+                assertEquals("NOT_ASKED", cursor.getString(0))
+                assertEquals(-1, cursor.getInt(1))
+                assertEquals(-1, cursor.getInt(2))
+                assertEquals(0, cursor.getInt(3))
+            }
+
+            // Step 4: verify the notifications table exists (PRAGMA table_info).
+            db.query("PRAGMA table_info(notifications)").use { cursor ->
+                assertTrue("notifications table should exist after migration 2→3", cursor.moveToFirst())
+            }
+
+            // Step 5: insert a notification referencing the migrated WebApp.
+            db.execSQL(
+                "INSERT INTO notifications (app_id, title, body, timestamp, is_read) VALUES (1, 'Hello', 'World', 1000000, 0)"
+            )
+
+            // Step 6: query it back and verify correctness.
+            db.query("SELECT app_id, title, body, is_read FROM notifications WHERE app_id = 1").use { cursor ->
+                assertTrue("Notification row not found after insert", cursor.moveToFirst())
+                assertEquals(1L, cursor.getLong(0))
+                assertEquals("Hello", cursor.getString(1))
+                assertEquals("World", cursor.getString(2))
+                assertFalse("is_read should be 0 (false) by default", cursor.getInt(3) != 0)
             }
         }
     }

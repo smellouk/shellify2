@@ -22,4 +22,7 @@ sealed class Screen(val route: String) {
     object Licenses : Screen("licenses")
     object Shortcuts : Screen("shortcuts")
     object Onboarding : Screen("onboarding")
+    object NotificationHistory : Screen("notification_history/{appId}") {
+        fun createRoute(appId: Long) = "notification_history/$appId"
+    }
 }

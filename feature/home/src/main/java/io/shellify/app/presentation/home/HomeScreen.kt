@@ -48,6 +48,7 @@ import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Fullscreen
@@ -128,6 +129,7 @@ import io.shellify.app.presentation.components.EmptyStateIllustration
 import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.theme.GeckoWarning
 import io.shellify.app.presentation.theme.TagAdBlock
+import io.shellify.app.presentation.theme.TagDnd
 import io.shellify.app.presentation.theme.TagFullscreen
 import io.shellify.app.presentation.theme.TagLockPassword
 import io.shellify.app.presentation.theme.TagLockSystem
@@ -986,6 +988,7 @@ private fun FeatureTags(app: WebApp) {
         if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", TagFullscreen))
         if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", TagAdBlock))
         if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", TagTranslate))
+        if (app.dndStartHour != -1) add(Tag(Icons.Default.DoNotDisturb, "DND", TagDnd))
         when (app.lockType) {
             LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password", TagLockPassword))
             LockType.SYSTEM -> add(Tag(Icons.Default.Fingerprint, "Lock", TagLockSystem))

@@ -3,11 +3,11 @@ package io.shellify.app.presentation.add
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.shellify.app.core.shortcut.SvgIconRenderer
 import io.shellify.core.ui.R
+import io.shellify.feature.add.R as AddR
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
@@ -26,6 +26,7 @@ import io.shellify.app.domain.model.PwaManifest
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
@@ -76,6 +77,9 @@ data class AddUiState(
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val engineType: EngineType = EngineType.SYSTEM_WEBVIEW,
+    // Notifications
+    val notificationsEnabled: Boolean = true,
+    val globalNotificationsEnabled: Boolean = false,
     // Security
     val hasPassword: Boolean = false,
     val lockType: LockType = LockType.NONE,
@@ -110,7 +114,6 @@ class AddViewModel(
     private val passwordManager: PasswordManager,
     private val prefilledUrl: String = "",
     private val prefilledName: String = "",
-    private val isUrlValid: (String) -> Boolean = { Patterns.WEB_URL.matcher(it).matches() },
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -150,6 +153,7 @@ class AddViewModel(
                         autoTranslateOnLoad = app.autoTranslateOnLoad,
                         uaMode = app.uaMode,
                         engineType = app.engineType,
+                        notificationsEnabled = app.notificationPermission != NotificationPermission.DENIED,
                         lockType = app.lockType,
                         wipeOnFailedAttempts = app.wipeOnFailedAttempts,
                     )
@@ -176,6 +180,11 @@ class AddViewModel(
                         lockType = if (!hasPassword) LockType.NONE else s.lockType,
                     )
                 }
+            }
+        }
+        viewModelScope.launch {
+            themeManager.globalNotificationsEnabled.collect { enabled ->
+                _state.update { it.copy(globalNotificationsEnabled = enabled) }
             }
         }
     }
@@ -235,6 +244,9 @@ class AddViewModel(
     // Browser
     fun setUaMode(v: UserAgentMode) = _state.update { it.copy(uaMode = v) }
     fun setEngineType(v: EngineType) = _state.update { it.copy(engineType = v) }
+
+    // Notifications
+    fun setNotificationsEnabled(v: Boolean) = _state.update { it.copy(notificationsEnabled = v) }
 
     // Security
     fun setLockType(v: LockType) = _state.update { it.copy(lockType = v) }
@@ -316,16 +328,17 @@ class AddViewModel(
             return null
         }
         val normalized = if (!trimmed.startsWith("http")) "https://$trimmed" else trimmed
-        if (normalized.startsWith("http://")) {
-            _state.update { it.copy(urlError = context.getString(R.string.add_url_error_http)) }
-            return null
-        }
-        if (!isUrlValid(normalized)) {
+        if (!isValidHttpsUrl(normalized)) {
             _state.update { it.copy(urlError = context.getString(R.string.error_invalid_url)) }
             return null
         }
         return normalized
     }
+
+    private fun isValidHttpsUrl(url: String): Boolean = try {
+        val parsed = java.net.URL(url)
+        parsed.protocol == "https" && parsed.host.isNotEmpty() && parsed.host.contains('.')
+    } catch (_: Exception) { false }
 
     private fun validate(): String? {
         val url = normalizeAndValidateUrl(_state.value.url) ?: return null
@@ -362,7 +375,7 @@ class AddViewModel(
         _state.update {
             it.copy(
                 isSaving = false,
-                duplicateError = "\"${existing.name}\" already exists"
+                duplicateError = context.getString(AddR.string.add_error_duplicate, existing.name)
             )
         }
         return true
@@ -452,6 +465,8 @@ class AddViewModel(
             autoTranslateOnLoad = s.autoTranslateOnLoad,
             uaMode = s.uaMode,
             engineType = s.engineType,
+            notificationPermission = if (!s.notificationsEnabled) NotificationPermission.DENIED
+            else originalApp?.notificationPermission ?: NotificationPermission.NOT_ASKED,
             lockType = s.lockType,
             wipeOnFailedAttempts = s.wipeOnFailedAttempts,
         )

@@ -137,125 +137,64 @@ Dependency direction: `feature → core:domain`, `core:* → core:domain`. Featu
 
 ---
 
-## Module Map
+## Supported Features
 
-### Core
-
-| Module | Description |
+### Web Apps
+| Feature | Detail |
 |---|---|
-| `core:domain` | Models, repository interfaces, use cases (pure Kotlin) |
-| `core:database` | Room + SQLCipher database, DAOs, entities, migrations |
-| `core:crypto` | AES-256-GCM, PBKDF2, Argon2id cryptographic utilities |
-| `core:security` | Android Keystore integration, biometrics, password management |
-| `core:backup` | Encrypted `.pwab` backup/restore (Argon2id + AES-256-GCM) |
-| `core:engine` | WebView abstraction, GeckoView integration, ad-block injection |
-| `core:isolation` | Per-app cookie and profile isolation management |
-| `core:pwa` | PWA manifest parser and icon/color analyzer |
-| `core:translate` | In-page translation via Google Translate (`translate.googleapis.com`) |
-| `core:theme` | DataStore-backed theme, language, and global preferences |
-| `core:locale` | Runtime language switching |
-| `core:iconpack` | Simple Icons download, import, and SVG rendering |
-| `core:shortcut` | Android launcher shortcut creation |
-| `core:deeplink` | Deep-link parsing and URI building (`shellify://` and `https://shellify.app`) |
-| `core:ui` | Shared Compose components, Material 3 design system |
+| PWA launcher | Add any website as a standalone home-screen app — name, icon, and theme color auto-detected from the manifest |
+| Per-app isolation | Dedicated cookie jar and local storage per app; Android 13+ gets a named WebView profile |
+| Ad blocking | Built-in content blocker with per-app enable/disable and custom rule support |
+| In-page translation | Google Translate JS injection — configurable source/target language per app |
+| User-agent override | Chrome, Firefox, Safari, Edge, or fully custom string per app |
+| Fullscreen mode | Hides system bars for immersive web apps |
+| Control center | Floating toolbar for quick access to reload, translate, and settings |
 
-### Feature
-
-| Module | Description |
+### Browser Engines
+| Engine | Notes |
 |---|---|
-| `feature:home` | App list with search, categories, and quick-pick suggestions |
-| `feature:add` | Add/edit PWA form — URL analysis, manifest detection, icon fetch |
-| `feature:category` | Category creation and management |
-| `feature:settings` | Per-app settings — fullscreen, ad-block, translation, lock, shortcut |
-| `feature:webview` | WebView activity — ad-block toggle, translate, fullscreen, lock UI |
-| `feature:onboarding` | Consent screen and 7-step first-run onboarding flow |
-| `feature:translate` | Translation settings screen |
-| `feature:shortcuts` | Shortcut list management |
-| `feature:shortcut` | Launcher shortcut creation entry point |
-| `feature:share` | QR code generation and deep-link sharing |
+| Android System WebView | Default — uses the Chromium-based WebView already on the device |
+| Mozilla GeckoView | Optional — user-initiated download; switchable per app without reinstalling |
 
-### App
-
-| Module | Description |
+### Notifications
+| Feature | Detail |
 |---|---|
-| `app` | Application class, MainActivity, NavHost, bottom navigation, DI wiring |
+| In-app notifications | Web `Notification` API support with per-app allow/deny |
+| Background notifications | Foreground service with a dedicated GeckoView session for apps that need push-style alerts |
+| Notification channels | Per-app Android notification channel, grouped by category; channel removed when app is deleted |
+| DND scheduling | Per-app quiet hours (start/end hour) to suppress notifications |
+| Rate limiting | 100 notifications per app per day maximum |
+| Notification history | In-app log of recent notifications per app |
 
----
+### Security & Privacy
+| Feature | Detail |
+|---|---|
+| App lock | Optional password or biometric (fingerprint / face) lock per app |
+| Global password | Single password that gates all locked apps |
+| Wipe on failed attempts | Optional data wipe after N incorrect password entries |
+| Encrypted database | SQLCipher AES-256 — database is unreadable without the app key |
+| Encrypted backup | `.pwab` archive — Argon2id key derivation + AES-256-GCM cipher |
+| Screenshot protection | Optional `FLAG_SECURE` to block screen capture |
+| Incognito sessions | Ephemeral WebView session that wipes cookies and profile on exit |
 
-## Module Dependency Graph
+### Backup & Restore
+| Feature | Detail |
+|---|---|
+| Manual backup | Export to any folder via Android SAF |
+| Scheduled backup | Weekly or monthly via WorkManager |
+| Cross-device restore | `.pwab` files are portable — restore with the same password on any device |
+| Backup contents | Database, icons, settings, cookies (re-encrypted), WebView profiles (Android 13+) |
 
-```mermaid
-graph TB
-    subgraph APP[":app"]
-        app["ShellifyApplication · MainActivity · NavHost\nManual DI wiring — no framework"]
-    end
-
-    subgraph FL["feature layer  ·  Compose UI + ViewModels"]
-        direction LR
-        f_home["home"]
-        f_add["add"]
-        f_category["category"]
-        f_settings["settings"]
-        f_webview["webview"]
-        f_onboarding["onboarding"]
-        f_translate["translate"]
-        f_shortcuts["shortcuts"]
-        f_share["share"]
-        f_shortcut["shortcut"]
-    end
-
-    subgraph CL["core layer  ·  Infrastructure & Data"]
-        subgraph CDATA["Data & Security"]
-            c_crypto["crypto\nAES-256-GCM · Keystore"]
-            c_database["database\nRoom + SQLCipher"]
-            c_security["security\nPassword · Biometrics"]
-            c_backup["backup\nArgon2id · .pwab"]
-        end
-        subgraph CWEB["Web & Content"]
-            c_engine["engine\nWebView + GeckoView · AdBlocker"]
-            c_isolation["isolation\nPer-app profiles & cookie jars"]
-            c_pwa["pwa\nManifest parser · Icon analyser"]
-            c_translate["translate\nJS injection · Google Translate"]
-        end
-        subgraph CUX["UX & System"]
-            c_ui["ui\nDesign system · Shared components"]
-            c_theme["theme\nMaterial You · DataStore prefs"]
-            c_locale["locale\nRuntime i18n"]
-            c_iconpack["iconpack\nSimple Icons SVG"]
-            c_shortcut["shortcut\nLauncher shortcuts"]
-            c_deeplink["deeplink\nURI parser · QR code"]
-        end
-    end
-
-    subgraph DL["core:domain  ·  Pure Kotlin — no Android deps"]
-        d_domain["WebApp · Category · PwaManifest · IconSource\nWebAppRepository · CategoryRepository\nGetWebApps · SaveWebApp · DeleteWebApp · …"]
-    end
-
-    app --> FL & CL & DL
-
-    f_home      --> d_domain & c_ui & c_pwa & c_shortcut
-    f_add       --> d_domain & c_ui & c_pwa & c_iconpack & c_engine & c_shortcut
-    f_category  --> d_domain & c_ui
-    f_settings  --> d_domain & c_ui & c_engine & c_security & c_isolation & c_backup & c_theme
-    f_webview   --> d_domain & c_ui & c_engine & c_isolation & c_security & c_translate
-    f_onboarding --> d_domain & c_ui & c_backup & c_pwa & c_security & c_theme & c_locale
-    f_translate --> d_domain & c_ui
-    f_shortcuts --> d_domain & c_ui & c_iconpack & c_pwa & c_shortcut
-    f_share     --> d_domain & c_ui & c_security & c_deeplink
-    f_shortcut  --> c_shortcut
-
-    c_database  --> d_domain & c_crypto
-    c_security  --> d_domain & c_crypto
-    c_isolation --> d_domain & c_crypto & c_engine
-    c_backup    --> d_domain & c_database & c_crypto & c_security & c_isolation & c_iconpack & c_theme
-    c_engine    --> d_domain
-    c_pwa       --> d_domain
-    c_translate --> d_domain
-    c_ui        --> d_domain & c_iconpack
-    c_deeplink  --> d_domain & c_security
-    c_iconpack  --> d_domain
-    c_shortcut  --> d_domain
-```
+### Customization & UX
+| Feature | Detail |
+|---|---|
+| Icon packs | Simple Icons integration — 3 000+ brand SVG logos rendered to PNG |
+| Custom icons | Pick any image from storage |
+| Material You | Dynamic color from wallpaper; light / dark / system mode |
+| Home-screen shortcuts | Android launcher shortcuts with the app's icon and theme color |
+| Categories | Group apps into named categories; filter the home grid |
+| Deep linking | Import apps via `shellify://` URI, HTTPS link, or QR code scan |
+| Multilingual | English, French, Arabic (runtime switchable) |
 
 ---
 
@@ -341,6 +280,25 @@ Backup files use the `.pwab` extension (an encrypted ZIP archive).
 
 Instrumented smoke tests cover navigation, consent gate, deep-link dialogs, and key screens end-to-end.
 
+### Developer Tools
+
+`docs/tools.html` is a single-page in-app test harness for manual feature testing. Serve it locally and load it inside Shellify:
+
+```bash
+# Tunnel host port 8080 to the device
+adb reverse tcp:8080 tcp:8080
+
+# Serve the docs folder (Python)
+python3 -m http.server 8080 --directory docs
+```
+
+Then open `http://localhost:8080/tools.html` as a Shellify web app. Available tabs:
+
+| Tab | What it tests |
+|---|---|
+| **Chrome Tools** | `ShellifyBridge` Java interface — direct notification dispatch, rate limit, and truncation via the Chromium WebView |
+| **GeckoView Tools** | Web `Notification` API via Gecko — permission flow, foreground fire, and 10-second background timer |
+
 ---
 
 ## Code Quality
@@ -383,15 +341,7 @@ Instrumented smoke tests cover navigation, consent gate, deep-link dialogs, and 
 
 ## Roadmap
 
-The full roadmap is at [`.planning/ROADMAP.md`](.planning/ROADMAP.md). The active milestone targets **v2 — Privacy-First Feature Parity**.
-
-| Phase | Goal | Status |
-|---|---|---|
-| 1 · Web Integration | Make Shellify the default web handler — incoming links route into the right PWA | Planned |
-| 2 · Privacy & Tor | Per-app stealth mode, panic button, and anonymous browsing via the Tor network | Planned |
-| 3 · Productivity & Insights | Custom JS/CSS injection, download manager, and on-device usage analytics | Planned |
-| 4 · Platform & Discovery | Home-screen widget, PWA directory, push notifications, launcher integration | Planned |
-| 5 · E2E Test Migration | Replace Espresso E2E tests with Maestro | Planned |
+See [`.planning/ROADMAP.md`](.planning/ROADMAP.md) for the full phase breakdown. Active milestone: **v2 — Privacy-First Feature Parity**.
 
 ---
 

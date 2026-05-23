@@ -21,6 +21,7 @@ import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
 import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import io.shellify.core.ui.R as CoreUiR
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,6 +67,7 @@ class GlobalSettingsViewModelTest {
         every { themeManager.defaultUaMode } returns MutableStateFlow(UserAgentMode.CHROME_MOBILE)
         every { themeManager.defaultEngineType } returns MutableStateFlow(EngineType.SYSTEM_WEBVIEW)
         every { themeManager.geckoSafeBrowsing } returns MutableStateFlow(false)
+        every { themeManager.globalNotificationsEnabled } returns MutableStateFlow(true)
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
         every { passwordManager.wipeOnFailedAttempts } returns MutableStateFlow(false)
         every { passwordManager.screenshotProtection } returns MutableStateFlow(false)
@@ -76,6 +78,16 @@ class GlobalSettingsViewModelTest {
         every { backupSettings.lastBackupTime } returns MutableStateFlow(0L)
         every { getWebApps() } returns flowOf(emptyList())
         coEvery { saveWebApp(any()) } returns 0L
+        every { context.getString(CoreUiR.string.settings_backup_error_no_password) } returns
+            "Set a backup password first"
+        every { context.getString(CoreUiR.string.settings_backup_error_no_folder) } returns
+            "Select a backup folder first"
+        every { context.getString(CoreUiR.string.settings_backup_success, any()) } answers
+            { "Backed up: ${args[1]}" }
+        every { context.getString(CoreUiR.string.settings_backup_failed, any()) } answers
+            { "Backup failed: ${args[1]}" }
+        every { context.getString(CoreUiR.string.settings_restore_failed, any()) } answers
+            { "Restore failed: ${args[1]}" }
 
         viewModel = GlobalSettingsViewModel(
             themeManager = themeManager,
@@ -267,6 +279,46 @@ class GlobalSettingsViewModelTest {
         advanceUntilIdle()
         assertTrue(vm.uiState.value.geckoSafeBrowsing)
         coVerify(atLeast = 1) { geckoEngineManager.applySafeBrowsing(true) }
+    }
+
+    @Test
+    fun `setGlobalNotificationsEnabled true delegates to themeManager`() = runTest {
+        viewModel.setGlobalNotificationsEnabled(true)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { themeManager.setGlobalNotificationsEnabled(true) }
+    }
+
+    @Test
+    fun `setGlobalNotificationsEnabled false delegates to themeManager`() = runTest {
+        viewModel.setGlobalNotificationsEnabled(false)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { themeManager.setGlobalNotificationsEnabled(false) }
+    }
+
+    @Test
+    fun `globalNotificationsEnabled state reflects themeManager flow`() = runTest {
+        val flow = MutableStateFlow(false)
+        every { themeManager.globalNotificationsEnabled } returns flow
+        val vm = GlobalSettingsViewModel(
+            themeManager = themeManager,
+            isolationManager = isolationManager,
+            getWebApps = getWebApps,
+            saveWebApp = saveWebApp,
+            deleteAllAppsUseCase = deleteAllAppsUseCase,
+            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
+            passwordManager = passwordManager,
+            backupSettings = backupSettings,
+            backupManager = backupManager,
+            context = context,
+            geckoEngineManager = geckoEngineManager,
+            simpleIconsManager = simpleIconsManager,
+        )
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.globalNotificationsEnabled)
+
+        flow.value = true
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.globalNotificationsEnabled)
     }
 
     @Test

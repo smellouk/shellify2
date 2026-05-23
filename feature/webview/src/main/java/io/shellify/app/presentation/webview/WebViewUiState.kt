@@ -25,4 +25,5 @@ sealed interface WebViewCommand {
     data class LoadUrl(val url: String) : WebViewCommand
     data object Reload : WebViewCommand
     data object Finish : WebViewCommand
+    data object PageFinished : WebViewCommand
 }

@@ -18,6 +18,7 @@ import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
@@ -44,6 +45,7 @@ class AppSettingsScreenTest {
         val vm = mockk<AppSettingsViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(uiState)
         every { vm.geckoEngineManager } returns geckoManager
+        every { vm.commands } returns MutableSharedFlow()
         return vm
     }
 
@@ -103,7 +105,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Figma", url = "https://figma.com")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText(context.getString(R.string.settings_control_center_title))
+            .onNodeWithText(context.getString(CoreUiR.string.settings_control_center_title))
             .assertIsDisplayed()
     }
 

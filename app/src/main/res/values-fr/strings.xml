@@ -102,6 +102,8 @@
     <string name="add_fullscreen_nav_bar_desc">Garder la barre de navigation inférieure visible en mode plein écran (Retour, Accueil, Récents)</string>
     <string name="add_fullscreen_top_toolbar">Afficher la barre d\'outils supérieure</string>
     <string name="add_fullscreen_top_toolbar_desc">Garder la barre d\'outils du navigateur visible en mode plein écran (titre, URL, précédent/suivant/recharger)</string>
+    <string name="add_feature_notifications">Notifications</string>
+    <string name="add_feature_notifications_desc">Autoriser cette application à vous envoyer des notifications</string>
     <string name="add_feature_applock">Verrouillage de l\'application</string>
     <string name="add_lock_password">Mot de passe de l\'application (défini dans Paramètres)</string>
     <string name="add_lock_system">Verrouillage système (empreinte / PIN)</string>
@@ -224,6 +226,9 @@
     <string name="global_settings_wipe_on_failed_desc">Supprimer toutes les données si l\'authentification échoue 3 fois</string>
     <string name="global_settings_screenshot_protection">Protection contre les captures d\'écran</string>
     <string name="global_settings_screenshot_protection_desc">Empêcher les captures d\'écran et l\'enregistrement d\'écran</string>
+    <string name="global_settings_section_notifications">Notifications</string>
+    <string name="global_settings_notifications_enabled">Autoriser les notifications</string>
+    <string name="settings_notifications_global_disabled">Activez les notifications dans les Paramètres globaux pour contrôler les applications</string>
     <string name="global_settings_section_backup">Sauvegarde</string>
     <string name="global_settings_encrypted_backup">Sauvegarde chiffrée</string>
     <string name="global_settings_backup_enabled">Activé</string>
@@ -257,6 +262,7 @@
     <string name="global_settings_delete_all_shortcuts_desc">Supprime tous les raccourcis du lanceur de l\'écran d\'accueil</string>
     <string name="global_settings_section_about">À propos</string>
     <string name="global_settings_version_headline">Version</string>
+    <string name="settings_developer_tools">Outils développeur</string>
     <string name="licenses_title">Licences open source</string>
     <string name="changelog_title">Journal des modifications</string>
     <string name="privacy_title">Politique de confidentialité</string>
@@ -324,6 +330,11 @@
     <string name="global_settings_clear_all_confirm_title">Effacer toutes les données des applications ?</string>
     <string name="global_settings_clear_all_confirm_body">Ceci supprimera les cookies, le stockage local et les données mises en cache pour toutes les applications. Vous serez déconnecté de toutes les sessions.</string>
     <string name="global_settings_backup_result_title">Sauvegarde</string>
+    <string name="settings_backup_error_no_password">Définissez d\'abord un mot de passe de sauvegarde</string>
+    <string name="settings_backup_error_no_folder">Sélectionnez d\'abord un dossier de sauvegarde</string>
+    <string name="settings_backup_success">Sauvegardé : %s</string>
+    <string name="settings_backup_failed">Échec de la sauvegarde : %s</string>
+    <string name="settings_restore_failed">Échec de la restauration : %s</string>
     <string name="global_settings_password_too_short">Au moins 4 caractères</string>
     <string name="global_settings_passwords_dont_match">Les mots de passe ne correspondent pas</string>
     <string name="global_settings_set_password_title">Définir le mot de passe de l\'application</string>
@@ -500,11 +511,12 @@
     <string name="consent_update_title">Nous avons mis à jour nos conditions</string>
     <string name="consent_update_subtitle">Une légère mise à jour de nos Conditions d\'utilisation et de notre Politique de confidentialité. Veuillez examiner les changements et accepter pour continuer à utiliser Shellify.</string>
     <string name="consent_update_changes_title">Nouveautés</string>
-    <string name="consent_update_changes_1">Précisé la manière dont les icônes de marque issues de Simple Icons sont affichées pour identifier vos apps</string>
-    <string name="consent_update_changes_2">Ajout d\'une mention reconnaissant que les logos de marque sont des marques déposées de leurs propriétaires respectifs</string>
+    <string name="consent_update_changes_1">Ajout d\'une mention sur les ponts JavaScript injectés pour les notifications, les contrôles médias et la traduction</string>
+    <string name="consent_update_changes_2">Précisé que la traduction intégrée charge un script hébergé par Google lorsque la fonctionnalité est active</string>
     <string name="consent_update_checkbox_label">J\'ai lu et j\'accepte les Conditions et la Politique de confidentialité mises à jour</string>
     <string name="consent_update_agree_button">Accepter &amp; continuer</string>
     <string name="consent_what_5">Affiche les logos de marque fournis par Simple Icons pour identifier les apps que vous ajoutez. Ces logos sont des marques déposées de leurs propriétaires respectifs et sont utilisés uniquement à des fins d\'identification — Shellify n\'en revendique pas la propriété</string>
+    <string name="consent_what_6">Injecte de petits ponts JavaScript dans les pages web uniquement pour activer les fonctionnalités que vous utilisez : notifications, contrôles médias et traduction intégrée. Lorsque la traduction est active, un script hébergé par Google est chargé. Aucun pont ne transmet de données hors de votre appareil au-delà de ce que la fonctionnalité requiert</string>
 
     <!-- Deeplink confirm -->
     <string name="deeplink_confirm_title">Ajouter la web app ?</string>
@@ -527,4 +539,31 @@
 
     <!-- WebView task label -->
     <string name="webview_task_label">Shell</string>
+
+    <!-- Notifications (per-app settings and notification handling) -->
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_permission">Autoriser les notifications</string>
+    <string name="settings_notifications_dnd_start">Début Ne pas déranger</string>
+    <string name="settings_notifications_dnd_end">Fin Ne pas déranger</string>
+    <string name="settings_notifications_dnd">Ne pas déranger</string>
+    <string name="settings_notifications_dnd_not_set">Non défini</string>
+    <string name="settings_notifications_dnd_clear_cd">Effacer le planning</string>
+    <string name="settings_notifications_dnd_start_title">Heure de début</string>
+    <string name="settings_notifications_dnd_end_title">Heure de fin</string>
+    <string name="settings_notifications_background">Notifications en arrière-plan</string>
+    <string name="settings_notifications_history">Historique des notifications</string>
+    <string name="settings_notifications_history_title">Historique des notifications</string>
+    <string name="settings_notifications_history_empty_title">Aucune notification</string>
+    <string name="settings_notifications_history_empty_body">Les notifications de cette application apparaîtront ici pendant 30 jours.</string>
+    <string name="settings_notifications_history_footer">Historique conservé 30 jours</string>
+    <string name="notification_permission_dialog_body" formatted="true">Autoriser %s à vous envoyer des notifications ?</string>
+    <string name="notification_permission_allow">Autoriser les notifications</string>
+    <string name="notification_permission_not_now">Pas maintenant</string>
+    <string name="notification_channel_name" formatted="true">Notifications de %s</string>
+    <string name="notification_channel_name_default">Défaut</string>
+    <string name="notification_channel_description" formatted="true">Notifications de %s</string>
+    <string name="settings_notifications_permission_os_denied">Activez les notifications pour Shellify dans les paramètres Android.</string>
+    <string name="bg_notification_service_title">Notifications Shellify</string>
+    <string name="bg_notification_service_text" formatted="true">Maintien des notifications pour %s</string>
+    <string name="bg_notification_service_text_generic">Maintien des notifications PWA</string>
 </resources>

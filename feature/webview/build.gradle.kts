@@ -2,14 +2,22 @@ plugins {
     id("shellify.android.library")
     id("shellify.compose")
 }
-android { namespace = "io.shellify.feature.webview" }
+android {
+    namespace = "io.shellify.feature.webview"
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+}
 dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:navigation"))
     api(project(":core:engine"))
+    implementation(libs.geckoview)
     implementation(project(":core:isolation"))
     implementation(project(":core:security"))
-    implementation(project(":core:translate"))
+    implementation(project(":core:webbridge"))
     implementation(project(":core:theme"))
     implementation(project(":core:ui"))
     val composeBom = platform(libs.compose.bom)
@@ -24,4 +32,5 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
 }

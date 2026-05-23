@@ -161,6 +161,9 @@ class AppLockPasswordGuardTest {
             geckoEngineManager = mockk<GeckoEngineManager> {
                 every { installState } returns MutableStateFlow(GeckoInstallState.NotInstalled)
             },
+            themeManager = mockk<ThemeManager>(relaxed = true) {
+                every { globalNotificationsEnabled } returns MutableStateFlow(false)
+            },
         )
     }
 
@@ -182,6 +185,7 @@ class AppLockPasswordGuardTest {
             },
             themeManager = mockk<ThemeManager> {
                 every { defaultEngineType } returns flowOf(EngineType.SYSTEM_WEBVIEW)
+                every { globalNotificationsEnabled } returns MutableStateFlow(false)
             },
             simpleIconsManager = mockk<SimpleIconsManager> {
                 every { state } returns MutableStateFlow(SimpleIconsState.NotImported)

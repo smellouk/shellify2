@@ -57,4 +57,9 @@ data class WebAppEntity(
     val wipeOnFailedAttempts: Boolean = false,
     @ColumnInfo(name = "has_launcher_shortcut") val hasLauncherShortcut: Boolean = false,
     @ColumnInfo(name = "show_control_center") val showControlCenter: Boolean = true,
+    // Notifications
+    @ColumnInfo(name = "notification_permission") val notificationPermission: String = "NOT_ASKED",
+    @ColumnInfo(name = "dnd_start_hour") val dndStartHour: Int = -1,
+    @ColumnInfo(name = "dnd_end_hour") val dndEndHour: Int = -1,
+    @ColumnInfo(name = "background_notifications_enabled") val backgroundNotificationsEnabled: Boolean = false,
 )

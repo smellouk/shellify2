@@ -47,6 +47,12 @@ import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -100,10 +106,13 @@ import io.shellify.core.ui.R
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.core.shortcut.PwaShortcutManager
 import io.shellify.app.domain.model.EngineType
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.presentation.theme.GeckoWarning
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
+import io.shellify.app.presentation.settings.components.DndRangeRow
+import io.shellify.app.presentation.settings.components.TimePickerHourDialog
 import io.shellify.app.presentation.share.AppShareSheet
 import io.shellify.app.presentation.components.SimpleIconPickerSheet
 import io.shellify.app.presentation.components.AppIcon
@@ -116,6 +125,9 @@ fun AppSettingsScreen(
     viewModel: AppSettingsViewModel,
     onBack: () -> Unit,
     onDeleted: () -> Unit,
+    onNavigateToHistory: (appId: Long) -> Unit = {},
+    onStartBackgroundService: (appId: Long) -> Unit = {},
+    onStopBackgroundService: (appId: Long) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
@@ -131,6 +143,8 @@ fun AppSettingsScreen(
     var showLangMenu by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
+    var showDndStartPicker by remember { mutableStateOf(false) }
+    var showDndEndPicker by remember { mutableStateOf(false) }
 
     val imagePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
@@ -148,6 +162,19 @@ fun AppSettingsScreen(
     }
 
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
+
+    LaunchedEffect(Unit) {
+        viewModel.commands.collect { command ->
+            when (command) {
+                is AppSettingsCommand.NavigateToNotificationHistory ->
+                    onNavigateToHistory(command.appId)
+                is AppSettingsCommand.StartBackgroundService ->
+                    onStartBackgroundService(command.appId)
+                is AppSettingsCommand.StopBackgroundService ->
+                    onStopBackgroundService(command.appId)
+            }
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f),
@@ -441,6 +468,77 @@ fun AppSettingsScreen(
                     },
                 )
             }
+            SurfaceCard {
+                ToggleListItem(
+                    label = stringResource(R.string.settings_notifications_permission),
+                    checked = app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled,
+                    onToggle = { if (state.globalNotificationsEnabled) viewModel.toggleNotificationPermission() },
+                    icon = {
+                        Icon(
+                            if (app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled) {
+                                Icons.Default.Notifications
+                            } else {
+                                Icons.Default.NotificationsOff
+                            },
+                            contentDescription = null,
+                        )
+                    },
+                )
+                if (!state.globalNotificationsEnabled) {
+                    CardDivider()
+                    ListItem(
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Info,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.settings_notifications_global_disabled),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                    )
+                } else if (app.notificationPermission == NotificationPermission.GRANTED) {
+                    CardDivider()
+                    DndRangeRow(
+                        startHour = app.dndStartHour,
+                        endHour = app.dndEndHour,
+                        onClick = { showDndStartPicker = true },
+                        onClear = viewModel::clearDndSchedule,
+                    )
+                    if (app.engineType == EngineType.GECKOVIEW) {
+                        CardDivider()
+                        ToggleListItem(
+                            label = stringResource(R.string.settings_notifications_background),
+                            checked = app.backgroundNotificationsEnabled,
+                            onToggle = viewModel::toggleBackgroundNotifications,
+                        )
+                    }
+                }
+                CardDivider()
+                @Suppress("MagicNumber")
+                ListItem(
+                    leadingContent = { Icon(Icons.Default.History, contentDescription = null) },
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_notifications_history),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    trailingContent = {
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        )
+                    },
+                    modifier = Modifier.clickable { viewModel.onNotificationHistoryClick() },
+                )
+            }
 
             // ── Browser Engine ────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.add_engine_section))
@@ -659,6 +757,31 @@ fun AppSettingsScreen(
                 appName = app.name,
                 appUrl = app.url,
                 onDismiss = { showShareSheet = false },
+            )
+        }
+
+        if (showDndStartPicker) {
+            TimePickerHourDialog(
+                titleRes = R.string.settings_notifications_dnd_start_title,
+                initialHour = if (app.dndStartHour == -1) 22 else app.dndStartHour,
+                onDismiss = { showDndStartPicker = false },
+                onConfirm = { hour ->
+                    viewModel.setDndStartHour(hour)
+                    showDndStartPicker = false
+                    showDndEndPicker = true
+                },
+            )
+        }
+
+        if (showDndEndPicker) {
+            TimePickerHourDialog(
+                titleRes = R.string.settings_notifications_dnd_end_title,
+                initialHour = if (app.dndEndHour == -1) 8 else app.dndEndHour,
+                onDismiss = { showDndEndPicker = false },
+                onConfirm = { hour ->
+                    viewModel.setDndEndHour(hour)
+                    showDndEndPicker = false
+                },
             )
         }
     }

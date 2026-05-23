@@ -1,4 +1,4 @@
-package io.shellify.app.core.translate
+package io.shellify.app.core.webbridge
 
 object TranslateBridge {
 

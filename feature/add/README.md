@@ -130,6 +130,14 @@ sequenceDiagram
     AddScreen->>AddScreen: navController.popBackStack()
 ```
 
+## String Resources
+
+`feature:add` owns its own string resources under `src/main/res/values/strings.xml` (with `values-fr` and `values-ar` translations). Currently contains:
+
+| Key | Default (en) |
+|---|---|
+| `add_error_duplicate` | `"%s" already exists` |
+
 ## Configuration
 
 - **Deep-link scheme**: `shellify://add?url=<encoded-url>`. The scheme is declared in `:app`'s `AndroidManifest.xml`; `feature:add` does not register its own manifest entry.

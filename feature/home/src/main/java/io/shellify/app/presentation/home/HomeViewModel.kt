@@ -8,6 +8,7 @@ import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.shortcut.PwaShortcutManager
 import io.shellify.app.domain.model.Category
+import io.shellify.app.domain.model.NotificationChannelId
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
@@ -113,6 +114,8 @@ class HomeViewModel(
     fun delete(app: WebApp) = viewModelScope.launch {
         PwaShortcutManager.removeShortcut(context, app)
         deleteWebApp(app)
+        androidx.core.app.NotificationManagerCompat.from(context)
+            .deleteNotificationChannel(NotificationChannelId.forApp(app.isolationId))
     }
 
     fun assignCategory(app: WebApp, categoryId: Long?) = viewModelScope.launch {

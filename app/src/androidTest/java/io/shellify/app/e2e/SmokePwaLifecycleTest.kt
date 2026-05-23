@@ -24,6 +24,7 @@ import io.shellify.core.ui.R as CoreUiR
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
@@ -279,6 +280,7 @@ class SmokePwaLifecycleTest {
         return mockk<AppSettingsViewModel>(relaxed = true).also {
             every { it.uiState } returns MutableStateFlow(state)
             every { it.geckoEngineManager } returns geckoManager
+            every { it.commands } returns MutableSharedFlow()
         }
     }
 }

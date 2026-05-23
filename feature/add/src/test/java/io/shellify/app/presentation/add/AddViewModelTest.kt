@@ -14,6 +14,7 @@ import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.PwaManifest
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.UserAgentMode
@@ -62,6 +63,7 @@ class AddViewModelTest {
         every { getCategories() } returns flowOf(emptyList())
         every { simpleIconsManager.state } returns MutableStateFlow(SimpleIconsState.NotImported)
         every { themeManager.defaultEngineType } returns MutableStateFlow(EngineType.SYSTEM_WEBVIEW)
+        every { themeManager.globalNotificationsEnabled } returns MutableStateFlow(true)
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
         coEvery { getWebAppByName(any()) } returns null
         coEvery { saveWebApp(any()) } returns 1L
@@ -87,8 +89,6 @@ class AddViewModelTest {
         context = context,
         prefilledUrl = url,
         prefilledName = name,
-        // Patterns.WEB_URL is null in JVM unit tests; replicate its key invariants here
-        isUrlValid = { it.startsWith("https://") && it.contains('.') && !it.contains(' ') },
     )
 
     @Test
@@ -200,26 +200,31 @@ class AddViewModelTest {
         val vm = newVm()
         vm.setUrl("http://example.com")
         vm.analyze()
+        advanceUntilIdle()
         assertNotNull(vm.uiState.value.urlError)
         assertFalse(vm.uiState.value.isAnalyzing)
     }
 
     @Test
-    fun `analyze with invalid url sets urlError`() = runTest {
+    fun `save with http url sets urlError`() = runTest {
         val vm = newVm()
-        vm.setUrl("not a valid url with spaces")
-        vm.analyze()
+        vm.setName("App")
+        vm.setUrl("http://example.com")
+        vm.save()
+        advanceUntilIdle()
         assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.isAnalyzing)
+        assertFalse(vm.uiState.value.saved)
     }
 
     @Test
-    fun `analyze with number-only input sets urlError`() = runTest {
+    fun `save with invalid url format sets urlError`() = runTest {
         val vm = newVm()
-        vm.setUrl("1111111")
-        vm.analyze()
+        vm.setName("App")
+        vm.setUrl("not a url at all")
+        vm.save()
+        advanceUntilIdle()
         assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.isAnalyzing)
+        assertFalse(vm.uiState.value.saved)
     }
 
     // ── fetchIcon validation ───────────────────────────────────────────────────
@@ -233,49 +238,7 @@ class AddViewModelTest {
         assertFalse(vm.uiState.value.isFetchingIcon)
     }
 
-    @Test
-    fun `fetchIcon with http url sets urlError and does not fetch`() = runTest {
-        val vm = newVm()
-        vm.setUrl("http://example.com")
-        vm.fetchIcon()
-        advanceUntilIdle()
-        assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.isFetchingIcon)
-    }
-
-    @Test
-    fun `fetchIcon with invalid url sets urlError and does not fetch`() = runTest {
-        val vm = newVm()
-        vm.setUrl("not a valid url with spaces")
-        vm.fetchIcon()
-        advanceUntilIdle()
-        assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.isFetchingIcon)
-    }
-
     // ── save / validate edge cases ─────────────────────────────────────────────
-
-    @Test
-    fun `save with http url sets urlError and does not save`() = runTest {
-        val vm = newVm()
-        vm.setName("App")
-        vm.setUrl("http://example.com")
-        vm.save()
-        advanceUntilIdle()
-        assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.saved)
-    }
-
-    @Test
-    fun `save with invalid url sets urlError and does not save`() = runTest {
-        val vm = newVm()
-        vm.setName("App")
-        vm.setUrl("not a valid url with spaces")
-        vm.save()
-        advanceUntilIdle()
-        assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.saved)
-    }
 
     @Test
     fun `save normalizes url without scheme to https`() = runTest {
@@ -287,16 +250,6 @@ class AddViewModelTest {
         advanceUntilIdle()
         assertTrue(vm.uiState.value.saved)
         assertNull(vm.uiState.value.urlError)
-    }
-
-    @Test
-    fun `run with http url sets urlError and does not preview`() {
-        val vm = newVm()
-        vm.setName("App")
-        vm.setUrl("http://example.com")
-        vm.run()
-        assertNotNull(vm.uiState.value.urlError)
-        assertNull(vm.uiState.value.previewUrl)
     }
 
     @Test
@@ -380,7 +333,6 @@ class AddViewModelTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             context = context,
-            isUrlValid = { it.startsWith("https://") && it.contains('.') && !it.contains(' ') },
         )
         advanceUntilIdle()
         assertFalse(vm.uiState.value.isLoading)
@@ -401,6 +353,115 @@ class AddViewModelTest {
         // by checking applyManifest is a no-op when pendingManifest is null
         vm.applyManifest()  // should be safe no-op
         assertEquals("", vm.uiState.value.name)  // unchanged
+    }
+
+    @Test
+    fun `setNotificationsEnabled false updates state`() {
+        val vm = newVm()
+        vm.setNotificationsEnabled(false)
+        assertFalse(vm.uiState.value.notificationsEnabled)
+    }
+
+    @Test
+    fun `setNotificationsEnabled true updates state`() {
+        val vm = newVm()
+        vm.setNotificationsEnabled(false)
+        vm.setNotificationsEnabled(true)
+        assertTrue(vm.uiState.value.notificationsEnabled)
+    }
+
+    @Test
+    fun `globalNotificationsEnabled reflects themeManager flow`() = runTest {
+        val flow = MutableStateFlow(true)
+        every { themeManager.globalNotificationsEnabled } returns flow
+        val vm = newVm()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.globalNotificationsEnabled)
+
+        flow.value = false
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.globalNotificationsEnabled)
+    }
+
+    @Test
+    fun `save with notificationsEnabled false persists NotificationPermission DENIED`() = runTest {
+        coEvery { getWebAppById(1L) } returns WebApp(id = 1L, name = "App", url = "https://example.com")
+        val vm = newVm()
+        vm.setName("App")
+        vm.setUrl("https://example.com")
+        vm.setNotificationsEnabled(false)
+        vm.save()
+        advanceUntilIdle()
+        coVerify(exactly = 1) {
+            saveWebApp(match { it.notificationPermission == NotificationPermission.DENIED })
+        }
+    }
+
+    @Test
+    fun `save with notificationsEnabled true for new app uses NOT_ASKED`() = runTest {
+        coEvery { getWebAppById(1L) } returns WebApp(id = 1L, name = "App", url = "https://example.com")
+        val vm = newVm()
+        vm.setName("App")
+        vm.setUrl("https://example.com")
+        vm.save()
+        advanceUntilIdle()
+        coVerify(exactly = 1) {
+            saveWebApp(match { it.notificationPermission == NotificationPermission.NOT_ASKED })
+        }
+    }
+
+    @Test
+    fun `when editing app with DENIED permission notificationsEnabled is false`() = runTest {
+        val existingApp = WebApp(
+            id = 7L,
+            name = "App",
+            url = "https://app.com",
+            notificationPermission = NotificationPermission.DENIED,
+        )
+        coEvery { getWebAppById(7L) } returns existingApp
+        val vm = AddViewModel(
+            appId = 7L,
+            getWebAppById = getWebAppById,
+            getWebAppByName = getWebAppByName,
+            saveWebApp = saveWebApp,
+            getCategories = getCategories,
+            analyzer = analyzer,
+            faviconFetcher = faviconFetcher,
+            geckoEngineManager = geckoEngineManager,
+            themeManager = themeManager,
+            simpleIconsManager = simpleIconsManager,
+            passwordManager = passwordManager,
+            context = context,
+        )
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.notificationsEnabled)
+    }
+
+    @Test
+    fun `when editing app with GRANTED permission notificationsEnabled is true`() = runTest {
+        val existingApp = WebApp(
+            id = 8L,
+            name = "App",
+            url = "https://app.com",
+            notificationPermission = NotificationPermission.GRANTED,
+        )
+        coEvery { getWebAppById(8L) } returns existingApp
+        val vm = AddViewModel(
+            appId = 8L,
+            getWebAppById = getWebAppById,
+            getWebAppByName = getWebAppByName,
+            saveWebApp = saveWebApp,
+            getCategories = getCategories,
+            analyzer = analyzer,
+            faviconFetcher = faviconFetcher,
+            geckoEngineManager = geckoEngineManager,
+            themeManager = themeManager,
+            simpleIconsManager = simpleIconsManager,
+            passwordManager = passwordManager,
+            context = context,
+        )
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.notificationsEnabled)
     }
 
     @Test

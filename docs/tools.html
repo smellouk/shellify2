@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shellify — Developer Tools</title>
+<link rel="stylesheet" href="assets/site.css">
+<style>
+
+/* ── Page header ─────────────────────────────────────── */
+.tools-hero {
+  padding: 48px 0 0;
+}
+.tools-hero h1 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  margin-bottom: 8px;
+}
+.tools-hero h1 span {
+  background: linear-gradient(125deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tools-hero p {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  margin-bottom: 32px;
+}
+
+/* ── Tab bar ─────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.tab-btn:hover { color: var(--text); background: var(--surface); }
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: transparent;
+}
+.tab-btn .tab-icon { opacity: 0.7; }
+.tab-btn.active .tab-icon { opacity: 1; }
+
+/* ── Tab panels ──────────────────────────────────────── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Status pill ─────────────────────────────────────── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  width: 100%;
+}
+.status-pill.ok  { background: rgba(0,229,204,0.08); border-color: rgba(0,229,204,0.25); color: var(--secondary); }
+.status-pill.err { background: rgba(255,45,85,0.08);  border-color: rgba(255,45,85,0.25);  color: #FF6B6B; }
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+  flex-shrink: 0;
+}
+.status-pill.ok  .status-dot { background: var(--secondary); box-shadow: 0 0 6px var(--secondary); }
+.status-pill.err .status-dot { background: #FF6B6B; box-shadow: 0 0 6px #FF6B6B; }
+
+/* ── Tool cards ──────────────────────────────────────── */
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+@media (max-width: 700px) { .tool-grid { grid-template-columns: 1fr; } }
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  transition: border-color 0.2s ease;
+}
+.tool-card:hover { border-color: var(--border-hover); }
+.tool-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.tool-card-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--primary-dim);
+  color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.tool-card-icon.teal { background: var(--secondary-dim); color: var(--secondary); }
+.tool-card-icon.warn { background: rgba(255,179,0,0.12); color: var(--accent); }
+.tool-card h3 { font-size: 0.9375rem; font-weight: 700; letter-spacing: -0.02em; }
+.tool-card p {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+/* ── Tool buttons ────────────────────────────────────── */
+.btn-tool {
+  display: block;
+  width: 100%;
+  padding: 11px 16px;
+  margin-bottom: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+.btn-tool:last-child { margin-bottom: 0; }
+.btn-tool.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.btn-tool.primary:hover { background: var(--primary-hov); border-color: var(--primary-hov); }
+.btn-tool.secondary {
+  background: var(--secondary);
+  color: #fff;
+  border-color: var(--secondary);
+}
+.btn-tool.secondary:hover { filter: brightness(1.12); }
+.btn-tool.danger {
+  background: #C0392B;
+  color: #fff;
+  border-color: #C0392B;
+}
+.btn-tool.danger:hover { filter: brightness(1.15); }
+.btn-tool.accent {
+  background: var(--accent);
+  color: #1a1a1a;
+  border-color: var(--accent);
+}
+.btn-tool.accent:hover { filter: brightness(1.12); }
+.btn-tool:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-tool:active:not(:disabled) { transform: scale(0.98); }
+
+/* ── Background test status ──────────────────────────── */
+.bg-status {
+  display: none;
+  font-size: 0.8125rem;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.bg-status.ok  { background: rgba(0,229,204,0.08);  border-color: rgba(0,229,204,0.25); color: var(--secondary); }
+.bg-status.err { background: rgba(255,45,85,0.08);  border-color: rgba(255,45,85,0.25); color: #FF6B6B; }
+
+/* ── Log console ─────────────────────────────────────── */
+.log-section { margin-top: 8px; }
+.log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.log-label {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.log-clear {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+}
+.log-clear:hover { color: var(--text); }
+#log {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-height: 120px;
+  max-height: 260px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.7;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+#log .log-ts { color: var(--text-subtle); }
+#log .log-ok  { color: var(--secondary); }
+#log .log-err { color: #FF6B6B; }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="site-nav" role="navigation" aria-label="Main">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="display:flex;align-items:center;gap:8px;">
+      <img src="icon.webp" alt="" width="36" height="36" style="border-radius:8px;">Shellify
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-hide-mobile">Home</a>
+      <a href="changelog.html" class="nav-hide-mobile">Changelog</a>
+      <button class="theme-toggle" id="theme-btn" aria-label="Toggle theme" title="Toggle dark/light mode">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a href="https://github.com/smellouk/shellify" class="btn-github" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <!-- Page header -->
+  <div class="tools-hero">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span class="badge"><span class="badge-dot badge-dot-primary"></span> Internal</span>
+    </div>
+    <h1><span>Developer</span> Tools</h1>
+    <p>In-app test utilities. Serve this file via <code>adb reverse tcp:8080 tcp:8080</code> and load <code>http://localhost:8080/tools.html</code> inside Shellify.</p>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-notifications" onclick="switchTab('notifications', this)">
+      <span class="tab-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </span>
+      Notifications
+    </button>
+  </div>
+
+  <!-- ── Notifications panel ──────────────────────────── -->
+  <div class="tab-panel active" id="panel-notifications" role="tabpanel">
+
+    <div class="tool-grid">
+
+      <!-- Chrome Tools -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+          </span>
+          <h3>Chrome Tools</h3>
+        </div>
+        <p>Calls <code>ShellifyBridge.onNotification()</code> directly via the Chromium Java bridge. Works in System WebView — no permission prompt needed.</p>
+        <!-- Bridge status -->
+        <div class="status-pill" id="bridge-status" style="margin-bottom:12px;">
+          <span class="status-dot"></span>
+          <span id="bridge-text">Checking bridge…</span>
+        </div>
+        <button class="btn-tool primary"    onclick="directBasic()">Fire basic notification</button>
+        <button class="btn-tool secondary"  onclick="directRich()">Fire with body + icon</button>
+        <button class="btn-tool danger"     onclick="directMany()">Rapid-fire 25 (rate limit)</button>
+        <button class="btn-tool accent"     onclick="directLong()">Long title + body (truncation)</button>
+      </div>
+
+      <!-- GeckoView Tools -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-card-icon teal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          </span>
+          <h3>GeckoView Tools</h3>
+        </div>
+        <p>Uses <code>window.Notification</code> via Gecko's web API. Requires permission = <strong>GRANTED</strong> and a page reload before <code>NotificationBridge</code> is injected.</p>
+        <button class="btn-tool secondary" onclick="checkPermission()">Check permission state</button>
+        <button class="btn-tool secondary" onclick="requestPermission()">Request permission</button>
+        <button class="btn-tool primary"   onclick="fireApi()">new Notification("Hello")</button>
+
+        <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
+
+        <div class="tool-card-header" style="margin-bottom:4px;">
+          <span class="tool-card-icon warn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <h3>Background Test</h3>
+        </div>
+        <p>Starts a 10-second countdown. Press Home immediately — the notification fires at the right time even when backgrounded (wall-clock deadline, <code>visibilitychange</code> fallback).</p>
+        <button class="btn-tool primary" id="bgBtn" onclick="startBackgroundTimer()">Start 10s background timer</button>
+        <div class="bg-status" id="bgStatus"></div>
+      </div>
+
+    </div><!-- /.tool-grid -->
+
+    <!-- Log console -->
+    <div class="log-section">
+      <div class="log-header">
+        <span class="log-label">Console</span>
+        <button class="log-clear" onclick="clearLog()">Clear</button>
+      </div>
+      <div id="log">Initialising…</div>
+    </div>
+
+  </div><!-- /#panel-notifications -->
+
+</div><!-- /.wrap -->
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-inner">
+      <span class="footer-logo">Shellify</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms</a>
+        <a href="changelog.html">Changelog</a>
+        <a href="https://github.com/smellouk/shellify" rel="noopener">GitHub</a>
+      </div>
+      <span class="footer-copy">© 2026 Shellify · Apache 2.0</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Theme toggle ──────────────────────────────────────
+(function() {
+  const root = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const ICON_MOON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const ICON_SUN  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
+  function applyTheme(t) {
+    root.dataset.theme = t;
+    btn.innerHTML = t === 'dark' ? ICON_MOON : ICON_SUN;
+    try { localStorage.setItem('shellify-theme', t); } catch(e) {}
+  }
+
+  const stored = (() => { try { return localStorage.getItem('shellify-theme'); } catch(e) { return null; } })();
+  const system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  applyTheme(stored || system);
+  btn.addEventListener('click', () => applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+})();
+
+// ── Tab switching ─────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+}
+
+// ── Log helpers ───────────────────────────────────────
+function log(msg, type) {
+  const el = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString();
+  const cls = type === 'ok' ? 'log-ok' : type === 'err' ? 'log-err' : '';
+  const line = document.createElement('div');
+  line.innerHTML = `<span class="log-ts">[${ts}]</span> <span class="${cls}">${msg}</span>`;
+  el.insertBefore(line, el.firstChild);
+}
+function clearLog() {
+  document.getElementById('log').innerHTML = '';
+}
+
+// ── Bridge detection ──────────────────────────────────
+window.addEventListener('load', () => {
+  const pill    = document.getElementById('bridge-status');
+  const text    = document.getElementById('bridge-text');
+  const hasBridge = typeof window.ShellifyBridge !== 'undefined';
+  const hasNotif  = typeof window.Notification  !== 'undefined';
+
+  if (hasBridge) {
+    pill.classList.add('ok');
+    text.textContent = '✓ ShellifyBridge attached — direct tests will work';
+  } else {
+    pill.classList.add('err');
+    text.textContent = '✗ ShellifyBridge not found — not running inside Shellify?';
+  }
+
+  log('ShellifyBridge: ' + (hasBridge ? 'YES' : 'NO'), hasBridge ? 'ok' : 'err');
+  log('window.Notification: ' + (hasNotif ? 'YES (bridge injected)' : 'NO (need GRANTED + reload)'), hasNotif ? 'ok' : null);
+  if (hasNotif) log('Notification.permission = ' + Notification.permission);
+
+  // Background service auto-fire (headless GeckoView session — no ShellifyBridge present)
+  if (!hasBridge && hasNotif && Notification.permission === 'granted') {
+    log('Background session detected — auto-firing in 3s', 'ok');
+    setTimeout(() => {
+      try {
+        new Notification('Background Test', { body: 'Auto-fired by background service — it works!', tag: 'bg-auto' });
+        log('Background notification fired', 'ok');
+      } catch(e) { log('Auto-fire error: ' + e.message, 'err'); }
+    }, 3000);
+  }
+});
+
+// ── Direct bridge ─────────────────────────────────────
+function directBasic() {
+  if (!window.ShellifyBridge) { log('ERROR: ShellifyBridge not available', 'err'); return; }
+  window.ShellifyBridge.onNotification('Hello from Shellify', 'Basic test notification', '');
+  log('Direct basic notification fired — check shade + history', 'ok');
+}
+
+function directRich() {
+  if (!window.ShellifyBridge) { log('ERROR: ShellifyBridge not available', 'err'); return; }
+  window.ShellifyBridge.onNotification('Rich Notification', 'This has a body and icon URL to verify passthrough.', 'https://shellify.app/icon.png');
+  log('Direct rich notification fired (body + icon)', 'ok');
+}
+
+function directMany() {
+  if (!window.ShellifyBridge) { log('ERROR: ShellifyBridge not available', 'err'); return; }
+  for (let i = 1; i <= 25; i++) {
+    window.ShellifyBridge.onNotification('Rate limit #' + i, 'Notification ' + i + ' of 25', '');
+  }
+  log('Fired 25 — only first N (daily limit) should appear', 'ok');
+}
+
+function directLong() {
+  if (!window.ShellifyBridge) { log('ERROR: ShellifyBridge not available', 'err'); return; }
+  window.ShellifyBridge.onNotification('T'.repeat(300), 'B'.repeat(1100), '');
+  log('Sent 300-char title + 1100-char body — should truncate to 256/1024', 'ok');
+}
+
+// ── Notification API ──────────────────────────────────
+function checkPermission() {
+  if (typeof Notification === 'undefined') { log('window.Notification undefined — grant permission + reload first', 'err'); return; }
+  log('Notification.permission = ' + Notification.permission);
+}
+
+function requestPermission() {
+  if (typeof Notification === 'undefined') { log('window.Notification undefined — grant permission + reload first', 'err'); return; }
+  Notification.requestPermission().then(r => log('requestPermission() → ' + r, r === 'granted' ? 'ok' : null)).catch(e => log('Error: ' + e, 'err'));
+}
+
+function fireApi() {
+  if (typeof Notification === 'undefined') { log('window.Notification undefined — grant permission + reload first', 'err'); return; }
+  try {
+    new Notification('API Test', { body: 'via window.Notification', tag: 'api-test' });
+    log('Fired via window.Notification API', 'ok');
+  } catch(e) { log('Error: ' + e.message, 'err'); }
+}
+
+// ── Background timer ───────────────────────────────────
+const BG_DELAY_MS = 10000;
+let bgDeadline = null;
+let bgTimer    = null;
+
+function startBackgroundTimer() {
+  if (bgTimer !== null) return;
+  bgDeadline = Date.now() + BG_DELAY_MS;
+
+  const btn    = document.getElementById('bgBtn');
+  const status = document.getElementById('bgStatus');
+  btn.disabled = true;
+  status.style.display = 'block';
+  status.className = 'bg-status';
+  status.textContent = 'Timer running — press Home now';
+  log('Background timer started — press Home now');
+
+  bgTimer = setInterval(checkBgTimer, 500);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+}
+
+function checkBgTimer() {
+  if (bgDeadline === null) return;
+  const remaining = Math.ceil((bgDeadline - Date.now()) / 1000);
+  const btn = document.getElementById('bgBtn');
+  if (remaining > 0) {
+    btn.textContent = remaining + 's remaining…';
+  } else {
+    fireBgNotification();
+  }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible' && bgDeadline !== null && Date.now() >= bgDeadline) {
+    fireBgNotification();
+  }
+}
+
+function fireBgNotification() {
+  clearInterval(bgTimer);
+  bgTimer    = null;
+  bgDeadline = null;
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+
+  const btn    = document.getElementById('bgBtn');
+  const status = document.getElementById('bgStatus');
+  btn.textContent = 'Start 10s background timer';
+  btn.disabled    = false;
+
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      new Notification('Background Test', { body: 'Fired after 10s — background notifications work!', tag: 'bg-timer' });
+      status.className  = 'bg-status ok';
+      status.textContent = '✓ Fired via Notification API';
+      log('Background notification fired via Notification API', 'ok');
+    } else if (window.ShellifyBridge) {
+      window.ShellifyBridge.onNotification('Background Test', 'Fired after 10s — background notifications work!', '');
+      status.className  = 'bg-status ok';
+      status.textContent = '✓ Fired via ShellifyBridge';
+      log('Background notification fired via ShellifyBridge', 'ok');
+    } else {
+      status.className  = 'bg-status err';
+      status.textContent = '✗ No notification channel available';
+      log('No notification channel available', 'err');
+    }
+  } catch(e) {
+    status.className  = 'bg-status err';
+    status.textContent = '✗ Error: ' + e.message;
+    log('Error: ' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>

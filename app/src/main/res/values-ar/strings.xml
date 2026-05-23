@@ -102,6 +102,8 @@
     <string name="add_fullscreen_nav_bar_desc">إبقاء شريط التنقل السفلي مرئياً في وضع ملء الشاشة (رجوع، الرئيسية، الأخيرة)</string>
     <string name="add_fullscreen_top_toolbar">إظهار شريط الأدوات العلوي</string>
     <string name="add_fullscreen_top_toolbar_desc">إبقاء شريط أدوات المتصفح مرئياً في وضع ملء الشاشة (العنوان، الرابط، الأمامي/الخلفي/إعادة التحميل)</string>
+    <string name="add_feature_notifications">الإشعارات</string>
+    <string name="add_feature_notifications_desc">السماح لهذا التطبيق بإرسال إشعارات إليك</string>
     <string name="add_feature_applock">قفل التطبيق</string>
     <string name="add_lock_password">كلمة مرور التطبيق (تُعيَّن في الإعدادات)</string>
     <string name="add_lock_system">قفل النظام (بصمة / رمز PIN)</string>
@@ -224,6 +226,9 @@
     <string name="global_settings_wipe_on_failed_desc">حذف جميع بيانات التطبيق إذا فشلت المصادقة 3 مرات</string>
     <string name="global_settings_screenshot_protection">حماية لقطات الشاشة</string>
     <string name="global_settings_screenshot_protection_desc">منع لقطات الشاشة وتسجيل الشاشة</string>
+    <string name="global_settings_section_notifications">الإشعارات</string>
+    <string name="global_settings_notifications_enabled">السماح بالإشعارات</string>
+    <string name="settings_notifications_global_disabled">فعّل الإشعارات من الإعدادات العامة للتحكم بها لكل تطبيق</string>
     <string name="global_settings_section_backup">النسخ الاحتياطي</string>
     <string name="global_settings_encrypted_backup">نسخ احتياطي مشفَّر</string>
     <string name="global_settings_backup_enabled">مفعَّل</string>
@@ -257,6 +262,7 @@
     <string name="global_settings_delete_all_shortcuts_desc">إزالة جميع اختصارات مشغِّل التطبيقات من الشاشة الرئيسية</string>
     <string name="global_settings_section_about">حول</string>
     <string name="global_settings_version_headline">الإصدار</string>
+    <string name="settings_developer_tools">أدوات المطور</string>
     <string name="licenses_title">تراخيص المصدر المفتوح</string>
     <string name="changelog_title">سجل التغييرات</string>
     <string name="privacy_title">سياسة الخصوصية</string>
@@ -324,6 +330,11 @@
     <string name="global_settings_clear_all_confirm_title">مسح جميع بيانات التطبيقات؟</string>
     <string name="global_settings_clear_all_confirm_body">سيؤدي هذا إلى حذف ملفات تعريف الارتباط والتخزين المحلي والبيانات المؤقتة لجميع التطبيقات. ستتم تسجيل الخروج من جميع الجلسات.</string>
     <string name="global_settings_backup_result_title">النسخ الاحتياطي</string>
+    <string name="settings_backup_error_no_password">عيِّن كلمة مرور للنسخ الاحتياطي أولاً</string>
+    <string name="settings_backup_error_no_folder">حدِّد مجلد النسخ الاحتياطي أولاً</string>
+    <string name="settings_backup_success">تمت النسخة الاحتياطية: %s</string>
+    <string name="settings_backup_failed">فشل النسخ الاحتياطي: %s</string>
+    <string name="settings_restore_failed">فشلت الاستعادة: %s</string>
     <string name="global_settings_password_too_short">4 أحرف على الأقل</string>
     <string name="global_settings_passwords_dont_match">كلمتا المرور غير متطابقتين</string>
     <string name="global_settings_set_password_title">تعيين كلمة مرور التطبيق</string>
@@ -500,11 +511,12 @@
     <string name="consent_update_title">حدّثنا الشروط</string>
     <string name="consent_update_subtitle">تحديث بسيط لشروط الخدمة وسياسة الخصوصية. يرجى مراجعة التغييرات والموافقة لمتابعة استخدام Shellify.</string>
     <string name="consent_update_changes_title">ما الجديد</string>
-    <string name="consent_update_changes_1">توضيح طريقة عرض أيقونات العلامات التجارية من Simple Icons لتمييز تطبيقاتك</string>
-    <string name="consent_update_changes_2">إضافة تنويه بأن شعارات العلامات التجارية هي علامات مسجلة لأصحابها</string>
+    <string name="consent_update_changes_1">إضافة إفصاح عن جسور JavaScript المُحقنة لتفعيل الإشعارات وعناصر التحكم في الوسائط والترجمة</string>
+    <string name="consent_update_changes_2">توضيح أن ترجمة الصفحات تُحمِّل نصاً برمجياً مستضافاً على خوادم Google عند تفعيل الميزة</string>
     <string name="consent_update_checkbox_label">قرأت ووافقت على الشروط وسياسة الخصوصية المُحدَّثة</string>
     <string name="consent_update_agree_button">أوافق وأتابع</string>
     <string name="consent_what_5">يعرض شعارات العلامات التجارية من Simple Icons لتمييز التطبيقات التي تضيفها. هذه الشعارات علامات مسجلة لأصحابها وتُستخدم فقط لأغراض التعريف — Shellify لا يدّعي ملكيتها</string>
+    <string name="consent_what_6">تحقن جسوراً برمجية صغيرة بلغة JavaScript في صفحات الويب فقط لتفعيل الميزات التي تستخدمها: الإشعارات وعناصر التحكم في الوسائط والترجمة. عند تفعيل الترجمة، يُحمَّل نصٌّ برمجي مستضاف على خوادم Google. لا يرسل أي جسر بيانات خارج جهازك إلا بما تستلزمه الميزة</string>
 
     <!-- Deeplink confirm -->
     <string name="deeplink_confirm_title">إضافة تطبيق ويب؟</string>
@@ -527,4 +539,31 @@
 
     <!-- WebView task label -->
     <string name="webview_task_label">Shell</string>
+
+    <!-- Notifications (per-app settings and notification handling) -->
+    <string name="settings_notifications">الإشعارات</string>
+    <string name="settings_notifications_permission">السماح بالإشعارات</string>
+    <string name="settings_notifications_dnd_start">بداية وضع عدم الإزعاج</string>
+    <string name="settings_notifications_dnd_end">نهاية وضع عدم الإزعاج</string>
+    <string name="settings_notifications_dnd">عدم الإزعاج</string>
+    <string name="settings_notifications_dnd_not_set">غير محدد</string>
+    <string name="settings_notifications_dnd_clear_cd">مسح الجدول</string>
+    <string name="settings_notifications_dnd_start_title">وقت البدء</string>
+    <string name="settings_notifications_dnd_end_title">وقت الانتهاء</string>
+    <string name="settings_notifications_background">الإشعارات في الخلفية</string>
+    <string name="settings_notifications_history">سجل الإشعارات</string>
+    <string name="settings_notifications_history_title">سجل الإشعارات</string>
+    <string name="settings_notifications_history_empty_title">لا توجد إشعارات بعد</string>
+    <string name="settings_notifications_history_empty_body">ستظهر إشعارات هذا التطبيق هنا لمدة 30 يومًا.</string>
+    <string name="settings_notifications_history_footer">يُحتفظ بالسجل 30 يومًا</string>
+    <string name="notification_permission_dialog_body" formatted="true">هل تسمح لـ %s بإرسال الإشعارات إليك؟</string>
+    <string name="notification_permission_allow">السماح بالإشعارات</string>
+    <string name="notification_permission_not_now">ليس الآن</string>
+    <string name="notification_channel_name" formatted="true">إشعارات %s</string>
+    <string name="notification_channel_name_default">افتراضي</string>
+    <string name="notification_channel_description" formatted="true">إشعارات من %s</string>
+    <string name="settings_notifications_permission_os_denied">قم بتفعيل الإشعارات لـ Shellify في إعدادات Android.</string>
+    <string name="bg_notification_service_title">إشعارات Shellify</string>
+    <string name="bg_notification_service_text" formatted="true">إبقاء الإشعارات نشطة لـ %s</string>
+    <string name="bg_notification_service_text_generic">إبقاء إشعارات PWA نشطة</string>
 </resources>

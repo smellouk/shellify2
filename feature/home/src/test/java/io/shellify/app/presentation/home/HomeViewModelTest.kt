@@ -1,5 +1,6 @@
 package io.shellify.app.presentation.home
 
+import android.app.NotificationManager
 import android.content.Context
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -58,6 +59,7 @@ class HomeViewModelTest {
         every { getCategories() } returns flowOf(listOf(cat1))
         coEvery { saveWebApp(any()) } returns 0L
         coEvery { deleteWebApp(any()) } returns Unit
+        every { context.getSystemService(Context.NOTIFICATION_SERVICE) } returns mockk<NotificationManager>(relaxed = true)
         viewModel = HomeViewModel(
             getWebApps, deleteWebApp, getCategories, saveWebApp,
             isolationManager, context, pwaAnalyzer, faviconFetcher

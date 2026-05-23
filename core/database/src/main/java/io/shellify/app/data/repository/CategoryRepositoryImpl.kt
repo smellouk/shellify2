@@ -12,6 +12,9 @@ class CategoryRepositoryImpl(private val dao: CategoryDao) : CategoryRepository 
     override fun getAll(): Flow<List<Category>> =
         dao.getAll().map { list -> list.map { it.toDomain() } }
 
+    override suspend fun getById(id: Long): Category? =
+        dao.getById(id)?.toDomain()
+
     override suspend fun save(category: Category): Long {
         val entity = category.toEntity()
         return if (entity.id == 0L) dao.insert(entity)

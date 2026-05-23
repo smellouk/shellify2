@@ -183,4 +183,40 @@ class GlobalSettingsScreenScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
+    @Test
+    fun globalNotificationsEnabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                GlobalSettingsScreen(
+                    viewModel = buildVm(
+                        GlobalSettingsUiState(
+                            isLoaded = true,
+                            globalNotificationsEnabled = true,
+                        )
+                    ),
+                    onLicenses = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun globalNotificationsDisabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                GlobalSettingsScreen(
+                    viewModel = buildVm(
+                        GlobalSettingsUiState(
+                            isLoaded = true,
+                            globalNotificationsEnabled = false,
+                        )
+                    ),
+                    onLicenses = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
 }

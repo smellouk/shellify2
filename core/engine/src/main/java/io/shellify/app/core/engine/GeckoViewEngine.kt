@@ -14,8 +14,37 @@ import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
 import org.mozilla.geckoview.StorageController
+import org.mozilla.geckoview.WebNotification
+import org.mozilla.geckoview.WebNotificationDelegate
 import org.mozilla.geckoview.WebRequestError
 import org.mozilla.geckoview.WebResponse
+
+// Thin, test-injectable data holder so unit tests can exercise fan-out without a real WebNotification.
+internal data class NotificationPayload(
+    val title: String?,
+    val body: String?,
+    val iconUrl: String?,
+    val tag: String?,
+)
+
+// Extracted so unit tests can exercise notification fan-out without a real GeckoSession or GeckoRuntime.
+internal fun dispatchNotification(payload: NotificationPayload, cb: BrowserEngineCallback) {
+    val title = payload.title ?: return
+    cb.onNotificationReceived(title, payload.body, payload.iconUrl, payload.tag)
+}
+
+// Bridge from the GeckoView 140 WebNotification type to the testable payload.
+internal fun dispatchNotification(notification: WebNotification, cb: BrowserEngineCallback) {
+    dispatchNotification(
+        NotificationPayload(
+            title = notification.title,
+            body = notification.text,
+            iconUrl = notification.imageUrl,
+            tag = notification.tag,
+        ),
+        cb,
+    )
+}
 
 class GeckoViewEngine(
     private val context: Context,
@@ -60,6 +89,18 @@ class GeckoViewEngine(
 
         val session = buildSession(uaMode, uaOverride, callback)
         this.session = session
+
+        // WebNotificationDelegate is runtime-scoped (GeckoView 140 API) — one delegate for all sessions.
+        // Overwrite on each createView so the active callback is always current.
+        engineManager.getRuntime().setWebNotificationDelegate(object : WebNotificationDelegate {
+            override fun onShowNotification(notification: WebNotification) {
+                dispatchNotification(notification, callback)
+            }
+
+            override fun onCloseNotification(notification: WebNotification) {
+                // No-op: notification lifecycle management is the caller's concern (Plan 05).
+            }
+        })
 
         val view = GeckoView(context)
         view.setSession(session)
@@ -173,6 +214,10 @@ class GeckoViewEngine(
                 cb.onProgressChanged(progress)
             }
         }
+
+        // Consolidate delegate wiring via factory so both GeckoViewEngine (foreground)
+        // and BackgroundNotificationService (background) share the same delegate logic.
+        NotificationDelegateFactory.attach(s, cb)
 
         return s
     }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Dispatchers
@@ -24,13 +25,25 @@ class WebViewViewModel(
     private val isolationManager: IsolationManager,
     private val saveWebApp: SaveWebAppUseCase,
     private val passwordManager: PasswordManager,
+    private val notificationDispatcher: PwaNotificationDispatcher? = null,
 ) : ViewModel() {
+
+    sealed interface PermissionDialogState {
+        data object Hidden : PermissionDialogState
+        data class Shown(val appName: String) : PermissionDialogState
+    }
 
     private val _uiState = MutableStateFlow(WebViewUiState(app = initialApp))
     val uiState: StateFlow<WebViewUiState> = _uiState.asStateFlow()
 
     private val _commands = MutableSharedFlow<WebViewCommand>(replay = 1, extraBufferCapacity = 16)
     val commands: SharedFlow<WebViewCommand> = _commands.asSharedFlow()
+
+    private val _permissionDialog = MutableStateFlow<PermissionDialogState>(PermissionDialogState.Hidden)
+    val permissionDialog: StateFlow<PermissionDialogState> = _permissionDialog.asStateFlow()
+
+    // Holds the pending callback from the engine until the user answers the dialog.
+    private var pendingPermissionResult: ((Boolean) -> Unit)? = null
 
     private var loadFailed = false
     private val visitedUrls = mutableSetOf<String>()
@@ -75,7 +88,7 @@ class WebViewViewModel(
             _uiState.update { it.copy(error = null) }
         }
         url?.let { visitedUrls += it }
-        WebViewActivity.pageFinishedCallback?.invoke()
+        viewModelScope.launch { _commands.emit(WebViewCommand.PageFinished) }
     }
 
     fun onError(code: Int, desc: String) {
@@ -157,6 +170,59 @@ class WebViewViewModel(
         }
     }
 
+    /**
+     * Called when the engine fires a notification permission request.
+     *
+     * Three-branch behavior:
+     * - GRANTED → invoke onResult(true) immediately
+     * - DENIED  → invoke onResult(false) immediately
+     * - NOT_ASKED → store callback, show dialog so the user can decide
+     */
+    fun onNotificationPermissionRequested(onResult: (Boolean) -> Unit) {
+        val app = currentApp()
+        when (app.notificationPermission) {
+            NotificationPermission.GRANTED -> onResult(true)
+            NotificationPermission.DENIED -> onResult(false)
+            NotificationPermission.NOT_ASKED -> {
+                pendingPermissionResult = onResult
+                _permissionDialog.value = PermissionDialogState.Shown(app.name)
+            }
+        }
+    }
+
+    /**
+     * Called by the Activity when the user taps Allow or Not Now in the permission dialog.
+     */
+    fun onPermissionDialogResult(granted: Boolean) {
+        val cb = pendingPermissionResult
+        pendingPermissionResult = null
+        val newPermission = if (granted) NotificationPermission.GRANTED else NotificationPermission.DENIED
+        val updated = currentApp().copy(notificationPermission = newPermission)
+        _uiState.update { it.copy(app = updated) }
+        viewModelScope.launch(Dispatchers.IO) { saveWebApp(updated) }
+        cb?.invoke(granted)
+        _permissionDialog.value = PermissionDialogState.Hidden
+    }
+
+    /**
+     * Called when the engine or JS bridge delivers a notification.
+     * Delegates to PwaNotificationDispatcher for all gating and posting logic.
+     */
+    fun onNotificationReceived(title: String, body: String?, iconUrl: String?, tag: String?) {
+        val app = currentApp()
+        val disp = notificationDispatcher ?: return
+        viewModelScope.launch {
+            val result = disp.dispatch(app, title, body, iconUrl, tag)
+            if (result == PwaNotificationDispatcher.DispatchResult.Dropped.NotAsked) {
+                onNotificationPermissionRequested { granted ->
+                    if (granted) {
+                        viewModelScope.launch { disp.dispatch(currentApp(), title, body, iconUrl, tag) }
+                    }
+                }
+            }
+        }
+    }
+
     private fun currentApp(): WebApp = _uiState.value.app ?: initialApp
 
     class Factory(
@@ -170,6 +236,7 @@ class WebViewViewModel(
                 isolationManager = services.isolationManager,
                 saveWebApp = services.saveWebApp,
                 passwordManager = services.passwordManager,
+                notificationDispatcher = services.notificationDispatcher,
             ) as T
     }
 }

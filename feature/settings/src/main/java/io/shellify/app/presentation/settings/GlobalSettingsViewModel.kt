@@ -24,6 +24,7 @@ import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
 import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import io.shellify.core.ui.R as CoreUiR
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -41,6 +42,8 @@ data class GlobalSettingsUiState(
     val defaultUaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val defaultEngineType: EngineType = EngineType.SYSTEM_WEBVIEW,
     val geckoSafeBrowsing: Boolean = false,
+    // Notifications
+    val globalNotificationsEnabled: Boolean = false,
     // App lock password
     val hasPassword: Boolean = false,
     val wipeOnFailedAttempts: Boolean = false,
@@ -101,6 +104,7 @@ class GlobalSettingsViewModel(
                     geckoSafeBrowsing = themeManager.geckoSafeBrowsing.first().also { v ->
                         geckoEngineManager.applySafeBrowsing(v)
                     },
+                    globalNotificationsEnabled = themeManager.globalNotificationsEnabled.first(),
                     hasPassword = passwordManager.passwordHash.first() != null,
                     wipeOnFailedAttempts = passwordManager.wipeOnFailedAttempts.first(),
                     screenshotProtection = passwordManager.screenshotProtection.first(),
@@ -133,6 +137,11 @@ class GlobalSettingsViewModel(
             themeManager.geckoSafeBrowsing.collect { v ->
                 geckoEngineManager.applySafeBrowsing(v)
                 _state.update { it.copy(geckoSafeBrowsing = v) }
+            }
+        }
+        viewModelScope.launch {
+            themeManager.globalNotificationsEnabled.collect { enabled ->
+                _state.update { it.copy(globalNotificationsEnabled = enabled) }
             }
         }
         viewModelScope.launch {
@@ -186,6 +195,12 @@ class GlobalSettingsViewModel(
 
     fun setGeckoSafeBrowsing(v: Boolean) =
         viewModelScope.launch { themeManager.setGeckoSafeBrowsing(v) }
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+
+    fun setGlobalNotificationsEnabled(enabled: Boolean) = viewModelScope.launch {
+        themeManager.setGlobalNotificationsEnabled(enabled)
+    }
 
     // ── App lock password ─────────────────────────────────────────────────────
 
@@ -338,9 +353,13 @@ class GlobalSettingsViewModel(
 
     fun backupNow() = viewModelScope.launch {
         val password = backupSettings.getPassword()
-            ?: return@launch _state.update { it.copy(backupResultMessage = "Set a backup password first") }
+            ?: return@launch _state.update {
+                it.copy(backupResultMessage = context.getString(CoreUiR.string.settings_backup_error_no_password))
+            }
         val uriStr = backupSettings.directoryUri.first()
-            ?: return@launch _state.update { it.copy(backupResultMessage = "Select a backup folder first") }
+            ?: return@launch _state.update {
+                it.copy(backupResultMessage = context.getString(CoreUiR.string.settings_backup_error_no_folder))
+            }
 
         _state.update { it.copy(backupRunning = true, backupResultMessage = null) }
         backupManager.backup(password, Uri.parse(uriStr)).fold(
@@ -349,7 +368,7 @@ class GlobalSettingsViewModel(
                 _state.update {
                     it.copy(
                         backupRunning = false,
-                        backupResultMessage = "Backed up: $name"
+                        backupResultMessage = context.getString(CoreUiR.string.settings_backup_success, name)
                     )
                 }
             },
@@ -357,7 +376,7 @@ class GlobalSettingsViewModel(
                 _state.update {
                     it.copy(
                         backupRunning = false,
-                        backupResultMessage = "Backup failed: ${e.message}"
+                        backupResultMessage = context.getString(CoreUiR.string.settings_backup_failed, e.message)
                     )
                 }
             },
@@ -387,7 +406,7 @@ class GlobalSettingsViewModel(
                 _state.update {
                     it.copy(
                         backupRunning = false,
-                        backupResultMessage = "Restore failed: ${e.message}"
+                        backupResultMessage = context.getString(CoreUiR.string.settings_restore_failed, e.message)
                     )
                 }
             },
