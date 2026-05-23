@@ -1,6 +1,6 @@
 # Terms of Service — Shellify
 
-**Last updated: May 17, 2026**
+**Last updated: May 23, 2026**
 
 ---
 
@@ -80,7 +80,19 @@ You acknowledge that:
 
 ---
 
-## 8. Third-Party Services
+## 8. JavaScript Functionality Bridges
+
+To provide certain in-app features, Shellify injects small JavaScript snippets ("bridges") into the web pages you open. These bridges run exclusively inside the isolated WebView container for the app you are using and serve only functional purposes:
+
+- **Notification bridge** — intercepts the browser's `Notification` API to route web push requests through Android's notification system, but only for apps where you have enabled notifications.
+- **Media and control bridge** — enables page-level controls (e.g. back navigation, display settings) to interact with the Android system.
+- **Translation bridge** — injects a Google-hosted translation script when you explicitly activate in-page translation for a specific app. This involves a network request to Google's servers; see Section 9 for details.
+
+None of these bridges transmit data outside your device beyond what is necessary for the feature they enable. No script is injected silently — each bridge activates only when the corresponding feature is in use.
+
+---
+
+## 9. Third-Party Services
 
 To provide certain features, Shellify may interact with third-party services including but not limited to:
 
@@ -95,7 +107,7 @@ These services are governed exclusively by their own terms and privacy policies.
 
 ---
 
-## 9. Disclaimer of Warranty
+## 10. Disclaimer of Warranty
 
 Shellify is provided **"as is"** and **"as available"**, without warranty of any kind.
 
@@ -107,7 +119,7 @@ To the maximum extent permitted by applicable law:
 
 ---
 
-## 10. Limitation of Liability
+## 11. Limitation of Liability
 
 To the maximum extent permitted by applicable law, Shellify and its developers are not liable for:
 
@@ -118,18 +130,18 @@ To the maximum extent permitted by applicable law, Shellify and its developers a
 
 ---
 
-## 11. Changes to These Terms
+## 12. Changes to These Terms
 
 We may update these Terms from time to time. Material changes will be communicated through the App or on our website. Continued use of Shellify after changes take effect constitutes acceptance of the revised Terms.
 
 ---
 
-## 12. Governing Law
+## 13. Governing Law
 
 These Terms are governed by and construed in accordance with the laws of the Federal Republic of Germany, without regard to conflict-of-law principles, unless mandatory local consumer protection law in your jurisdiction requires otherwise.
 
 ---
 
-## 13. Contact
+## 14. Contact
 
 For legal inquiries: [contact@shellify.app](mailto:contact@shellify.app)

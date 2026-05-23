@@ -156,12 +156,13 @@ h3.release-category {
     <a class="toc-link" href="#s5">5. No Affiliation</a>
     <a class="toc-link" href="#s6">6. Open Source &amp; Branding</a>
     <a class="toc-link" href="#s7">7. Backup &amp; Data Responsibility</a>
-    <a class="toc-link" href="#s8">8. Third-Party Services</a>
-    <a class="toc-link" href="#s9">9. Disclaimer of Warranty</a>
-    <a class="toc-link" href="#s10">10. Limitation of Liability</a>
-    <a class="toc-link" href="#s11">11. Changes to These Terms</a>
-    <a class="toc-link" href="#s12">12. Governing Law</a>
-    <a class="toc-link" href="#s13">13. Contact</a>
+    <a class="toc-link" href="#s8">8. JavaScript Functionality Bridges</a>
+    <a class="toc-link" href="#s9">9. Third-Party Services</a>
+    <a class="toc-link" href="#s10">10. Disclaimer of Warranty</a>
+    <a class="toc-link" href="#s11">11. Limitation of Liability</a>
+    <a class="toc-link" href="#s12">12. Changes to These Terms</a>
+    <a class="toc-link" href="#s13">13. Governing Law</a>
+    <a class="toc-link" href="#s14">14. Contact</a>
     <div class="toc-sep"></div>
     <div class="toc-alt">
       <a href="privacy.html"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Privacy Policy</a>
@@ -175,7 +176,7 @@ h3.release-category {
       <span class="doc-tag doc-tag-accent">Terms of Service</span>
       <h1>Simple rules, clear intent</h1>
       <div class="doc-meta">
-        <span>Last updated: May 17, 2026</span>
+        <span>Last updated: May 23, 2026</span>
         <span>·</span>
         <a href="mailto:contact@shellify.app">contact@shellify.app</a>
       </div>
@@ -254,7 +255,18 @@ h3.release-category {
     </div>
 
     <div class="doc-section" id="s8">
-      <h2><span class="sec-num">8</span> Third-Party Services</h2>
+      <h2><span class="sec-num">8</span> JavaScript Functionality Bridges</h2>
+<p>To provide certain in-app features, Shellify injects small JavaScript snippets (&quot;bridges&quot;) into the web pages you open. These bridges run exclusively inside the isolated WebView container for the app you are using and serve only functional purposes:</p>
+<ul>
+<li><strong>Notification bridge</strong> — intercepts the browser&#x27;s <code>Notification</code> API to route web push requests through Android&#x27;s notification system, but only for apps where you have enabled notifications.</li>
+<li><strong>Media and control bridge</strong> — enables page-level controls (e.g. back navigation, display settings) to interact with the Android system.</li>
+<li><strong>Translation bridge</strong> — injects a Google-hosted translation script when you explicitly activate in-page translation for a specific app. This involves a network request to Google&#x27;s servers; see Section 9 for details.</li>
+</ul>
+<p>None of these bridges transmit data outside your device beyond what is necessary for the feature they enable. No script is injected silently — each bridge activates only when the corresponding feature is in use.</p>
+    </div>
+
+    <div class="doc-section" id="s9">
+      <h2><span class="sec-num">9</span> Third-Party Services</h2>
 <p>To provide certain features, Shellify may interact with third-party services including but not limited to:</p>
 <ul>
 <li>translation APIs (Google Translate),</li>
@@ -266,8 +278,8 @@ h3.release-category {
 <p><strong>Brand Icons.</strong> Brand logos and icons displayed within the App — including icons sourced from Simple Icons — are trademarks of their respective brand owners. Shellify uses them solely to identify web apps you choose to add, in a nominative and non-commercial context. This does not imply affiliation with, endorsement by, or sponsorship by any brand.</p>
     </div>
 
-    <div class="doc-section" id="s9">
-      <h2><span class="sec-num">9</span> Disclaimer of Warranty</h2>
+    <div class="doc-section" id="s10">
+      <h2><span class="sec-num">10</span> Disclaimer of Warranty</h2>
 <p>Shellify is provided <strong>&quot;as is&quot;</strong> and <strong>&quot;as available&quot;</strong>, without warranty of any kind.</p>
 <p>To the maximum extent permitted by applicable law:</p>
 <ul>
@@ -277,8 +289,8 @@ h3.release-category {
 </ul>
     </div>
 
-    <div class="doc-section" id="s10">
-      <h2><span class="sec-num">10</span> Limitation of Liability</h2>
+    <div class="doc-section" id="s11">
+      <h2><span class="sec-num">11</span> Limitation of Liability</h2>
 <p>To the maximum extent permitted by applicable law, Shellify and its developers are not liable for:</p>
 <ul>
 <li>content, actions, or data practices of third-party websites accessed through the App,</li>
@@ -288,18 +300,18 @@ h3.release-category {
 </ul>
     </div>
 
-    <div class="doc-section" id="s11">
-      <h2><span class="sec-num">11</span> Changes to These Terms</h2>
+    <div class="doc-section" id="s12">
+      <h2><span class="sec-num">12</span> Changes to These Terms</h2>
 <p>We may update these Terms from time to time. Material changes will be communicated through the App or on our website. Continued use of Shellify after changes take effect constitutes acceptance of the revised Terms.</p>
     </div>
 
-    <div class="doc-section" id="s12">
-      <h2><span class="sec-num">12</span> Governing Law</h2>
+    <div class="doc-section" id="s13">
+      <h2><span class="sec-num">13</span> Governing Law</h2>
 <p>These Terms are governed by and construed in accordance with the laws of the Federal Republic of Germany, without regard to conflict-of-law principles, unless mandatory local consumer protection law in your jurisdiction requires otherwise.</p>
     </div>
 
-    <div class="doc-section" id="s13">
-      <h2><span class="sec-num">13</span> Contact</h2>
+    <div class="doc-section" id="s14">
+      <h2><span class="sec-num">14</span> Contact</h2>
 <p>For legal inquiries: <a href="mailto:contact@shellify.app" rel="noopener">contact@shellify.app</a></p>
     </div>
   </article>
