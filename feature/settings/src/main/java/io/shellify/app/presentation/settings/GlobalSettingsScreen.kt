@@ -849,11 +849,23 @@ fun GlobalSettingsScreen(
                 SurfaceCard {
                     ListItem(
                         leadingContent = {
-                            Icon(
-                                if (state.globalNotificationsEnabled) Icons.Default.Notifications
-                                else Icons.Default.NotificationsOff,
-                                null,
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                                    ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    if (state.globalNotificationsEnabled) Icons.Default.Notifications
+                                    else Icons.Default.NotificationsOff,
+                                    null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                         },
                         headlineContent = {
                             Text(
