@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -69,6 +70,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -114,6 +116,8 @@ class WebViewActivity : FragmentActivity() {
                 .putExtra(EXTRA_PREVIEW_URL, url)
                 .putExtra(EXTRA_INCOGNITO, true)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+
+        private const val SPLASH_MIN_MS = 500L
     }
 
     private lateinit var engine: BrowserEngine
@@ -141,6 +145,7 @@ class WebViewActivity : FragmentActivity() {
 
     @VisibleForTesting
     var splashOverlay: View? = null
+    private var splashShownAt: Long = 0L
 
     @VisibleForTesting
     fun navigateTo(url: String) = engine.loadUrl(url)
@@ -602,6 +607,7 @@ class WebViewActivity : FragmentActivity() {
         }
 
     private fun showSplash(pwaApp: WebApp) {
+        splashShownAt = SystemClock.elapsedRealtime()
         val app = application as WebViewServiceProvider
         val rawColor = pwaApp.themeColor
             ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
@@ -655,11 +661,15 @@ class WebViewActivity : FragmentActivity() {
     private fun hideSplash() {
         val splash = splashOverlay ?: return
         splashOverlay = null
-        splash.animate()
-            .alpha(0f)
-            .setDuration(250)
-            .withEndAction { container.removeView(splash) }
-            .start()
+        val remaining = (SPLASH_MIN_MS - (SystemClock.elapsedRealtime() - splashShownAt)).coerceAtLeast(0L)
+        lifecycleScope.launch {
+            if (remaining > 0L) delay(remaining)
+            splash.animate()
+                .alpha(0f)
+                .setDuration(250)
+                .withEndAction { container.removeView(splash) }
+                .start()
+        }
     }
 
     private fun applyWindowMode(app: WebApp) {
