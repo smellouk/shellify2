@@ -228,9 +228,14 @@ class WebViewActivity : FragmentActivity() {
             val wv = (engine as SystemWebViewEngine).getWebView()
             if (wv != null) {
                 isolationManager.attachProfile(wv, pwaApp.isolationId)
-                wv.addJavascriptInterface(ShellifyBridge(notificationCallback = { t: String, b: String, i: String ->
-                    viewModel.onNotificationReceived(t, b, i, null)
-                }), "ShellifyBridge")
+                wv.addJavascriptInterface(ShellifyBridge(
+                    notificationCallback = { t: String, b: String, i: String ->
+                        viewModel.onNotificationReceived(t, b, i, null)
+                    },
+                    permissionProvider = {
+                        viewModel.uiState.value.app?.notificationPermission?.name ?: "NOT_ASKED"
+                    },
+                ), "ShellifyBridge")
             }
         }
 

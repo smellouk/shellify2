@@ -12,7 +12,10 @@ import android.webkit.JavascriptInterface
  * before being forwarded to the callback. A thrown callback exception is swallowed via
  * runCatching so a misbehaving caller cannot crash the WebView thread.
  */
-class ShellifyBridge(private val notificationCallback: (title: String, body: String, icon: String) -> Unit) {
+class ShellifyBridge(
+    private val permissionProvider: () -> String = { "UNKNOWN" },
+    private val notificationCallback: (title: String, body: String, icon: String) -> Unit,
+) {
 
     companion object {
         private const val TAG = "ShellifyBridge"
@@ -20,6 +23,9 @@ class ShellifyBridge(private val notificationCallback: (title: String, body: Str
         const val MAX_BODY_LEN = 1024
         const val MAX_ICON_LEN = 2048
     }
+
+    @JavascriptInterface
+    fun getNotificationPermission(): String = permissionProvider()
 
     @JavascriptInterface
     fun onNotification(title: String?, body: String?, icon: String?) {

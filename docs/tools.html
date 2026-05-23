@@ -301,9 +301,14 @@
         </div>
         <p>Calls <code>ShellifyBridge.onNotification()</code> directly via the Chromium Java bridge. Works in System WebView — no permission prompt needed.</p>
         <!-- Bridge status -->
-        <div class="status-pill" id="bridge-status" style="margin-bottom:12px;">
+        <div class="status-pill" id="bridge-status" style="margin-bottom:8px;">
           <span class="status-dot"></span>
           <span id="bridge-text">Checking bridge…</span>
+        </div>
+        <!-- PWA notification permission (populated by JS when bridge is present) -->
+        <div class="status-pill" id="pwa-perm-status" style="display:none;margin-bottom:12px;">
+          <span class="status-dot"></span>
+          <span id="pwa-perm-text"></span>
         </div>
         <button class="btn-tool primary"    onclick="directBasic()">Fire basic notification</button>
         <button class="btn-tool secondary"  onclick="directRich()">Fire with body + icon</button>
@@ -422,6 +427,26 @@ window.addEventListener('load', () => {
   if (hasBridge) {
     pill.classList.add('ok');
     text.textContent = '✓ ShellifyBridge attached — direct tests will work';
+
+    // PWA-level permission from Shellify settings
+    try {
+      const perm    = window.ShellifyBridge.getNotificationPermission();
+      const permEl  = document.getElementById('pwa-perm-status');
+      const permTxt = document.getElementById('pwa-perm-text');
+      permEl.style.display = 'inline-flex';
+      if (perm === 'GRANTED') {
+        permEl.classList.add('ok');
+        permTxt.textContent = '✓ Shellify permission: GRANTED — bridge relay active';
+      } else if (perm === 'DENIED') {
+        permEl.classList.add('err');
+        permTxt.textContent = '✗ Shellify permission: DENIED — blocked in PWA settings';
+      } else {
+        permTxt.textContent = '○ Shellify permission: ' + perm + ' — not yet configured in PWA settings';
+      }
+      log('Shellify notification permission: ' + perm, perm === 'GRANTED' ? 'ok' : null);
+    } catch(e) {
+      log('getNotificationPermission() error: ' + e.message, 'err');
+    }
   } else {
     pill.classList.add('err');
     text.textContent = '✗ ShellifyBridge not found — not running inside Shellify?';
