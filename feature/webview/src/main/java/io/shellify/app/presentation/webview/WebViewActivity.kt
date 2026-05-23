@@ -716,22 +716,28 @@ class WebViewActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.uiState.value.app?.let { applyTaskDescription(it) }
+        // viewModel is initialized asynchronously for appId launches — guard until ready.
+        if (::viewModel.isInitialized) {
+            viewModel.uiState.value.app?.let { applyTaskDescription(it) }
+        }
     }
 
     override fun onDestroy() {
-        viewModel.onSessionEnd()
+        // viewModel/engine may not be initialized if the Activity was destroyed before the
+        // async DB lookup (appId path) completed.
+        if (::viewModel.isInitialized) {
+            viewModel.onSessionEnd()
+            if (isIncognitoSession) {
+                val isolationId = viewModel.uiState.value.app?.isolationId
+                if (isolationId != null) {
+                    lifecycleScope.launch { isolationManager.clearData(isolationId) }
+                }
+            }
+        }
         // Unregister this Activity so BackgroundNotificationService can start its own session.
         val activeAppId = intent.getLongExtra(EXTRA_APP_ID, -1L)
         if (activeAppId != -1L) (application as? WebViewServiceProvider)?.unregisterActiveApp(activeAppId)
-        if (isIncognitoSession) {
-            // Wipe cookies and profile data for the ephemeral session (D-03).
-            val isolationId = viewModel.uiState.value.app?.isolationId
-            if (isolationId != null) {
-                lifecycleScope.launch { isolationManager.clearData(isolationId) }
-            }
-        }
-        engine.destroy()
+        if (::engine.isInitialized) engine.destroy()
         super.onDestroy()
     }
 }
