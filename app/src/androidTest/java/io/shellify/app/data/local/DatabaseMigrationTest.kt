@@ -4,6 +4,7 @@ import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.data.local.migration.MIGRATION_2_3
+import io.shellify.app.data.local.migration.MIGRATION_3_4
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -211,6 +212,58 @@ class DatabaseMigrationTest {
                 assertEquals("Hello", cursor.getString(1))
                 assertEquals("World", cursor.getString(2))
                 assertFalse("is_read should be 0 (false) by default", cursor.getInt(3) != 0)
+            }
+        }
+    }
+
+    // ── Migration 3 → 4 ───────────────────────────────────────────────────────
+
+    @Test
+    fun migrate3To4_addsSwipeToRefreshEnabledColumnWithDefaultTrue() {
+        // Step 1: create a v3 database with one WebApp row (no swipe_to_refresh_enabled column).
+        migrationHelper.createDatabase(TEST_DB_NAME, 3).use { db ->
+            db.execSQL(
+                """INSERT INTO web_apps (
+                    id, name, url, isolationId,
+                    adBlockEnabled, adBlockAllowUserToggle, adBlockCustomRules,
+                    translateEnabled, translateTarget, translateEngine,
+                    showTranslateButton, autoTranslateOnLoad,
+                    libreTranslateUrl, libreTranslateApiKey,
+                    uaMode, createdAt, updatedAt,
+                    lockType, engineType, wipeOnFailedAttempts,
+                    isFullscreen, fullscreenShowStatusBar, fullscreenShowNavBar,
+                    fullscreenShowTopToolbar, has_launcher_shortcut, show_control_center,
+                    notification_permission, dnd_start_hour, dnd_end_hour,
+                    background_notifications_enabled
+                ) VALUES (
+                    1, 'RefreshApp', 'https://refresh.example.com', 'iso-refresh-001',
+                    1, 0, '',
+                    0, 'en', 'AUTO',
+                    1, 0,
+                    'https://libretranslate.com', '',
+                    'CHROME_MOBILE', 0, 0,
+                    'NONE', 'SYSTEM_WEBVIEW', 0,
+                    0, 0, 0,
+                    0, 0, 1,
+                    'NOT_ASKED', -1, -1,
+                    0
+                )"""
+            )
+        }
+
+        // Step 2: run the migration and validate the schema matches 4.json.
+        migrationHelper.runMigrationsAndValidate(TEST_DB_NAME, 4, true, MIGRATION_3_4).use { db ->
+
+            // Step 3: verify swipe_to_refresh_enabled defaults to 1 for the existing row.
+            db.query(
+                "SELECT swipe_to_refresh_enabled FROM web_apps WHERE id = 1"
+            ).use { cursor ->
+                assertTrue("web_apps row not found after migration 3→4", cursor.moveToFirst())
+                assertEquals(
+                    "swipe_to_refresh_enabled must be 1 (DEFAULT 1) after migration",
+                    1,
+                    cursor.getInt(0),
+                )
             }
         }
     }

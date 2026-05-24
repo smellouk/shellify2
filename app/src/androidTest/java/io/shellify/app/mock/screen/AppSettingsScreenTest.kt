@@ -159,4 +159,14 @@ class AppSettingsScreenTest {
             .onNodeWithText(context.getString(CoreUiR.string.settings_delete_confirm, "Asana"))
             .assertIsDisplayed()
     }
+
+    @Test
+    fun swipeToRefreshToggle_isDisplayed() {
+        val app = FakeData.webApp(id = 1L, name = "Notion", url = "https://notion.so")
+        setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.settings_swipe_to_refresh))
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
 }

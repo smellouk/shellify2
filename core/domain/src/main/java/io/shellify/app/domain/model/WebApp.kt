@@ -43,6 +43,7 @@ data class WebApp(
     val dndStartHour: Int = -1,
     val dndEndHour: Int = -1,
     val backgroundNotificationsEnabled: Boolean = false,
+    val swipeToRefreshEnabled: Boolean = true,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
     val iconPath: String?

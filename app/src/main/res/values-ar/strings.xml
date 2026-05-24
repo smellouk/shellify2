@@ -162,6 +162,7 @@
     <string name="settings_translate">الترجمة التلقائية</string>
     <string name="settings_translate_configure">تكوين اللغة</string>
     <string name="settings_translate_lang">لغة الترجمة</string>
+    <string name="settings_swipe_to_refresh">اسحب للتحديث</string>
     <string name="settings_shortcut">الاختصار</string>
     <string name="settings_create_shortcut">إضافة إلى الشاشة الرئيسية</string>
     <string name="settings_create_shortcut_desc">إنشاء اختصار على مشغِّل التطبيقات</string>
@@ -569,4 +570,6 @@
     <string name="bg_notification_service_title">إشعارات Shellify</string>
     <string name="bg_notification_service_text" formatted="true">إبقاء الإشعارات نشطة لـ %s</string>
     <string name="bg_notification_service_text_generic">إبقاء إشعارات PWA نشطة</string>
+    <string name="test_app_name">Test App</string>
+    <string name="test_url_example">https://example.com</string>
 </resources>

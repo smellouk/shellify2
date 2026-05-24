@@ -63,6 +63,7 @@ class GeckoViewEngine(
     private var currentUrl: String? = null
     private var currentTitle: String? = null
     private var canGoBackFlag = false
+    private var geckoScrollY: Int = 0
 
     // For crash recovery
     private var lastUaMode = GeckoSessionSettings.USER_AGENT_MODE_MOBILE
@@ -161,6 +162,14 @@ class GeckoViewEngine(
             }
         }
 
+        // ScrollDelegate is the correct GeckoView 140 API for tracking scroll position.
+        // ContentDelegate.onScrollChanged does not exist in this API level.
+        s.setScrollDelegate(object : GeckoSession.ScrollDelegate {
+            override fun onScrollChanged(session: GeckoSession, scrollX: Int, scrollY: Int) {
+                geckoScrollY = scrollY
+            }
+        })
+
         s.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLocationChange(
                 session: GeckoSession,
@@ -169,6 +178,7 @@ class GeckoViewEngine(
                 hasUserGesture: Boolean,
             ) {
                 currentUrl = url
+                geckoScrollY = 0
             }
 
             override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
@@ -284,6 +294,9 @@ class GeckoViewEngine(
     }
 
     override fun canGoBack() = canGoBackFlag
+
+    fun canScrollUp(): Boolean = geckoScrollY > 0
+
     override fun goBack() {
         session?.goBack()
     }

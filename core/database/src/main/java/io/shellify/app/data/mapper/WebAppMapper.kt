@@ -44,6 +44,7 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     dndStartHour = dndStartHour,
     dndEndHour = dndEndHour,
     backgroundNotificationsEnabled = backgroundNotificationsEnabled,
+    swipeToRefreshEnabled = swipeToRefreshEnabled,
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -79,4 +80,5 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     dndStartHour = dndStartHour,
     dndEndHour = dndEndHour,
     backgroundNotificationsEnabled = backgroundNotificationsEnabled,
+    swipeToRefreshEnabled = swipeToRefreshEnabled,
 )

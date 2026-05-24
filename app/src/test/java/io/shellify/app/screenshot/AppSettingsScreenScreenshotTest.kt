@@ -124,4 +124,40 @@ class AppSettingsScreenScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
+    @Test
+    fun swipeToRefreshToggle_enabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("Notion", "https://notion.so").copy(swipeToRefreshEnabled = true),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun swipeToRefreshToggle_disabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("Notion", "https://notion.so").copy(swipeToRefreshEnabled = false),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
 }

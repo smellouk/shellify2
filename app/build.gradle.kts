@@ -185,6 +185,7 @@ dependencies {
     detektPlugins(libs.detekt.formatting)
 
     // Instrumented tests
+    androidTestImplementation(libs.androidx.swiperefreshlayout)
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.espresso.core)

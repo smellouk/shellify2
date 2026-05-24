@@ -62,4 +62,5 @@ data class WebAppEntity(
     @ColumnInfo(name = "dnd_start_hour") val dndStartHour: Int = -1,
     @ColumnInfo(name = "dnd_end_hour") val dndEndHour: Int = -1,
     @ColumnInfo(name = "background_notifications_enabled") val backgroundNotificationsEnabled: Boolean = false,
+    @ColumnInfo(name = "swipe_to_refresh_enabled") val swipeToRefreshEnabled: Boolean = true,
 )

@@ -185,4 +185,24 @@ class AppSettingsViewModelTest {
         viewModel.setIconPickerQuery("github")
         assertEquals("github", viewModel.uiState.value.iconPickerQuery)
     }
+
+    @Test
+    fun `toggleSwipeToRefresh flips swipeToRefreshEnabled from true to false`() = runTest {
+        // swipeToRefreshEnabled defaults to true in WebApp
+        assertTrue(viewModel.uiState.value.app?.swipeToRefreshEnabled ?: false)
+        viewModel.toggleSwipeToRefresh()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.app?.swipeToRefreshEnabled ?: true)
+        coVerify(exactly = 1) { saveWebApp(match { !it.swipeToRefreshEnabled }) }
+    }
+
+    @Test
+    fun `toggleSwipeToRefresh is idempotent — toggling twice restores original value`() = runTest {
+        val initial = viewModel.uiState.value.app?.swipeToRefreshEnabled ?: false
+        viewModel.toggleSwipeToRefresh()
+        advanceUntilIdle()
+        viewModel.toggleSwipeToRefresh()
+        advanceUntilIdle()
+        assertEquals(initial, viewModel.uiState.value.app?.swipeToRefreshEnabled)
+    }
 }

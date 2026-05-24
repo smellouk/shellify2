@@ -79,6 +79,7 @@ import android.util.Log
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -133,6 +134,8 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var engine: BrowserEngine
     private lateinit var progressBar: ProgressBar
     private lateinit var container: FrameLayout
+    @VisibleForTesting
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var isolationManager: IsolationManager
     private lateinit var viewModel: WebViewViewModel
     private var statusBarScrim: View? = null
@@ -263,13 +266,6 @@ class WebViewActivity : FragmentActivity() {
             FrameLayout.LayoutParams.MATCH_PARENT,
         )
 
-        ViewCompat.setOnApplyWindowInsetsListener(container) { view, insets ->
-            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            view.setPadding(0, statusBars.top, 0, navBars.bottom)
-            insets
-        }
-
         val barHeightPx = (3 * resources.displayMetrics.density).toInt().coerceAtLeast(2)
         progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100
@@ -289,7 +285,44 @@ class WebViewActivity : FragmentActivity() {
             ),
         )
 
-        setContentView(container)
+        swipeRefreshLayout = SwipeRefreshLayout(this).apply {
+            val tintColor = pwaApp.themeColor
+                ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                ?: getColor(android.R.color.holo_blue_bright)
+            setColorSchemeColors(tintColor)
+            isEnabled = pwaApp.swipeToRefreshEnabled
+            setOnChildScrollUpCallback { _, _ ->
+                when (val e = engine) {
+                    is GeckoViewEngine -> e.canScrollUp()
+                    else -> e.getView()?.canScrollVertically(-1) ?: false
+                }
+            }
+            setOnRefreshListener { engine.reload() }
+        }
+        swipeRefreshLayout.addView(container)
+        // SwipeRefreshLayout is the root view after edge-to-edge is enabled. Register the insets
+        // listener here — not on container — so insets are reliably dispatched to the actual root.
+        // displayCutout handles punch-hole cameras; topInset = max(statusBar, cutout) pushes
+        // the spinner below the camera and status bar without double-counting.
+        ViewCompat.setOnApplyWindowInsetsListener(swipeRefreshLayout) { _, insets ->
+            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            val topInset = maxOf(statusBars.top, displayCutout.top)
+            @Suppress("MagicNumber")
+            val spinnerEndPx = topInset + (64 * resources.displayMetrics.density).toInt()
+            swipeRefreshLayout.setProgressViewOffset(false, topInset, spinnerEndPx)
+            container.setPadding(0, topInset, 0, navBars.bottom)
+            insets
+        }
+        setContentView(swipeRefreshLayout)
+
+        lifecycleScope.launch {
+            viewModel.uiState.collect { uiState ->
+                swipeRefreshLayout.isEnabled = uiState.app?.swipeToRefreshEnabled ?: false
+            }
+        }
+
         applyWindowMode(pwaApp)
         applyStatusBarColor(pwaApp.themeColor)
         applyTaskDescription(pwaApp)
@@ -616,6 +649,7 @@ class WebViewActivity : FragmentActivity() {
                         NotificationPermission.DENIED -> Unit
                     }
                 }
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onProgressChanged(progress: Int) {
@@ -630,12 +664,14 @@ class WebViewActivity : FragmentActivity() {
                 viewModel.onError(errorCode, description)
                 engine.getView()?.visibility = View.INVISIBLE
                 hideSplash()
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onSslError(error: String) {
                 viewModel.onSslError(error)
                 engine.getView()?.visibility = View.INVISIBLE
                 hideSplash()
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onExternalLink(url: String) {

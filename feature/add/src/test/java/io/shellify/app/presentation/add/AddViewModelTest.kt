@@ -196,24 +196,23 @@ class AddViewModelTest {
     }
 
     @Test
-    fun `analyze with http url proceeds without urlError`() = runTest {
+    fun `analyze with http url sets urlError and does not proceed`() = runTest {
         val vm = newVm()
         vm.setUrl("http://example.com")
         vm.analyze()
         advanceUntilIdle()
-        assertNull(vm.uiState.value.urlError)
+        assertNotNull(vm.uiState.value.urlError)
     }
 
     @Test
-    fun `save with http url saves without urlError`() = runTest {
+    fun `save with http url sets urlError and does not save`() = runTest {
         val vm = newVm()
         vm.setName("App")
         vm.setUrl("http://example.com")
-        coEvery { getWebAppById(1L) } returns WebApp(id = 1L, name = "App", url = "http://example.com")
         vm.save()
         advanceUntilIdle()
-        assertNull(vm.uiState.value.urlError)
-        assertTrue(vm.uiState.value.saved)
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.saved)
     }
 
     @Test
@@ -232,6 +231,16 @@ class AddViewModelTest {
     @Test
     fun `fetchIcon with blank url sets urlError and does not fetch`() = runTest {
         val vm = newVm()
+        vm.fetchIcon()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isFetchingIcon)
+    }
+
+    @Test
+    fun `fetchIcon with http url sets urlError and does not fetch`() = runTest {
+        val vm = newVm()
+        vm.setUrl("http://example.com")
         vm.fetchIcon()
         advanceUntilIdle()
         assertNotNull(vm.uiState.value.urlError)

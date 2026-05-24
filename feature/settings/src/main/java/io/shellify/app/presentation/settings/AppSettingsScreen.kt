@@ -56,6 +56,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -433,6 +434,13 @@ fun AppSettingsScreen(
                     checked = app.translateEnabled,
                     onToggle = viewModel::toggleTranslate,
                     icon = { Icon(Icons.Default.GTranslate, null) },
+                )
+                CardDivider()
+                ToggleListItem(
+                    label = stringResource(R.string.settings_swipe_to_refresh),
+                    checked = app.swipeToRefreshEnabled,
+                    onToggle = viewModel::toggleSwipeToRefresh,
+                    icon = { Icon(Icons.Default.Refresh, null) },
                 )
                 CardDivider()
                 ListItem(

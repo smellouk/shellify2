@@ -162,6 +162,7 @@
     <string name="settings_translate">Traduction automatique</string>
     <string name="settings_translate_configure">Configurer la langue</string>
     <string name="settings_translate_lang">Langue de traduction</string>
+    <string name="settings_swipe_to_refresh">Glisser pour actualiser</string>
     <string name="settings_shortcut">Raccourci</string>
     <string name="settings_create_shortcut">Ajouter à l\'écran d\'accueil</string>
     <string name="settings_create_shortcut_desc">Crée un raccourci sur votre lanceur</string>
@@ -569,4 +570,6 @@
     <string name="bg_notification_service_title">Notifications Shellify</string>
     <string name="bg_notification_service_text" formatted="true">Maintien des notifications pour %s</string>
     <string name="bg_notification_service_text_generic">Maintien des notifications PWA</string>
+    <string name="test_app_name">Test App</string>
+    <string name="test_url_example">https://example.com</string>
 </resources>

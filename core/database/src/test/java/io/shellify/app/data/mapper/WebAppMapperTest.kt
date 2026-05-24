@@ -201,4 +201,47 @@ class WebAppMapperTest {
         val app = baseApp().copy(showControlCenter = false)
         assertEquals(false, app.toEntity().showControlCenter)
     }
+
+    // ── swipeToRefreshEnabled ─────────────────────────────────────────────────
+
+    @Test
+    fun `toDomain maps swipeToRefreshEnabled true by default`() {
+        assertEquals(true, baseEntity().toDomain().swipeToRefreshEnabled)
+    }
+
+    @Test
+    fun `toDomain maps swipeToRefreshEnabled true`() {
+        val entity = baseEntity().copy(swipeToRefreshEnabled = true)
+        assertEquals(true, entity.toDomain().swipeToRefreshEnabled)
+    }
+
+    @Test
+    fun `toDomain maps swipeToRefreshEnabled false`() {
+        val entity = baseEntity().copy(swipeToRefreshEnabled = false)
+        assertEquals(false, entity.toDomain().swipeToRefreshEnabled)
+    }
+
+    @Test
+    fun `toEntity preserves swipeToRefreshEnabled true`() {
+        val app = baseApp().copy(swipeToRefreshEnabled = true)
+        assertEquals(true, app.toEntity().swipeToRefreshEnabled)
+    }
+
+    @Test
+    fun `toEntity preserves swipeToRefreshEnabled false`() {
+        val app = baseApp().copy(swipeToRefreshEnabled = false)
+        assertEquals(false, app.toEntity().swipeToRefreshEnabled)
+    }
+
+    @Test
+    fun `toEntity round-trip preserves swipeToRefreshEnabled true`() {
+        val app = baseApp().copy(swipeToRefreshEnabled = true)
+        assertEquals(true, app.toEntity().toDomain().swipeToRefreshEnabled)
+    }
+
+    @Test
+    fun `toEntity round-trip preserves swipeToRefreshEnabled false`() {
+        val app = baseApp().copy(swipeToRefreshEnabled = false)
+        assertEquals(false, app.toEntity().toDomain().swipeToRefreshEnabled)
+    }
 }

@@ -152,6 +152,7 @@ class AppSettingsViewModel(
     fun toggleAdBlock() = update { it.copy(adBlockEnabled = !it.adBlockEnabled) }
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
     fun toggleControlCenter() = update { it.copy(showControlCenter = !it.showControlCenter) }
+    fun toggleSwipeToRefresh() = update { it.copy(swipeToRefreshEnabled = !it.swipeToRefreshEnabled) }
     fun setTranslateTarget(lang: TranslateLanguage) =
         update { it.copy(translateTarget = lang) }
 

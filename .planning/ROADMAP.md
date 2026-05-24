@@ -18,7 +18,7 @@
 | 5 | E2E Test Migration | Replace Espresso E2E tests with Maestro | TEST-01–05 (5) | 4 |
 | 6 | PWA Notification Handling | Complete in-app notification experience for PWAs | TBD | TBD |
 | 7 | Run Music in the Background | Keep audio playing from PWAs when the screen is off or the app is backgrounded | TBD | TBD |
-| 8 | Swipe to Refresh in WebViewActivity | Let users pull-to-refresh the current page in any PWA | TBD | TBD |
+| 8 | Swipe to Refresh in WebViewActivity | Let users pull-to-refresh the current page in any PWA | STR-01–06 | 4 |
 | 9 | Inject JS Script to Website for PWA Editing | Allow users to inject custom JavaScript into any PWA for per-app page customisation | TBD | TBD |
 | 10 | Browser Fingerprint Hard Ghosting | Spoof or randomise browser fingerprint signals per PWA to prevent cross-site tracking | TBD | TBD |
 | 11 | Web Casting Support | Cast media from any PWA to Chromecast or other casting targets | TBD | TBD |
@@ -237,15 +237,31 @@ Plans:
 
 **Goal:** Let users pull-to-refresh the current page in any PWA via a standard swipe-down gesture, matching the UX of native Android apps.
 
-**Requirements:** TBD — run `/gsd-plan-phase 8` to define
+**Requirements:** STR-01, STR-02, STR-03, STR-04, STR-05, STR-06
 
 **Depends on:** None
 
-**Plans:**
-- TBD
+**Plans:** 3 plans across 2 waves
+
+**Wave 1** *(foundation)*
+- [x] 08-01-PLAN.md — Domain + DB layer: WebApp.swipeToRefreshEnabled, WebAppEntity column, MIGRATION_3_4 (3→4), WebAppMapper round-trip, migration test + mapper tests, 4.json schema commit
+
+**Wave 2** *(parallel — both depend on Wave 1)*
+- [x] 08-02-PLAN.md — Engine + View layer: swiperefreshlayout 1.2.0 dependency, GeckoViewEngine geckoScrollY field + canScrollUp(), SwipeRefreshLayout wrapping container in WebViewActivity, isRefreshing=false in onPageFinished + onError + onSslError
+- [x] 08-03-PLAN.md — Settings UI: AppSettingsViewModel.toggleSwipeToRefresh(), ToggleListItem in Control center section, settings_swipe_to_refresh strings in EN/FR/AR, ViewModel unit test, Roborazzi golden update
+
+**Cross-cutting constraints:**
+- BrowserEngine.reload() already exists — do NOT modify BrowserEngine.kt
+- SwipeRefreshLayout wraps container FrameLayout; container is not replaced
+- isRefreshing = false must be set in onPageFinished, onError, AND onSslError
+- Room migration 3→4 requires MIGRATION_3_4 object and committed 4.json schema file
+- All string resources added to EN, FR, and AR locale files simultaneously
 
 **Success Criteria:**
-1. TBD
+1. Pulling down from the top of any PWA page triggers the circular spinner and reloads the page via engine.reload()
+2. The spinner is tinted to the PWA themeColor (with fallback to holo_blue_bright); spinner disappears when the page finishes loading or on error
+3. Per-app toggle in AppSettings Control center section lets users disable swipe-to-refresh; with the toggle off, SwipeRefreshLayout.isEnabled = false and no spinner appears
+4. GeckoView engine does not trigger swipe-to-refresh when the page is scrolled below the top (canScrollUp() guard active via geckoScrollY reset on navigation)
 
 ---
 
@@ -502,4 +518,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-05-15*
-*Last updated: 2026-05-21 — added Phases 11–23*
+*Last updated: 2026-05-24 — Phase 8 plans created*

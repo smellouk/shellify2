@@ -179,6 +179,7 @@
     <string name="settings_translate">Auto-translate</string>
     <string name="settings_translate_configure">Configure language</string>
     <string name="settings_translate_lang">Translation language</string>
+    <string name="settings_swipe_to_refresh">Swipe to refresh</string>
     <string name="settings_shortcut">Shortcut</string>
     <string name="settings_create_shortcut">Add to home screen</string>
     <string name="settings_create_shortcut_desc">Creates a shortcut on your launcher</string>
@@ -544,4 +545,6 @@
     <string name="bg_notification_service_title">Shellify notifications</string>
     <string name="bg_notification_service_text" formatted="true">Keeping notifications alive for %s</string>
     <string name="bg_notification_service_text_generic">Keeping PWA notifications alive</string>
+    <string name="test_app_name">Test App</string>
+    <string name="test_url_example">https://example.com</string>
 </resources>

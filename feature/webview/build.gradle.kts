@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

@@ -37,3 +37,11 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_notifications_timestamp ON notifications(timestamp)")
     }
 }
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "ALTER TABLE web_apps ADD COLUMN swipe_to_refresh_enabled INTEGER NOT NULL DEFAULT 1"
+        )
+    }
+}

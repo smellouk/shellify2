@@ -15,11 +15,12 @@ import io.shellify.app.data.local.entity.NotificationEntity
 import io.shellify.app.data.local.entity.WebAppEntity
 import io.shellify.app.data.local.migration.MIGRATION_1_2
 import io.shellify.app.data.local.migration.MIGRATION_2_3
+import io.shellify.app.data.local.migration.MIGRATION_3_4
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class, NotificationEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(IconSourceConverter::class)
@@ -54,7 +55,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "shellify.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
         }
     }
