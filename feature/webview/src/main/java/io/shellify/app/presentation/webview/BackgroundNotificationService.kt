@@ -5,10 +5,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.IBinder
 import android.util.Log
+import android.view.View
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import io.shellify.app.core.engine.BrowserEngineCallback
+import io.shellify.app.core.engine.NotificationDelegateFactory
+import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
 import io.shellify.core.ui.R
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +21,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoSessionSettings
+import org.mozilla.geckoview.WebNotification
+import org.mozilla.geckoview.WebNotificationDelegate
 
 class BackgroundNotificationService : Service() {
 
@@ -30,12 +40,18 @@ class BackgroundNotificationService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    // Background GeckoSession created only when the Activity for this app is not active.
+    // Accessed exclusively on the main thread.
+    private var backgroundSession: GeckoSession? = null
+    private var backgroundAppId: Long = -1L
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // MUST be the very first statement: Android will ANR if startForeground is not
         // called promptly when the service is started via startForegroundService.
         startForeground(SERVICE_NOTIFICATION_ID, buildServiceNotification(null))
 
         if (intent?.action == ACTION_STOP) {
+            closeBackgroundSession()
             stopSelf()
             return START_NOT_STICKY
         }
@@ -46,11 +62,11 @@ class BackgroundNotificationService : Service() {
             return START_NOT_STICKY
         }
 
-        scope.launch { keepAlive(appId) }
+        scope.launch { manageSession(appId) }
         return START_STICKY
     }
 
-    private suspend fun keepAlive(appId: Long) {
+    private suspend fun manageSession(appId: Long) {
         val provider = application as WebViewServiceProvider
 
         // GeckoView native libs must be loaded before anything touches the runtime.
@@ -66,19 +82,95 @@ class BackgroundNotificationService : Service() {
         NotificationManagerCompat.from(this@BackgroundNotificationService)
             .notify(SERVICE_NOTIFICATION_ID, buildServiceNotification(webApp.name))
 
-        // This service's sole purpose is process keepalive: it prevents Android from killing
-        // the process and throttling GeckoView's JS timers while WebViewActivity is backgrounded.
-        // Known limitation: if Android destroys the Activity under memory pressure, the
-        // GeckoSession and its WebNotificationDelegate are also destroyed and PWA notifications
-        // stop arriving — the foreground service notification is the only thing that remains.
-        // A future improvement would restore a background GeckoSession here to cover that gap.
-        Log.d(TAG, "Process keepalive active for ${webApp.name} (appId=$appId)")
+        // If the Activity is still showing this app, its GeckoSession and WebNotificationDelegate
+        // are already handling notifications — just keep the process alive and do nothing else.
+        if (provider.activeWebViewApps.value.contains(appId)) {
+            Log.d(TAG, "Activity active for $appId, process keepalive only")
+            return
+        }
+
+        // Activity is gone — open a background session to keep receiving notifications.
+        withContext(Dispatchers.Main) {
+            if (backgroundSession != null && backgroundAppId == appId) {
+                Log.d(TAG, "Background session already running for $appId")
+                return@withContext
+            }
+            // Close any session left over from a different app.
+            backgroundSession?.close()
+            backgroundSession = null
+
+            val dispatcher = provider.notificationDispatcher ?: run {
+                Log.w(TAG, "No dispatcher available; skipping background session")
+                return@withContext
+            }
+
+            val cb = buildCallback(webApp, dispatcher)
+            val runtime = provider.geckoEngineManager.getRuntime()
+
+            runtime.setWebNotificationDelegate(object : WebNotificationDelegate {
+                override fun onShowNotification(notification: WebNotification) {
+                    val title = notification.title ?: return
+                    cb.onNotificationReceived(title, notification.text, notification.imageUrl, notification.tag)
+                }
+                override fun onCloseNotification(notification: WebNotification) = Unit
+            })
+
+            val settings = GeckoSessionSettings.Builder()
+                .contextId(webApp.isolationId)
+                .build()
+            val session = GeckoSession(settings)
+            session.open(runtime)
+            NotificationDelegateFactory.attach(session, cb)
+            session.loadUri(webApp.url)
+
+            backgroundSession = session
+            backgroundAppId = appId
+            Log.i(TAG, "Background session started for ${webApp.name} (appId=$appId)")
+        }
+    }
+
+    private fun buildCallback(webApp: WebApp, dispatcher: PwaNotificationDispatcher): BrowserEngineCallback =
+        object : BrowserEngineCallback {
+            override fun onNotificationReceived(title: String, body: String?, iconUrl: String?, tag: String?) {
+                scope.launch { dispatcher.dispatch(webApp, title, body, iconUrl, tag) }
+            }
+            override fun onNotificationPermissionRequested(onResult: (Boolean) -> Unit) {
+                // Background — no dialog available; respect the stored permission.
+                onResult(webApp.notificationPermission == NotificationPermission.GRANTED)
+            }
+            override fun onPageStarted(url: String?) = Unit
+            override fun onPageFinished(url: String?) = Unit
+            override fun onProgressChanged(progress: Int) = Unit
+            override fun onTitleChanged(title: String?) = Unit
+            override fun onIconReceived(icon: Bitmap?) = Unit
+            override fun onError(errorCode: Int, description: String) {
+                Log.w(TAG, "Background session error $errorCode: $description")
+            }
+            override fun onSslError(error: String) {
+                Log.w(TAG, "Background session SSL error: $error")
+            }
+            override fun onExternalLink(url: String) = Unit
+            override fun onShowCustomView(view: View?, callback: Any?) = Unit
+            override fun onHideCustomView() = Unit
+            override fun onDownloadStart(
+                url: String, userAgent: String, contentDisposition: String,
+                mimeType: String, contentLength: Long,
+            ) = Unit
+        }
+
+    // Must be called on the main thread.
+    private fun closeBackgroundSession() {
+        backgroundSession?.close()
+        backgroundSession = null
+        backgroundAppId = -1L
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         scope.cancel()
+        // onDestroy runs on the main thread — safe to close the session directly.
+        closeBackgroundSession()
         super.onDestroy()
     }
 
