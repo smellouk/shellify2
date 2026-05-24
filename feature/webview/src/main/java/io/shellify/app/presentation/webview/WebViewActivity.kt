@@ -9,6 +9,8 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.view.Gravity
 import android.view.View
@@ -16,7 +18,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -33,8 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.activity.OnBackPressedCallback
@@ -237,6 +243,13 @@ class WebViewActivity : FragmentActivity() {
                         if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) "BLOCKED_BY_OS"
                         else viewModel.uiState.value.app?.notificationPermission?.name ?: "NOT_ASKED"
                     },
+                    permissionRequestCallback = {
+                        Handler(Looper.getMainLooper()).post {
+                            viewModel.onNotificationPermissionRequested { granted ->
+                                resolveWebViewPermission(granted)
+                            }
+                        }
+                    },
                 ), "ShellifyBridge")
             }
         }
@@ -280,41 +293,66 @@ class WebViewActivity : FragmentActivity() {
 
         observeState(app, pwaApp)
         collectCommands()
-        collectPermissionDialog()
 
         // Track that this Activity is actively showing the app — used by BackgroundNotificationService
         // to avoid creating a competing GeckoSession for the same appId (T-06-30).
         if (appId != -1L) (application as? WebViewServiceProvider)?.registerActiveApp(appId)
     }
 
-    private fun collectPermissionDialog() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.permissionDialog.collect { state ->
-                    when (state) {
-                        is PermissionDialogState.Hidden -> Unit
-                        is PermissionDialogState.Shown -> showPermissionDialog(state.appName)
-                    }
+    private fun addPermissionDialogOverlay(app: WebViewServiceProvider) {
+        val overlay = ComposeView(this).apply {
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val state by viewModel.uiState.collectAsState()
+                val dialogState by viewModel.permissionDialog.collectAsState()
+                val accentColor = state.app?.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                val shown = dialogState as? PermissionDialogState.Shown ?: return@setContent
+                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, accentColor = accentColor, controlStatusBar = false) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            viewModel.onPermissionDialogResult(false)
+                            resolveWebViewPermission(false)
+                        },
+                        icon = { Icon(Icons.Default.Notifications, contentDescription = null) },
+                        title = { Text(shown.appName) },
+                        text = { Text(stringResource(R.string.notification_permission_dialog_body, shown.appName)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.onPermissionDialogResult(true)
+                                requestPostNotificationsPermissionIfNeeded()
+                                resolveWebViewPermission(true)
+                                // SystemWebView needs a reload to re-inject NotificationBridge.
+                                // GeckoView must NOT reload here: the reload would reset
+                                // Notification.permission to 'default' for the current session,
+                                // breaking any timers already scheduled on the page.
+                                if (engine.engineType == EngineType.SYSTEM_WEBVIEW) engine.reload()
+                            }) { Text(stringResource(R.string.notification_permission_allow)) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                viewModel.onPermissionDialogResult(false)
+                                resolveWebViewPermission(false)
+                            }) { Text(stringResource(R.string.notification_permission_not_now)) }
+                        },
+                    )
                 }
             }
         }
+        container.addView(overlay, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        ))
     }
 
-    private fun showPermissionDialog(appName: String) {
-        AlertDialog.Builder(this)
-            .setTitle(appName)
-            .setMessage(getString(R.string.notification_permission_dialog_body, appName))
-            .setPositiveButton(R.string.notification_permission_allow) { _, _ ->
-                viewModel.onPermissionDialogResult(true)
-                requestPostNotificationsPermissionIfNeeded()
-            }
-            .setNegativeButton(R.string.notification_permission_not_now) { _, _ ->
-                viewModel.onPermissionDialogResult(false)
-            }
-            .setOnCancelListener {
-                viewModel.onPermissionDialogResult(false)
-            }
-            .show()
+    private fun resolveWebViewPermission(granted: Boolean) {
+        val app = viewModel.uiState.value.app ?: return
+        if (app.engineType != EngineType.SYSTEM_WEBVIEW) return
+        engine.evaluateJavascript("window.__shellifyResolvePermission($granted)", null)
+        if (granted) {
+            engine.evaluateJavascript("window.__shellifyNotificationLoaded = false;", null)
+            engine.evaluateJavascript(NotificationBridge.buildScript(), null)
+        }
     }
 
     private fun requestPostNotificationsPermissionIfNeeded() {
@@ -339,6 +377,7 @@ class WebViewActivity : FragmentActivity() {
         }
         addErrorOverlay(app)
         addControlsOverlay(app)
+        addPermissionDialogOverlay(app)
     }
 
     private fun handleAuthState(app: WebViewServiceProvider, pwaApp: WebApp, authState: AuthState) {
@@ -546,13 +585,20 @@ class WebViewActivity : FragmentActivity() {
                     )
                     engine.evaluateJavascript(script, null)
                 }
-                // Inject the notification bridge for System WebView apps with GRANTED permission.
-                // Re-injection on each page load is safe: the load-guard prevents double-patching.
-                if (app.engineType == EngineType.SYSTEM_WEBVIEW &&
-                    app.notificationPermission == NotificationPermission.GRANTED
-                ) {
-                    engine.evaluateJavascript("window.__shellifyNotificationLoaded = false;", null)
-                    engine.evaluateJavascript(NotificationBridge.buildScript(), null)
+                // Inject the appropriate notification script for System WebView on each page load.
+                // Load-guards prevent double-patching; re-injection on navigation is intentional.
+                if (app.engineType == EngineType.SYSTEM_WEBVIEW) {
+                    when (app.notificationPermission) {
+                        NotificationPermission.GRANTED -> {
+                            engine.evaluateJavascript("window.__shellifyNotificationLoaded = false;", null)
+                            engine.evaluateJavascript(NotificationBridge.buildScript(), null)
+                        }
+                        NotificationPermission.NOT_ASKED -> {
+                            engine.evaluateJavascript("window.__shellifyPermRequestLoaded = false;", null)
+                            engine.evaluateJavascript(NotificationBridge.buildPermissionRequestScript(), null)
+                        }
+                        NotificationPermission.DENIED -> Unit
+                    }
                 }
             }
 
@@ -731,6 +777,39 @@ class WebViewActivity : FragmentActivity() {
         setTaskDescription(ActivityManager.TaskDescription(app.name, icon, opaqueColor))
     }
 
+    override fun onStart() {
+        super.onStart()
+        val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
+        if (appId != -1L) (application as? WebViewServiceProvider)?.registerActiveApp(appId)
+        if (::engine.isInitialized && engine is GeckoViewEngine) {
+            // Reclaim the runtime-scoped WebNotificationDelegate that the background service may
+            // have overwritten so notifications route through the ViewModel (in-app handling).
+            (engine as GeckoViewEngine).reattachNotificationDelegate()
+            // The foreground Activity now handles notifications — stop the background service.
+            val stopIntent = android.content.Intent(this, BackgroundNotificationService::class.java)
+                .apply { action = BackgroundNotificationService.ACTION_STOP }
+            startService(stopIntent)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
+        if (appId == -1L) return
+        (application as? WebViewServiceProvider)?.unregisterActiveApp(appId)
+        // For GeckoView apps with notification permission, start a foreground service so the
+        // background GeckoSession runs without Android's JS throttling. The service's initSession()
+        // dedup guard prevents creating multiple sessions if onStartCommand fires repeatedly.
+        if (::engine.isInitialized && engine is GeckoViewEngine &&
+            ::viewModel.isInitialized &&
+            viewModel.uiState.value.app?.notificationPermission == NotificationPermission.GRANTED
+        ) {
+            val svcIntent = android.content.Intent(this, BackgroundNotificationService::class.java)
+                .apply { putExtra(BackgroundNotificationService.EXTRA_APP_ID, appId) }
+            startForegroundService(svcIntent)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         // viewModel is initialized asynchronously for appId launches — guard until ready.
@@ -751,10 +830,9 @@ class WebViewActivity : FragmentActivity() {
                 }
             }
         }
-        // Unregister this Activity so BackgroundNotificationService can start its own session.
-        val activeAppId = intent.getLongExtra(EXTRA_APP_ID, -1L)
-        if (activeAppId != -1L) (application as? WebViewServiceProvider)?.unregisterActiveApp(activeAppId)
+        // unregisterActiveApp was already called in onStop(); engine.destroy() closes the session.
         if (::engine.isInitialized) engine.destroy()
         super.onDestroy()
     }
+
 }

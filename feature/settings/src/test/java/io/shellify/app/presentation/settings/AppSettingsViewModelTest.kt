@@ -1,5 +1,6 @@
 package io.shellify.app.presentation.settings
 
+import android.app.AppOpsManager
 import android.app.NotificationManager
 import android.content.Context
 import io.mockk.coEvery
@@ -13,7 +14,6 @@ import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.security.PasswordManager
-import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
@@ -51,7 +51,6 @@ class AppSettingsViewModelTest {
     private val simpleIconsManager = mockk<SimpleIconsManager>(relaxed = true)
     private val passwordManager = mockk<PasswordManager>(relaxed = true)
     private val geckoEngineManager = mockk<GeckoEngineManager>(relaxed = true)
-    private val themeManager = mockk<ThemeManager>(relaxed = true)
 
     private val testApp = WebApp(id = 1L, name = "TestApp", url = "https://test.com", isolationId = "iso-abc")
 
@@ -65,8 +64,8 @@ class AppSettingsViewModelTest {
         coEvery { saveWebApp(any()) } returns 1L
         coEvery { deleteWebApp(any()) } returns Unit
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
-        every { themeManager.globalNotificationsEnabled } returns MutableStateFlow(true)
         every { context.getSystemService(Context.NOTIFICATION_SERVICE) } returns mockk<NotificationManager>(relaxed = true)
+        every { context.getSystemService(Context.APP_OPS_SERVICE) } returns mockk<AppOpsManager>(relaxed = true)
         viewModel = AppSettingsViewModel(
             appId = 1L,
             getWebAppById = getWebAppById,
@@ -79,7 +78,6 @@ class AppSettingsViewModelTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
         )
     }
 

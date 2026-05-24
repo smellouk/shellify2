@@ -11,11 +11,24 @@ import org.mozilla.geckoview.GeckoSession
  */
 object NotificationDelegateFactory {
 
-    fun attach(session: GeckoSession, cb: BrowserEngineCallback) {
-        session.permissionDelegate = buildPermissionDelegate(cb)
+    /**
+     * @param onPermissionGranted optional callback invoked with the [ContentPermission] when the
+     *   user grants notification permission. Callers can use this to persist the grant via
+     *   [GeckoRuntime.storageController][org.mozilla.geckoview.GeckoRuntime.getStorageController]
+     *   so that [Notification.permission] returns "granted" across page reloads.
+     */
+    fun attach(
+        session: GeckoSession,
+        cb: BrowserEngineCallback,
+        onPermissionGranted: ((GeckoSession.PermissionDelegate.ContentPermission) -> Unit)? = null,
+    ) {
+        session.permissionDelegate = buildPermissionDelegate(cb, onPermissionGranted)
     }
 
-    private fun buildPermissionDelegate(cb: BrowserEngineCallback): GeckoSession.PermissionDelegate =
+    private fun buildPermissionDelegate(
+        cb: BrowserEngineCallback,
+        onPermissionGranted: ((GeckoSession.PermissionDelegate.ContentPermission) -> Unit)? = null,
+    ): GeckoSession.PermissionDelegate =
         object : GeckoSession.PermissionDelegate {
             override fun onContentPermissionRequest(
                 session: GeckoSession,
@@ -30,6 +43,7 @@ object NotificationDelegateFactory {
                         // take effect immediately without clearing GeckoView's permission store.
                         result.complete(
                             if (granted) {
+                                onPermissionGranted?.invoke(perm)
                                 GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW
                             } else {
                                 GeckoSession.PermissionDelegate.ContentPermission.VALUE_PROMPT

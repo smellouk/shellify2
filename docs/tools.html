@@ -331,17 +331,17 @@
         <button class="btn-tool accent"     onclick="directLong()">Long title + body (truncation)</button>
       </div>
 
-      <!-- GeckoView Tools -->
+      <!-- GeckoView / System WebView Web API Tools -->
       <div class="tool-card">
         <div class="tool-card-header">
           <span class="tool-card-icon teal">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
           </span>
-          <h3>GeckoView Tools</h3>
+          <h3>Web Notification API</h3>
         </div>
-        <p>Uses <code>window.Notification</code> via Gecko's web API. Requires permission = <strong>GRANTED</strong> and a page reload before <code>NotificationBridge</code> is injected.</p>
+        <p>Uses <code>window.Notification</code> via Shellify's JS bridge. Works in both GeckoView and System WebView. Calling <code>requestPermission()</code> shows Shellify's native permission dialog when state is <strong>NOT_ASKED</strong>; once <strong>GRANTED</strong>, <code>new Notification()</code> is forwarded to Android.</p>
         <button class="btn-tool secondary" onclick="checkPermission()">Check permission state</button>
-        <button class="btn-tool secondary" onclick="requestPermission()">Request permission</button>
+        <button class="btn-tool secondary" onclick="requestPermission()">Request permission (triggers dialog)</button>
         <button class="btn-tool primary"   onclick="fireApi()">new Notification("Hello")</button>
 
         <div style="border-top:1px solid var(--border);margin:16px 0;"></div>

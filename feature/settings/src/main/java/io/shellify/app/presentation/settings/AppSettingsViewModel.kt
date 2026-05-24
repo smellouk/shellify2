@@ -199,14 +199,10 @@ class AppSettingsViewModel(
 
     // ── Notifications ─────────────────────────────────────────────────────────
 
-    fun toggleNotificationPermission() = update {
-        it.copy(
-            notificationPermission = if (it.notificationPermission == NotificationPermission.GRANTED) {
-                NotificationPermission.DENIED
-            } else {
-                NotificationPermission.GRANTED
-            }
-        )
+    fun toggleNotificationPermission() {
+        val app = _state.value.app ?: return
+        if (app.notificationPermission == NotificationPermission.NOT_ASKED) return
+        update { it.copy(notificationPermission = NotificationPermission.NOT_ASKED) }
     }
 
     fun setDndStartHour(hour: Int) = update { it.copy(dndStartHour = hour) }

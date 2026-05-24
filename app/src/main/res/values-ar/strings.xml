@@ -565,6 +565,7 @@
     <string name="notification_channel_name_default">افتراضي</string>
     <string name="notification_channel_description" formatted="true">إشعارات من %s</string>
     <string name="settings_notifications_permission_os_denied">قم بتفعيل الإشعارات لـ Shellify في إعدادات Android.</string>
+    <string name="settings_notifications_not_asked_hint">قم بزيارة الموقع والسماح بالإشعارات عند المطالبة.</string>
     <string name="bg_notification_service_title">إشعارات Shellify</string>
     <string name="bg_notification_service_text" formatted="true">إبقاء الإشعارات نشطة لـ %s</string>
     <string name="bg_notification_service_text_generic">إبقاء إشعارات PWA نشطة</string>

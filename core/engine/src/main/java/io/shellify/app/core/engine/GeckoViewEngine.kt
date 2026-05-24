@@ -70,6 +70,16 @@ class GeckoViewEngine(
     private var lastApp: WebApp? = null
     private var contextId: String? = null
 
+    fun reattachNotificationDelegate() {
+        val cb = callback ?: return
+        engineManager.getRuntime().setWebNotificationDelegate(object : WebNotificationDelegate {
+            override fun onShowNotification(notification: WebNotification) {
+                dispatchNotification(notification, cb)
+            }
+            override fun onCloseNotification(notification: WebNotification) = Unit
+        })
+    }
+
     override fun createView(context: Context, app: WebApp, callback: BrowserEngineCallback): View {
         this.callback = callback
         this.lastApp = app
@@ -217,7 +227,14 @@ class GeckoViewEngine(
 
         // Consolidate delegate wiring via factory so both GeckoViewEngine (foreground)
         // and BackgroundNotificationService (background) share the same delegate logic.
-        NotificationDelegateFactory.attach(s, cb)
+        // Persist the grant via StorageController so Notification.permission === 'granted'
+        // survives page reloads — GeckoView's VALUE_ALLOW is per-request only without this.
+        NotificationDelegateFactory.attach(s, cb) { perm ->
+            engineManager.getRuntime().storageController.setPermission(
+                perm,
+                GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW,
+            )
+        }
 
         return s
     }

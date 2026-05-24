@@ -337,7 +337,8 @@ class AddViewModel(
 
     private fun isValidHttpsUrl(url: String): Boolean = try {
         val parsed = java.net.URL(url)
-        parsed.protocol == "https" && parsed.host.isNotEmpty() && parsed.host.contains('.')
+        (parsed.protocol == "https" || parsed.protocol == "http") &&
+            parsed.host.isNotEmpty() && !parsed.host.contains(' ')
     } catch (_: Exception) { false }
 
     private fun validate(): String? {

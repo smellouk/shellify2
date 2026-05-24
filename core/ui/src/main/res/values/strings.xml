@@ -540,6 +540,7 @@
     <string name="notification_channel_name_default">Default</string>
     <string name="notification_channel_description" formatted="true">Notifications from %s</string>
     <string name="settings_notifications_permission_os_denied">Enable notifications for Shellify in Android Settings.</string>
+    <string name="settings_notifications_not_asked_hint">Visit the website and allow notifications when prompted.</string>
     <string name="bg_notification_service_title">Shellify notifications</string>
     <string name="bg_notification_service_text" formatted="true">Keeping notifications alive for %s</string>
     <string name="bg_notification_service_text_generic">Keeping PWA notifications alive</string>

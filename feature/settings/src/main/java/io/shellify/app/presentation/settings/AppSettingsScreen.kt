@@ -484,7 +484,11 @@ fun AppSettingsScreen(
                 ToggleListItem(
                     label = stringResource(R.string.settings_notifications_permission),
                     checked = app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled,
-                    onToggle = { if (state.globalNotificationsEnabled) viewModel.toggleNotificationPermission() },
+                    onToggle = {
+                        if (state.globalNotificationsEnabled && app.notificationPermission != NotificationPermission.NOT_ASKED) {
+                            viewModel.toggleNotificationPermission()
+                        }
+                    },
                     icon = {
                         Icon(
                             if (app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled) {
@@ -509,6 +513,24 @@ fun AppSettingsScreen(
                         headlineContent = {
                             Text(
                                 stringResource(R.string.settings_notifications_global_disabled),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                    )
+                } else if (app.notificationPermission == NotificationPermission.NOT_ASKED) {
+                    CardDivider()
+                    ListItem(
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Info,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.settings_notifications_not_asked_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

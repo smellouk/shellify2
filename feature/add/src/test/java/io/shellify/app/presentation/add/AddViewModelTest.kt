@@ -196,24 +196,24 @@ class AddViewModelTest {
     }
 
     @Test
-    fun `analyze with http url sets urlError`() = runTest {
+    fun `analyze with http url proceeds without urlError`() = runTest {
         val vm = newVm()
         vm.setUrl("http://example.com")
         vm.analyze()
         advanceUntilIdle()
-        assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.isAnalyzing)
+        assertNull(vm.uiState.value.urlError)
     }
 
     @Test
-    fun `save with http url sets urlError`() = runTest {
+    fun `save with http url saves without urlError`() = runTest {
         val vm = newVm()
         vm.setName("App")
         vm.setUrl("http://example.com")
+        coEvery { getWebAppById(1L) } returns WebApp(id = 1L, name = "App", url = "http://example.com")
         vm.save()
         advanceUntilIdle()
-        assertNotNull(vm.uiState.value.urlError)
-        assertFalse(vm.uiState.value.saved)
+        assertNull(vm.uiState.value.urlError)
+        assertTrue(vm.uiState.value.saved)
     }
 
     @Test

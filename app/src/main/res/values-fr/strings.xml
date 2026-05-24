@@ -565,6 +565,7 @@
     <string name="notification_channel_name_default">Défaut</string>
     <string name="notification_channel_description" formatted="true">Notifications de %s</string>
     <string name="settings_notifications_permission_os_denied">Activez les notifications pour Shellify dans les paramètres Android.</string>
+    <string name="settings_notifications_not_asked_hint">Visitez le site et autorisez les notifications lorsque vous y êtes invité.</string>
     <string name="bg_notification_service_title">Notifications Shellify</string>
     <string name="bg_notification_service_text" formatted="true">Maintien des notifications pour %s</string>
     <string name="bg_notification_service_text_generic">Maintien des notifications PWA</string>

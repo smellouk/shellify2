@@ -14,6 +14,7 @@ import android.webkit.JavascriptInterface
  */
 class ShellifyBridge(
     private val permissionProvider: () -> String = { "UNKNOWN" },
+    private val permissionRequestCallback: () -> Unit = {},
     private val notificationCallback: (title: String, body: String, icon: String) -> Unit,
 ) {
 
@@ -26,6 +27,12 @@ class ShellifyBridge(
 
     @JavascriptInterface
     fun getNotificationPermission(): String = permissionProvider()
+
+    @JavascriptInterface
+    fun requestNotificationPermission() {
+        runCatching { permissionRequestCallback() }
+            .onFailure { Log.d(TAG, "requestNotificationPermission: callback threw", it) }
+    }
 
     @JavascriptInterface
     fun onNotification(title: String?, body: String?, icon: String?) {

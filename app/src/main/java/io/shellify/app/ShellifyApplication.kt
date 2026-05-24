@@ -1,6 +1,7 @@
 package io.shellify.app
 
 import android.app.Application
+import androidx.core.app.NotificationManagerCompat
 import io.shellify.app.core.adblock.AdBlocker
 import io.shellify.app.core.backup.BackupManager
 import io.shellify.app.core.backup.BackupSettings
@@ -41,7 +42,6 @@ import io.shellify.app.presentation.shortcut.ShortcutActivity
 import io.shellify.app.presentation.webview.PwaNotificationDispatcher
 import io.shellify.app.presentation.webview.WebViewIntentFactoryImpl
 import io.shellify.app.presentation.webview.WebViewServiceProvider
-import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

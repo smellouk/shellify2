@@ -1,5 +1,7 @@
 package io.shellify.app.presentation.settings
 
+import android.app.AppOpsManager
+import android.app.NotificationManager
 import android.content.Context
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -12,7 +14,6 @@ import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.security.PasswordManager
-import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
@@ -50,7 +51,6 @@ class AppSettingsViewModelNotificationTest {
     private val simpleIconsManager = mockk<SimpleIconsManager>(relaxed = true)
     private val passwordManager = mockk<PasswordManager>(relaxed = true)
     private val geckoEngineManager = mockk<GeckoEngineManager>(relaxed = true)
-    private val themeManager = mockk<ThemeManager>(relaxed = true)
 
     private val testApp = WebApp(
         id = 42L,
@@ -73,7 +73,8 @@ class AppSettingsViewModelNotificationTest {
         coEvery { saveWebApp(any()) } returns 42L
         coEvery { deleteWebApp(any()) } returns Unit
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
-        every { themeManager.globalNotificationsEnabled } returns MutableStateFlow(true)
+        every { context.getSystemService(Context.NOTIFICATION_SERVICE) } returns mockk<NotificationManager>(relaxed = true)
+        every { context.getSystemService(Context.APP_OPS_SERVICE) } returns mockk<AppOpsManager>(relaxed = true)
         viewModel = AppSettingsViewModel(
             appId = 42L,
             getWebAppById = getWebAppById,
@@ -86,7 +87,6 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
         )
     }
 
@@ -96,19 +96,19 @@ class AppSettingsViewModelNotificationTest {
     }
 
     @Test
-    fun `toggleNotificationPermission fromNotAsked setsGranted andSaves`() = runTest {
+    fun `toggleNotificationPermission fromNotAsked isNoOp`() = runTest {
         advanceUntilIdle()
         assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
 
         viewModel.toggleNotificationPermission()
         advanceUntilIdle()
 
-        assertEquals(NotificationPermission.GRANTED, viewModel.uiState.value.app?.notificationPermission)
-        coVerify(exactly = 1) { saveWebApp(match { it.notificationPermission == NotificationPermission.GRANTED }) }
+        assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
+        coVerify(exactly = 0) { saveWebApp(any()) }
     }
 
     @Test
-    fun `toggleNotificationPermission fromGranted setsDenied`() = runTest {
+    fun `toggleNotificationPermission fromGranted setsNotAsked`() = runTest {
         val grantedApp = testApp.copy(notificationPermission = NotificationPermission.GRANTED)
         coEvery { getWebAppById(42L) } returns grantedApp
         viewModel = AppSettingsViewModel(
@@ -123,14 +123,40 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
         )
         advanceUntilIdle()
 
         viewModel.toggleNotificationPermission()
         advanceUntilIdle()
 
-        assertEquals(NotificationPermission.DENIED, viewModel.uiState.value.app?.notificationPermission)
+        assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
+        coVerify(exactly = 1) { saveWebApp(match { it.notificationPermission == NotificationPermission.NOT_ASKED }) }
+    }
+
+    @Test
+    fun `toggleNotificationPermission fromDenied setsNotAsked`() = runTest {
+        val deniedApp = testApp.copy(notificationPermission = NotificationPermission.DENIED)
+        coEvery { getWebAppById(42L) } returns deniedApp
+        viewModel = AppSettingsViewModel(
+            appId = 42L,
+            getWebAppById = getWebAppById,
+            saveWebApp = saveWebApp,
+            deleteWebApp = deleteWebApp,
+            isolationManager = isolationManager,
+            context = context,
+            analyzer = analyzer,
+            faviconFetcher = faviconFetcher,
+            simpleIconsManager = simpleIconsManager,
+            passwordManager = passwordManager,
+            geckoEngineManager = geckoEngineManager,
+        )
+        advanceUntilIdle()
+
+        viewModel.toggleNotificationPermission()
+        advanceUntilIdle()
+
+        assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
+        coVerify(exactly = 1) { saveWebApp(match { it.notificationPermission == NotificationPermission.NOT_ASKED }) }
     }
 
     @Test
@@ -185,7 +211,6 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
         )
         advanceUntilIdle()
         val commands = mutableListOf<AppSettingsCommand>()
@@ -230,7 +255,6 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
         )
         advanceUntilIdle()
         assertEquals(22, viewModel.uiState.value.app?.dndStartHour)
@@ -243,51 +267,4 @@ class AppSettingsViewModelNotificationTest {
         coVerify(exactly = 1) { saveWebApp(match { it.dndStartHour == -1 && it.dndEndHour == -1 }) }
     }
 
-    @Test
-    fun `globalNotificationsEnabled false reflects in state`() = runTest {
-        val flow = MutableStateFlow(false)
-        every { themeManager.globalNotificationsEnabled } returns flow
-        viewModel = AppSettingsViewModel(
-            appId = 42L,
-            getWebAppById = getWebAppById,
-            saveWebApp = saveWebApp,
-            deleteWebApp = deleteWebApp,
-            isolationManager = isolationManager,
-            context = context,
-            analyzer = analyzer,
-            faviconFetcher = faviconFetcher,
-            simpleIconsManager = simpleIconsManager,
-            passwordManager = passwordManager,
-            geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
-        )
-        advanceUntilIdle()
-        assertFalse(viewModel.uiState.value.globalNotificationsEnabled)
-    }
-
-    @Test
-    fun `globalNotificationsEnabled updates when themeManager flow changes`() = runTest {
-        val flow = MutableStateFlow(true)
-        every { themeManager.globalNotificationsEnabled } returns flow
-        viewModel = AppSettingsViewModel(
-            appId = 42L,
-            getWebAppById = getWebAppById,
-            saveWebApp = saveWebApp,
-            deleteWebApp = deleteWebApp,
-            isolationManager = isolationManager,
-            context = context,
-            analyzer = analyzer,
-            faviconFetcher = faviconFetcher,
-            simpleIconsManager = simpleIconsManager,
-            passwordManager = passwordManager,
-            geckoEngineManager = geckoEngineManager,
-            themeManager = themeManager,
-        )
-        advanceUntilIdle()
-        assertTrue(viewModel.uiState.value.globalNotificationsEnabled)
-
-        flow.value = false
-        advanceUntilIdle()
-        assertFalse(viewModel.uiState.value.globalNotificationsEnabled)
-    }
 }

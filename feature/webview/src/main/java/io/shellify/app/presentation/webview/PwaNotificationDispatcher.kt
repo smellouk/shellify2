@@ -2,6 +2,7 @@ package io.shellify.app.presentation.webview
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -41,6 +42,16 @@ class PwaNotificationDispatcher(
     },
     private val channelDescProvider: (appName: String) -> String = { name ->
         context.getString(R.string.notification_channel_description, name)
+    },
+    private val tapIntentProvider: (appId: Long) -> PendingIntent? = { appId ->
+        runCatching {
+            PendingIntent.getActivity(
+                context,
+                appId.toInt(),
+                WebViewActivity.launchIntent(context, appId),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }.getOrNull()
     },
 ) {
 
@@ -169,6 +180,7 @@ class PwaNotificationDispatcher(
             .apply { appIcon?.let { setLargeIcon(it) } }
             .setContentTitle(safeTitle)
             .setContentText(safeBody)
+            .setContentIntent(tapIntentProvider(app.id))
             .setAutoCancel(true)
             .build()
 
