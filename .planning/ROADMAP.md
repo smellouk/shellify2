@@ -82,10 +82,30 @@ Plans:
 
 **Requirements:** PRIV-01, PRIV-02, PRIV-03, PRIV-04, PRIV-05, TOR-01, TOR-02, TOR-03, TOR-04, TOR-05
 
-**Plans:**
-1. Privacy hardening — stealth mode (`ShortcutManager` + recents exclusion); cookie auto-wipe (`IsolationManager.clearSession` on `onStop`); incognito session (ephemeral profile, no DB write); tracking protection (extended domain blocklist in `AdBlocker`)
-2. Panic button — hold-gesture in `WebViewActivity`; wipe all `IsolationManager` profiles + Room DB + DataStore; confirmation dialog
-3. Tor integration — add `tor-android` dependency; `TorManager` daemon lifecycle (start on first Tor-app launch, stop when none active); dual `GeckoRuntime` in `GeckoEngineManager` (standard + SOCKS5); `WebApp.useTor` flag + DB migration; `.onion` URL support in `PwaAnalyzer` and `AddWebAppScreen`
+**Plans:** 5 plans across 4 waves
+
+Plans:
+
+**Wave 1** *(parallel — no dependencies between these plans)*
+- [ ] 02-01-PLAN.md — Domain + DB foundation: 6 new WebApp boolean fields (stealthMode, cookieAutoWipe, alwaysIncognito, trackerBlockingEnabled, useTor, preserveTorIdentity); MIGRATION_5_6 (5→6); AppDatabase v6 bump; WebAppMapper round-trip; instrumented Migration5To6Test
+- [ ] 02-04-PLAN.md — Tor infrastructure (autonomous=false, package legitimacy checkpoint): Guardian Project Maven repo + tor-android:0.4.9.8 + jtorctl:0.4.5.7; ProxyConfig sealed class (None/Socks5/Http); TorState sealed class; TorManager skeleton (StateFlow + grace-period release + NEWNYM); GeckoEngineManager refactor to multi-runtime cache keyed by ProxyConfig
+
+**Wave 2** *(depends on Plan 01)*
+- [ ] 02-02-PLAN.md — Privacy hardening (PRIV-01/02/03/05): AdBlockFilterCache tracker rule set + easyprivacy_domains.txt asset; AdBlocker trackerBlockingEnabled gate; WebViewActivity stealth-aware applyTaskDescription + onStop cookie auto-wipe + alwaysIncognito auto-route; WebViewControlCenter stealth toggle + open incognito row; HomeScreen long-press Open incognito; AppSettingsScreen Privacy section (4 toggles); 11 new EN/FR/AR strings
+
+**Wave 3** *(depends on Plan 02 — shares WebViewActivity / WebViewControlCenter)*
+- [ ] 02-03-PLAN.md — Panic button (PRIV-04): WebViewViewModel.executePanicWipe (clearData per app + DeleteAllAppsUseCase + ThemeManager/PasswordManager clearAll + NavigateHome); WebViewServiceProvider extended with deleteAllApps + getWebApps; WebViewActivity panic icon with 2000ms long-press + ConfirmDialog; 5 new EN/FR/AR strings
+
+**Wave 4** *(depends on Plans 01, 02, 03, and 04 — wires Tor end-to-end)*
+- [ ] 02-05-PLAN.md — Tor UI + integration (TOR-01–05 + D-07): ShellifyApplication TorManager wiring; WebViewServiceProvider.torManager; WebViewViewModel TorState gate on LoadUrl + onAppReady/onSessionStop/onNewTorIdentity; GeckoViewEngine ProxyConfig threading; WebViewActivity bootstrap chip + incognito badge; WebViewControlCenter New Tor identity row; AppSettingsScreen Tor section (Route through Tor toggle disabled when SYSTEM_WEBVIEW, Preserve identity toggle, New Tor identity row); AddViewModel .onion exemption; 11 new EN/FR/AR strings
+
+**Cross-cutting constraints:**
+- DB migration 5→6 requires explicit Migration object + committed `6.json` schema
+- TorManager MUST NOT create its own OkHttpClient (CONCERNS.md flag)
+- `loadUrl()` MUST be gated on `TorState.Ready` for Tor apps — never call before the bootstrap completes
+- All new string resources added to EN, FR, and AR locale files simultaneously
+- Guardian Project Maven artifacts require blocking-human verification (Plan 04 Task 0) before install lines land
+
 
 **Success Criteria:**
 1. Enabling stealth mode for a PWA removes its name/icon from the Android recents screen
