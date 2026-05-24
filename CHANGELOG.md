@@ -3,23 +3,41 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
-## [1.2.0] - 2026-05-20
+## [1.3.0] - 2026-05-24
 
 ### Bug Fixes
 
+- **core:engine**: Upgrade GeckoView to 140.x and guard against version mismatch
+- **core:database**: Enable schema export and add migration test
+- **app**: Keep GeckoView classes from R8 to prevent native SIGSEGV in release
+- **feature:webview**: Back press navigates browser history instead of exiting app
 - **feature:webview**: Improve recents chip label and task description
 - **core:isolation**: Make clearData suspend and await cookie removal before reload
 - **core:isolation**: Replace suspendCancellableCoroutine with fire-and-forget removeAllCookies
+- **feature:settings**: Add background container to global notifications icon
+- **feature:webview**: Guard viewModel/engine isInitialized in onResume and onDestroy
+- **feature:webview**: Enforce minimum splash display duration
+- **feature:settings**: Use OS notification state as source of truth in per-app settings
+- Address post-review findings in notification permission flow
+- **feature:webview**: Restore background GeckoSession in BackgroundNotificationService
+- **app**: Remove stale themeManager arg from AppSettingsViewModel e2e builders
 
 ### Documentation
 
+- Revert LICENSE copyright to Apache template placeholder
+- Correct and expand technical debt in CONCERNS.md and CLAUDE.md
+- **privacy**: Update logo image reference from icon.png to icon.webp
 - **legal**: Soften branding language per legal advice
 - **site**: Add assetlinks.json for Android App Links verification
 - **app**: Update CLAUDE.md — reflect actual Konsist boundaries and WebView MVVM pattern
 - **site**: Fix changelog date format and add Changelog link to legal page sidebars
+- **planning**: Expand roadmap to 23 phases
+- **legal**: Disclose JavaScript bridges; bump consent to v3
+- Add missing README files for .github and docs subdirectories
 
 ### Features
 
+- **feature:onboarding**: Add versioned consent with update re-consent screen
 - **feature:webview**: Add per-PWA splash screen and suppress double splash
 - **feature:settings**: Add per-app control center toggle with tests
 - **feature:webview**: Add typed error screen and screenshot test coverage
@@ -28,11 +46,29 @@ Entries are auto-generated from conventional commits using [git-cliff](https://g
 - **feature:webview**: Add clear data button to control center
 - **feature:add**: Validate URL on save, analyze, and icon fetch
 - **feature:webview**: Hide control center FAB until page finishes loading
+- Link dispatcher — route shared URLs and App Links into installed PWAs
+- In-app notifications — per-app toggle, DND, global control, history
+- Expose PWA notification permission via ShellifyBridge
+- **docs**: Make tools.html PWA-compatible
+- **docs**: Add PWA manifest and meta to all site pages
+- **feature:settings**: Replace notifications toggle with OS-redirect UX
+- Complete PWA notification permission request flow for System WebView and GeckoView
 
 ### Maintenance
 
+- **site**: Regenerate legal pages for v1.0.0
+- **deps**: Bump actions/checkout from 4 to 6 (#5)
+- **deps**: Bump actions/download-artifact from 4 to 8 (#3)
+- **deps**: Bump actions/upload-artifact from 4 to 7 (#4)
+- **deps**: Bump softprops/action-gh-release from 2 to 3 (#2)
+- **deps**: Bump amannn/action-semantic-pull-request from 5 to 6 (#1)
+- **main**: Skip workflow for github-actions bot pushes
+- **site**: Regenerate legal pages for v1.1.0
+- **release**: Merge changelog and site update into single publish job
 - **main**: Skip workflow for bot commits pushed via PAT
 - Restore canonical Apache 2.0 license text
+- **planning**: Fix worktree config key for GSD executor
+- **planning**: Update roadmap wave structure and state for phase 01
 
 ### Refactoring
 
@@ -44,45 +80,7 @@ Entries are auto-generated from conventional commits using [git-cliff](https://g
 - **app**: Update AppSettingsScreen goldens after Features section renamed to Control center
 - **app**: Replace all hardcoded strings in Android tests with R.string resources
 - **feature:webview**: Add kotlinx.coroutines.test dependency for WebViewViewModelTest
-
-## [1.1.1] - 2026-05-18
-
-### Bug Fixes
-
-- **feature:webview**: Back press navigates browser history instead of exiting app
-
-### Maintenance
-
-- **site**: Regenerate legal pages for v1.1.0
-- **release**: Merge changelog and site update into single publish job
-
-## [1.1.0] - 2026-05-17
-
-### Bug Fixes
-
-- **core:engine**: Upgrade GeckoView to 140.x and guard against version mismatch
-- **core:database**: Enable schema export and add migration test
-- **app**: Keep GeckoView classes from R8 to prevent native SIGSEGV in release
-
-### Documentation
-
-- Revert LICENSE copyright to Apache template placeholder
-- Correct and expand technical debt in CONCERNS.md and CLAUDE.md
-- **privacy**: Update logo image reference from icon.png to icon.webp
-
-### Features
-
-- **feature:onboarding**: Add versioned consent with update re-consent screen
-
-### Maintenance
-
-- **site**: Regenerate legal pages for v1.0.0
-- **deps**: Bump actions/checkout from 4 to 6 (#5)
-- **deps**: Bump actions/download-artifact from 4 to 8 (#3)
-- **deps**: Bump actions/upload-artifact from 4 to 7 (#4)
-- **deps**: Bump softprops/action-gh-release from 2 to 3 (#2)
-- **deps**: Bump amannn/action-semantic-pull-request from 5 to 6 (#1)
-- **main**: Skip workflow for github-actions bot pushes
+- **notification**: Complete UAT — 6/6 passed, phase 6 marked complete
 
 ## [1.0.0] - 2026-05-17
 
