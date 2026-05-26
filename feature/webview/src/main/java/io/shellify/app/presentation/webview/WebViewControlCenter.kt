@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
@@ -77,6 +78,8 @@ fun WebViewControlCenter(
     onNetworkLogClick: () -> Unit,
     onNewTorIdentity: () -> Unit = {},
     onPanic: () -> Unit = {},
+    isReadingModeActive: Boolean = false,
+    onReadingModeToggled: () -> Unit = {},
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -113,6 +116,8 @@ fun WebViewControlCenter(
                 onNetworkLogClick = { showSheet = false; onNetworkLogClick() },
                 onNewTorIdentity = { showSheet = false; onNewTorIdentity() },
                 onPanic = { showSheet = false; onPanic() },
+                isReadingModeActive = isReadingModeActive,
+                onReadingModeToggled = { onReadingModeToggled(); showSheet = false },
             )
         }
     }
@@ -131,6 +136,8 @@ fun WebViewControlCenterSheet(
     onNetworkLogClick: () -> Unit,
     onNewTorIdentity: () -> Unit = {},
     onPanic: () -> Unit = {},
+    isReadingModeActive: Boolean = false,
+    onReadingModeToggled: () -> Unit = {},
 ) {
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showPanicDialog by remember { mutableStateOf(false) }
@@ -281,6 +288,20 @@ fun WebViewControlCenterSheet(
         leadingContent = { Icon(Icons.Default.Shield, null) },
         headlineContent = { Text(stringResource(R.string.webview_control_network_log)) },
         modifier = Modifier.clickable { onNetworkLogClick() },
+    )
+    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        leadingContent = { Icon(Icons.AutoMirrored.Outlined.MenuBook, null) },
+        headlineContent = {
+            Text(
+                stringResource(
+                    if (isReadingModeActive) R.string.webview_control_reading_mode_exit
+                    else R.string.webview_control_reading_mode
+                )
+            )
+        },
+        modifier = Modifier.clickable { onReadingModeToggled() },
     )
     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
     ListItem(
