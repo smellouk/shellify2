@@ -14,7 +14,7 @@ android {
     sourceSets {
         // Expose the generated schema JSON files as assets in the androidTest APK so
         // MigrationTestHelper can read them when validating migration correctness.
-        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
 }
 
