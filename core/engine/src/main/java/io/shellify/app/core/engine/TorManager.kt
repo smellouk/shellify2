@@ -6,9 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -238,19 +238,15 @@ class TorManager(
             }
         }
 
-        // Android 14+ (API 34) requires specifying RECEIVER_NOT_EXPORTED or RECEIVER_EXPORTED
-        // for dynamically registered receivers; omitting the flag throws IllegalArgumentException
-        // at runtime. TorService.ACTION_STATUS is an internal broadcast so NOT_EXPORTED is correct.
+        // TorService.ACTION_STATUS is an internal broadcast — RECEIVER_NOT_EXPORTED is correct.
+        // ContextCompat.registerReceiver() handles the API-level flag requirement automatically.
         runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(
-                    torReceiver,
-                    IntentFilter(TorService.ACTION_STATUS),
-                    Context.RECEIVER_NOT_EXPORTED,
-                )
-            } else {
-                context.registerReceiver(torReceiver, IntentFilter(TorService.ACTION_STATUS))
-            }
+            ContextCompat.registerReceiver(
+                context,
+                torReceiver,
+                IntentFilter(TorService.ACTION_STATUS),
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
         }.onFailure { Log.w(TAG, "Failed to register TorService receiver", it) }
     }
 

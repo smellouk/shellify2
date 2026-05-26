@@ -1,6 +1,6 @@
 import com.adarshr.gradle.testlogger.TestLoggerExtension
 import com.adarshr.gradle.testlogger.theme.ThemeType
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -14,7 +14,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("com.android.application")
-                apply("org.jetbrains.kotlin.android")
+                // org.jetbrains.kotlin.android no longer required — AGP 9.0+ has built-in Kotlin support.
                 apply("com.adarshr.test-logger")
             }
             extensions.configure<TestLoggerExtension> {
@@ -24,7 +24,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 showPassedStandardStreams = false
                 showSkippedStandardStreams = false
             }
-            extensions.configure<BaseAppModuleExtension> {
+            extensions.configure<ApplicationExtension> {
                 compileSdk = 36
                 defaultConfig {
                     minSdk = 26

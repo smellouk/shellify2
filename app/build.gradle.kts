@@ -204,7 +204,9 @@ dependencies {
 // Force 1.2.0 only for androidTest so the InputManager.getInstance fix works on API 35+.
 aboutLibraries {
     // Ensures the plugin re-collects when Gradle inputs change, preventing stale empty JSON.
-    configPath = "config/aboutlibraries"
+    collect {
+        configPath = rootProject.file("config/aboutlibraries")
+    }
     offlineMode = false
 }
 

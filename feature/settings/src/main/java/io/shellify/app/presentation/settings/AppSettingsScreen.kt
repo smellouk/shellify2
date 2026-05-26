@@ -158,6 +158,7 @@ fun AppSettingsScreen(
     val lockSystemLabel = stringResource(R.string.settings_lock_system)
     val themeColorLabel = stringResource(R.string.add_theme_color)
     val themeColorNotSet = stringResource(R.string.add_theme_color_not_set)
+    val networkLogExportSubject = stringResource(R.string.network_log_export_subject)
 
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showLangMenu by remember { mutableStateOf(false) }
@@ -198,7 +199,7 @@ fun AppSettingsScreen(
                     val sendIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, command.content)
-                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.network_log_export_subject))
+                        putExtra(Intent.EXTRA_SUBJECT, networkLogExportSubject)
                     }
                     context.startActivity(Intent.createChooser(sendIntent, null))
                 }

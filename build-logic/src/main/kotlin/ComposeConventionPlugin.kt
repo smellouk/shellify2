@@ -1,5 +1,5 @@
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -16,7 +16,7 @@ class ComposeConventionPlugin : Plugin<Project> {
                 }
             }
             pluginManager.withPlugin("com.android.application") {
-                extensions.configure<BaseAppModuleExtension> {
+                extensions.configure<ApplicationExtension> {
                     buildFeatures { compose = true }
                 }
             }

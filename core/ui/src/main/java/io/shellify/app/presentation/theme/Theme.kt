@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.compose.material3.Typography
@@ -20,7 +21,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import io.shellify.core.ui.R
 import io.shellify.app.core.theme.ThemeMode
-import java.util.Locale
 
 /**
  * Named typography style for the incognito-mode badge rendered below the app name in the
@@ -115,7 +115,8 @@ fun ShellifyTheme(
         )
     } else colorScheme
 
-    val typography = if (Locale.getDefault().language == "ar") arabicTypography() else Typography()
+    // Use LocalConfiguration so locale changes trigger recomposition.
+    val typography = if (LocalConfiguration.current.locales[0].language == "ar") arabicTypography() else Typography()
 
     val view = LocalView.current
     if (!view.isInEditMode && controlStatusBar) {
