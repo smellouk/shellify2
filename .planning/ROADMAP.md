@@ -18,7 +18,7 @@
 | 5 | E2E Test Migration | Replace Espresso E2E tests with Maestro | TEST-01–05 (5) | 4 |
 | 6 | PWA Notification Handling | Complete in-app notification experience for PWAs | TBD | TBD |
 | 7 | Run Music in the Background | Keep audio playing from PWAs when the screen is off or the app is backgrounded | TBD | TBD |
-| 8 | Swipe to Refresh in WebViewActivity | Let users pull-to-refresh the current page in any PWA | STR-01–06 | 4 |
+| 8 | Swipe to Refresh in WebViewActivity | 4/4 | Complete    | 2026-05-26 |
 | 9 | Inject JS Script to Website for PWA Editing | Allow users to inject custom JavaScript into any PWA for per-app page customisation | TBD | TBD |
 | 10 | Browser Fingerprint Hard Ghosting | Spoof or randomise browser fingerprint signals per PWA to prevent cross-site tracking | TBD | TBD |
 | 11 | Web Casting Support | Cast media from any PWA to Chromecast or other casting targets | TBD | TBD |
@@ -254,7 +254,7 @@ Plans:
 
 ---
 
-## Phase 8: Swipe to Refresh in WebViewActivity
+## Phase 8: Swipe to Refresh in WebViewActivity ✅ Complete (2026-05-26)
 
 **Goal:** Let users pull-to-refresh the current page in any PWA via a standard swipe-down gesture, matching the UX of native Android apps.
 
