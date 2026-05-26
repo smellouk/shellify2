@@ -3,6 +3,12 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.4.2] - 2026-05-26
+
+### Bug Fixes
+
+- **app**: Add ProGuard keep rules for tor-android and jtorctl
+
 ## [1.4.1] - 2026-05-26
 
 ### Bug Fixes
