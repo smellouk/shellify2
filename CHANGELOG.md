@@ -3,6 +3,24 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.4.0] - 2026-05-26
+
+### Documentation
+
+- Plan phase 2 — privacy and tor
+
+### Features
+
+- **feature:webview**: Add swipe-to-refresh with per-app toggle and HTTPS enforcement
+- **core**: Add network request logging infrastructure
+- **feature:onboarding**: Add versioned What's New screen for phase 2 features (#11)
+
+### Maintenance
+
+- Migrate to AGP 9.2.0, Gradle 9.4.1, Kotlin 2.3.21, Compose BOM 2026.05.00
+- Upgrade JDK 17 → 21 in setup-android action
+- Restore verifyRoborazziRelease and fix srcDirs deprecation
+
 ## [1.3.0] - 2026-05-24
 
 ### Bug Fixes
