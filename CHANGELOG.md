@@ -3,6 +3,12 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.4.1] - 2026-05-26
+
+### Bug Fixes
+
+- **core:engine**: Surface TorState.Error on silent startup failures and add 90s timeout
+
 ## [1.4.0] - 2026-05-26
 
 ### Documentation
